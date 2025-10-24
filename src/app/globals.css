@@ -108,3 +108,57 @@ html,body{background:var(--bg);color:var(--text)}
 @media (max-width: 860px){
   .auth__grid{grid-template-columns:1fr}
 }
+.dash{
+  min-height:100dvh;
+  display:grid;
+  place-items:center;
+  padding:4dvh 4dvw;
+}
+
+.dash__wrap{
+  width:min(900px,92dvw);
+}
+
+.dash__title{
+  font-size:22px;
+  font-weight:700;
+  margin-bottom:8px;
+}
+
+.dash__meta{
+  display:grid;
+  gap:10px;
+  margin:8px 0 16px;
+}
+
+.dash__row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 12px;
+  border:1px solid var(--ring);
+  border-radius:12px;
+  background:#0f1424;
+}
+
+.dash__label{
+  color:var(--muted);
+  font-size:13px;
+}
+
+.dash__value{
+  color:var(--text);
+  font-weight:600;
+  font-size:14px;
+  max-width:60ch;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.dash__actions{
+  display:flex;
+  justify-content:flex-end;
+}
+.auth__brand{display:flex;justify-content:center;margin:48px 0}
+.auth__logo-wrap{width:clamp(160px,14vw,260px);height:clamp(160px,14vw,260px);border-radius:50%;overflow:hidden;display:grid;place-items:center;outline:3px solid #0b0b12;box-shadow:0 0 24px 6px rgba(120,180,255,.55),0 0 80px 18px rgba(120,180,255,.22)}
+.auth__logo{width:100%;height:100%;border-radius:50%;object-fit:cover}
