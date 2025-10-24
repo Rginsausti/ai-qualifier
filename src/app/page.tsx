@@ -58,7 +58,7 @@ export default async function Page({
           )}
           {err && (
             <p className="auth__error" style={{ marginTop: 12 }}>
-              {err}
+              Verification email sent. Check your inbox and click the link to finish signup.
             </p>
           )}
         </form>
