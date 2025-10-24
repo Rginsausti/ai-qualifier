@@ -17,14 +17,76 @@ async function siteURL(): Promise<string> {
   return base || 'http://localhost:3000'
 }
 
-/** SIGNUP for <form action={signUpForm}> */
-export async function signUpForm(formData: FormData): Promise<void> {
+export type SignUpResult = { ok: boolean; message?: string; error?: string }
+
+const credsSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6)
+})
+
+export async function signIn(formData: FormData) {
+  const supabase = getSupabaseServer()
+  const parsed = credsSchema.safeParse({
+    email: String(formData.get('email') || '').trim(),
+    password: String(formData.get('password') || '')
+  })
+  if (!parsed.success) redirect('/?error=Invalid+credentials')
+
+  const { error } = await (await supabase).auth.signInWithPassword(parsed.data)
+  if (error) redirect(`/?error=${encodeURIComponent(error.message)}`)
+
+  redirect('/dashboard')
+}
+
+export async function signUpForm(formData: FormData) {
+  const supabase = getSupabaseServer()
   const email = String(formData.get('email') || '').trim()
   const password = String(formData.get('password') || '')
-  if (!email || !password) {
-    redirect(`/?error=${encodeURIComponent('Missing credentials')}`, RedirectType.replace)
+  const parsed = credsSchema.safeParse({ email, password })
+  if (!parsed.success) redirect('/?error=Invalid+data')
+
+  const base = await siteURL()
+  const emailRedirectTo = `${base}/auth/callback?next=/dashboard`
+
+  const { error } = await (await supabase).auth.signUp({
+    email,
+    password,
+    options: { emailRedirectTo }
+  })
+
+  // Si ya existe o cualquier otra cosa, intentamos re-enviar igual
+  if (error) {
+    try {
+      const r = await (await supabase).auth.resend({
+        type: 'signup',
+        email,
+        options: { emailRedirectTo }
+      })
+      if (r.error) redirect(`/?error=${encodeURIComponent(`resend:${r.error.code||''}:${r.error.message}`)}`)
+      redirect('/?checkEmail=resent')
+    } catch (e:unknown) {
+      redirect(`/?error=${encodeURIComponent(`resend-throw:${(e as Error)?.message||'unknown'}`)}`)
+    }
   }
 
+  // Incluso si no hubo error, reenvía para el caso "repeated_signup" silencioso.
+  const r2 = await (await supabase).auth.resend({
+    type: 'signup',
+    email,
+    options: { emailRedirectTo }
+  })
+  if (r2.error) redirect(`/?error=${encodeURIComponent(`resend2:${r2.error.code||''}:${r2.error.message}`)}`)
+
+  redirect('/?checkEmail=1')
+}
+
+export async function signUp(
+  _prev: SignUpResult,
+  formData: FormData
+): Promise<SignUpResult> {
+  const email = String(formData.get('email') || '').trim()
+  const password = String(formData.get('password') || '')
+  if (!email || !password) return { ok: false, error: 'Missing credentials' }
   const supabase = await getSupabaseServer()
   const url = await siteURL()
   const { data, error } = await supabase.auth.signUp({
@@ -32,32 +94,13 @@ export async function signUpForm(formData: FormData): Promise<void> {
     password,
     options: { emailRedirectTo: `${url}/auth/callback` }
   })
-
-  if (error) {
-    redirect(`/?error=${encodeURIComponent(error.message)}`, RedirectType.replace)
-  }
-
+  if (error) return { ok: false, error: error.message }
   if (!data.session) {
-    redirect('/?checkEmail=1', RedirectType.replace)
-  }
-
-  redirect('/dashboard', RedirectType.replace)
-}
-
-export async function signIn(formData: FormData): Promise<void> {
-  const email = String(formData.get('email') || '').trim()
-  const password = String(formData.get('password') || '')
-  if (!email || !password) {
-    redirect(`/?error=${encodeURIComponent('Missing credentials')}`, RedirectType.replace)
-  }
-
-  const supabase = await getSupabaseServer()
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
-  if (error) {
-    redirect(`/?error=${encodeURIComponent(error.message)}`, RedirectType.replace)
+    return { ok: true, message: `Verification email sent to ${email}. Check your inbox to finish signup.` }
   }
   redirect('/dashboard', RedirectType.replace)
 }
+
 
 export type SummaryState = { summary: string; error?: string }
 
@@ -238,32 +281,21 @@ async function ensureUserAndCompany(): Promise<{ user_id: string; company_id: st
   const { data: auth } = await supabase.auth.getUser()
   const user_id = auth.user?.id ?? ''
   if (!user_id) throw new Error('no auth')
-
-  const { data: userRow } = await supabase
-    .from('users')
-    .select('id, company_id, email')
-    .eq('id', user_id)
-    .maybeSingle()
-
+  const { data: userRow } = await supabase.from('users').select('id, company_id, email').eq('id', user_id).maybeSingle()
   if (userRow?.company_id) return { user_id, company_id: userRow.company_id as string }
-
   const email = userRow?.email ?? auth.user?.email ?? ''
   const fallbackName = (email.split('@')[1] || 'personal') + '-' + user_id.slice(0, 8)
-
   const { data: company } = await supabase
     .from('companies')
     .insert({ name: fallbackName })
     .select('id')
     .maybeSingle()
-
   const company_id = company?.id as string
-
   if (!userRow) {
     await supabase.from('users').insert({ id: user_id, email, company_id })
   } else {
     await supabase.from('users').update({ company_id }).eq('id', user_id)
   }
-
   return { user_id, company_id }
 }
 

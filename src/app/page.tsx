@@ -1,15 +1,14 @@
-// src/app/page.tsx
 import Image from 'next/image'
 import { signIn, signUpForm } from './auth/actions'
 
-export default function Page({
+export default async function Page({
   searchParams
 }: {
-  searchParams?: Record<string, string | string[] | undefined>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
-  const checkEmail =
-    (Array.isArray(searchParams?.checkEmail) ? searchParams?.checkEmail[0] : searchParams?.checkEmail) === '1'
-  const err = Array.isArray(searchParams?.error) ? searchParams?.error[0] : searchParams?.error
+  const sp = await searchParams
+  const checkEmail = (Array.isArray(sp?.checkEmail) ? sp?.checkEmail[0] : sp?.checkEmail) === '1'
+  const err = Array.isArray(sp?.error) ? sp?.error[0] : sp?.error
 
   return (
     <main className="auth">
