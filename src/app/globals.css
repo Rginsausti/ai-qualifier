@@ -318,3 +318,22 @@ html, body {
 }
 .dash .auth__btn:hover { background: rgba(91,124,255,.10); transform: none; }
 .dash .auth__btn:disabled { opacity: .55; }
+/* === AUTH: botones minimalistas como en dashboard === */
+.auth .auth__btn{
+  background: transparent;
+  color: var(--text);
+  border: 1px solid color-mix(in oklab, var(--primary) 35%, transparent);
+  box-shadow: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  transition: background .15s ease, opacity .15s ease;
+  transform: none;            /* elimina el “lift” */
+}
+.auth .auth__btn:hover{ background: rgba(91,124,255,.10) }
+.auth .auth__btn:active{ background: rgba(91,124,255,.14) }
+.auth .auth__btn:disabled{ opacity: .55; cursor: not-allowed }
+.auth .auth__btn:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 35%, transparent);
+}
+
