@@ -1,0 +1,65 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.pnpm-store/
+.turbo/
+.parcel-cache/
+.cache/
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/.next/cache
+/out/
+.vercel/
+.vercel/output
+
+# pnpm workspace files generated per dev
+pnpm-debug.log*
+.pnpm-debug.log*
+.pnpmfile.cjs
+/pnpm-lock.yaml.save
+
+# production
+.idea/
+.fleet/
+.vscode/
+!.vscode/tasks.json
+/build
+
+*.log
+*.log.*
+.eslintcache
+*.swp
+*.swo
+
+# local runtime data
+/tmp
+/temp
+/dist
+/coverage
+# misc
+.DS_Store
+*.pem
+
+# debug
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts

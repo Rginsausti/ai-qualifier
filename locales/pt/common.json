@@ -1,0 +1,211 @@
+{
+  "language": {
+    "label": "Idioma",
+    "scrollLeft": "Ver anteriores",
+    "scrollRight": "Ver próximos"
+  },
+  "hero": {
+    "betaPill": "Agente Alma · beta privada",
+    "title": "Analisamos o seu bairro e a sua despensa para que comer melhor seja simples.",
+    "description": "A Alma escuta a sua rotina e seu humor, confere o que você já tem e cruza tudo com os lugares confiáveis ao redor. Assim qualquer pessoa consegue escolher algo saudável sem esforço extra.",
+    "primaryCta": "Testar o ritual demo",
+    "secondaryCta": "Conhecer o plano",
+    "bullets": {
+      "care": "Acompanhamento gentil dos seus hábitos",
+      "places": "Mapeamos lugares confiáveis perto de você",
+      "alerts": "Alertas oportunos quando a energia cai"
+    },
+    "previewCards": {
+      "suggestion": {
+        "label": "Sugestão do momento",
+        "title": "Torrada energia",
+        "detail": "Abacate + grão-de-bico crocante + limão. 12 g de proteína."
+      },
+      "places": {
+        "label": "Locais próximos",
+        "title": "Green Mood (200 m)",
+        "detail": "Bowls a partir de $4500 · aberto até as 23h."
+      },
+      "streak": {
+        "label": "Sequência",
+        "title": "12 dias cuidando de você",
+        "detail": "+240 pontos · ritual da manhã liberado."
+      }
+    }
+  },
+  "features": {
+    "routines": {
+      "title": "Rotinas e humor",
+      "description": "Registramos energia, fome emocional e desejos para agir antes das recaídas."
+    },
+    "pantry": {
+      "title": "Despensa viva",
+      "description": "Escaneamos os itens, avisamos vencimentos e sugerimos compras objetivas."
+    },
+    "neighborhood": {
+      "title": "Radar do bairro",
+      "description": "Mostramos mercados e restaurantes honestos por distância, preço e horário."
+    }
+  },
+  "coachSection": {
+    "badge": "Modo coach",
+    "title": "Conversas rápidas para decidir sem culpa.",
+    "description": "Cada diálogo captura como você está, qual ingrediente quer usar e quanto quer gastar. A Alma transforma isso em receitas, missões e lembretes com tom humano.",
+    "bullets": {
+      "care": "Orientação criada com especialistas e IA",
+      "time": "Menos de um minuto para registrar o dia",
+      "result": "Termine com um prato ou plano B pronto"
+    },
+    "cta": "Ver mapa de decisões"
+  },
+  "livePanelSection": {
+    "badge": "Painel ao vivo",
+    "title": "Todo o seu universo alimentar em um olhar.",
+    "cta": "Ver demo interativa",
+    "pantry": {
+      "title": "Despensa zen",
+      "stat": "7 ingredientes prontos",
+      "detail": "Avisamos que a cúrcuma acaba em 3 dias para repor a tempo.",
+      "badge": "Sem faltas críticas"
+    },
+    "mood": {
+      "title": "Humor e fome",
+      "stat": "Energia estável",
+      "detail": "O desejo por doce chega às 17h, então sugerimos um snack com especiarias.",
+      "badge": "Nova dica"
+    },
+    "places": {
+      "title": "Locais parceiros",
+      "stat": "4 abertos agora",
+      "detail": "Green Mood, Huerta Viva e dois empórios orgânicos a menos de 400 m.",
+      "badge": "Modo caminhada"
+    }
+  },
+  "ritualSection": {
+    "badge": "Ritual diário",
+    "title": "Cinco minutos para mudar sua alimentação.",
+    "reminder": "Alertas próprios, zero spam.",
+    "steps": {
+      "one": {
+        "title": "Check-in leve",
+        "detail": "Três toques para contar fome, humor e vontade de cozinhar."
+      },
+      "two": {
+        "title": "Receita expressa",
+        "detail": "Usamos o que há em casa e sugerimos trocas acessíveis."
+      },
+      "three": {
+        "title": "Mensagem amiga",
+        "detail": "Um lembrete gentil que te mantém no plano."
+      }
+    }
+  },
+  "futureSection": {
+    "badge": "O que vem aí",
+    "title": "Automatizamos lembretes e compras conscientes.",
+    "description": "Estamos criando relatórios semanais que interpretam seus áudios, listas inteligentes que se completam sozinhas e alertas que priorizam sua saúde.",
+    "items": {
+      "insight": "Resumo mindful todo domingo",
+      "missions": "Desafios cooperativos para motivar",
+      "map": "Radar saudável renovado todas as manhãs"
+    }
+  },
+  "missionsSection": {
+    "badge": "Missões ativas",
+    "title": "Gamificação mindful para sustentar o hábito.",
+    "streakInfo": "Sequência média da beta: 18 dias",
+    "items": {
+      "ayurveda": {
+        "status": "Em andamento",
+        "points": "+60 XP",
+        "title": "Missões Ayurveda",
+        "description": "Respire, água morna com limão e registro emocional antes do café."
+      },
+      "pantry": {
+        "status": "Falta 1 item",
+        "points": "+45 XP",
+        "title": "Despensa express",
+        "description": "Escaneie 5 produtos e anote como se sente."
+      },
+      "explorer": {
+        "status": "Planejado",
+        "points": "+80 XP",
+        "title": "Explorador do bairro",
+        "description": "Experimente um local saudável e compartilhe feedback."
+      }
+    }
+  },
+  "insightsSection": {
+    "badge": "Inteligência própria",
+    "title": "Tecnologia para nutrir corpo, mente e bairro.",
+    "description": "A Alma transforma áudios em insights, cruza o clima com seus desejos e indica pequenas ações para manter a energia.",
+    "cards": {
+      "engine": {
+        "title": "Motor nutricional",
+        "detail": "Misturamos ciência moderna e saberes ancestrais em cada prato."
+      },
+      "journal": {
+        "title": "Diário mindful",
+        "detail": "Áudios transcritos com etiquetas emocionais automáticas."
+      },
+      "energy": {
+        "title": "Tendências de energia",
+        "detail": "Gráficos simples para prever quedas e evitá-las."
+      },
+      "recipes": {
+        "title": "Receitas contextuais",
+        "detail": "Sugestões que consideram ingredientes, clima e orçamento."
+      }
+    }
+  },
+  "closingSection": {
+    "badge": "Beta privada",
+    "title": "Quer que a Alma cuide das suas decisões diárias?",
+    "description": "Deixe seu contato e enviaremos uma demo guiada com acesso prioritário quando abrirmos mais vagas.",
+    "primaryCta": "Reservar vaga",
+    "secondaryCta": "Ver manifesto"
+  },
+  "coachDemo": {
+    "badge": "Demo conversacional",
+    "title": "Assim é um papo de 60 segundos com a Alma.",
+    "speaker": "Alma",
+    "yourTurn": "Sua vez",
+    "timer": "60 segundos",
+    "recipe": "Receita personalizada",
+    "reset": "Reiniciar",
+    "finished": "Usamos essas respostas para equilibrar sua energia com o que existe em casa.",
+    "summaryTitle": "Receita pronta para você",
+    "summaryIntro": "A Alma combinaria {{ingredient}} com um toque especial para uma refeição perfeita para o estado {{energy}}.",
+  "summaryMood": "Também consideramos {{mood}} para fechar o plano.",
+  "summaryFallbackIngredient": "seu ingrediente favorito",
+  "summaryFallbackEnergy": "sua energia atual",
+  "summaryFallbackMood": "seu clima de hoje",
+    "summaryMissing": "Guardamos o passo final e os ingredientes secretos para assinantes. Deixe seu e-mail e enviaremos a receita completa.",
+    "emailLabel": "E-mail",
+    "emailPlaceholder": "voce@email.com",
+    "subscribeCta": "Quero a receita",
+    "planInvite": "Com o plano completo você libera receitas ilimitadas e acesso total ao app.",
+    "planCta": "Ver planos",
+    "subscribedThanks": "Obrigado por assinar. A receita completa chegará em instantes.",
+    "steps": {
+      "energy": {
+        "question": "Como está sua energia agora?",
+        "helper": "Ajuda a detectar quedas e sugerir lanches preventivos.",
+        "options": ["Alta", "Média", "Preciso de resgate"]
+      },
+      "pantry": {
+        "question": "Qual ingrediente você quer usar de qualquer jeito?",
+        "helper": "Escolha seus itens favoritos.",
+        "options": ["Grão-de-bico", "Abacate", "Frutas vermelhas"]
+      },
+      "mood": {
+        "question": "Prefere cozinhar ou pedir algo?",
+        "helper": "Cruzamos seu clima com lugares próximos e orçamento.",
+        "options": ["Cozinhar rápido", "Algo fresco fora", "Surpreenda-me"]
+      }
+    }
+  },
+  "general": {
+    "stepLabel": "Passo"
+  }
+}

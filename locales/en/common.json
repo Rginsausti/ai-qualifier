@@ -1,0 +1,211 @@
+{
+  "language": {
+    "label": "Language",
+    "scrollLeft": "Scroll left",
+    "scrollRight": "Scroll right"
+  },
+  "hero": {
+    "betaPill": "Alma Agent · private beta",
+    "title": "We analyze your neighborhood and pantry so eating better stays simple.",
+    "description": "Alma listens to your schedule and mood, checks what you already own, and cross-references it with trustworthy spots nearby. That way anyone can pick a healthy option without extra effort.",
+    "primaryCta": "Try the ritual demo",
+    "secondaryCta": "Explore the plan",
+    "bullets": {
+      "care": "Friendly habit tracking",
+      "places": "Trusted nearby places mapped for you",
+      "alerts": "Timely nudges when energy dips"
+    },
+    "previewCards": {
+      "suggestion": {
+        "label": "Suggestion of the moment",
+        "title": "Power toast",
+        "detail": "Avocado + crispy chickpeas + lemon. 12 g protein."
+      },
+      "places": {
+        "label": "Nearby places",
+        "title": "Green Mood (200 m)",
+        "detail": "Bowls from $4500 · open until 11 p.m."
+      },
+      "streak": {
+        "label": "Streak",
+        "title": "12 days caring for yourself",
+        "detail": "+240 points · morning ritual unlocked."
+      }
+    }
+  },
+  "features": {
+    "routines": {
+      "title": "Routines and mood",
+      "description": "Track energy, emotional hunger, and cravings to act before relapses."
+    },
+    "pantry": {
+      "title": "Living pantry",
+      "description": "Scan shelves, catch expirations, and get clear shopping prompts."
+    },
+    "neighborhood": {
+      "title": "Neighborhood radar",
+      "description": "Spot honest stores and restaurants by distance, price, and schedule."
+    }
+  },
+  "coachSection": {
+    "badge": "Coach mode",
+    "title": "Short chats that remove guilt from food decisions.",
+    "description": "Each exchange captures how you feel, which ingredient you want to use, and the budget you have in mind. Alma transforms that into recipes, missions, and reminders that sound like a close friend.",
+    "bullets": {
+      "care": "Guidance shaped with specialists and a human tone.",
+      "time": "Log your day in under a minute.",
+      "result": "Finish with a ready-to-go dish or nearby plan B."
+    },
+    "cta": "View decision map"
+  },
+  "livePanelSection": {
+    "badge": "Live panel",
+    "title": "Your food universe at a glance.",
+    "cta": "See interactive demo",
+    "pantry": {
+      "title": "Zen pantry",
+      "stat": "7 ingredients ready",
+      "detail": "We warn you when turmeric runs out in three days.",
+      "badge": "No critical gaps"
+    },
+    "mood": {
+      "title": "Mood and hunger",
+      "stat": "Energy on track",
+      "detail": "A sweet craving shows up around 5 p.m., so we prepare a spiced snack.",
+      "badge": "Fresh tip"
+    },
+    "places": {
+      "title": "Allied spots",
+      "stat": "4 open right now",
+      "detail": "Green Mood, Huerta Viva, and two organic shops within 400 m.",
+      "badge": "Walkable mode"
+    }
+  },
+  "ritualSection": {
+    "badge": "Daily ritual",
+    "title": "Five minutes to rewire how you eat.",
+    "reminder": "Own notifications, zero spam.",
+    "steps": {
+      "one": {
+        "title": "Playful check-in",
+        "detail": "Three taps to share hunger, mood, and desire to cook."
+      },
+      "two": {
+        "title": "Express recipe",
+        "detail": "We remix what you already have and suggest easy swaps."
+      },
+      "three": {
+        "title": "Warm reminder",
+        "detail": "A friendly nudge that keeps you on track without guilt."
+      }
+    }
+  },
+  "futureSection": {
+    "badge": "What's next",
+    "title": "Automating conscious reminders and smart grocery runs.",
+    "description": "We're building weekly recaps that digest your voice notes, lists that refill on their own, and alerts that prioritize your health over algorithms.",
+    "items": {
+      "insight": "Mindful recap every Sunday.",
+      "missions": "Co-op challenges to keep motivation high.",
+      "map": "Healthy radar refreshed each morning."
+    }
+  },
+  "missionsSection": {
+    "badge": "Active missions",
+    "title": "Mindful gamification to sustain the habit.",
+    "streakInfo": "Average beta streak: 18 days",
+    "items": {
+      "ayurveda": {
+        "status": "In progress",
+        "points": "+60 XP",
+        "title": "Ayurveda missions",
+        "description": "Breathing, warm lemon water, and emotion logging before breakfast."
+      },
+      "pantry": {
+        "status": "1 item left",
+        "points": "+45 XP",
+        "title": "Express pantry",
+        "description": "Scan 5 products and note how they make you feel."
+      },
+      "explorer": {
+        "status": "Planned",
+        "points": "+80 XP",
+        "title": "Neighborhood explorer",
+        "description": "Test a healthy spot and share feedback with the community."
+      }
+    }
+  },
+  "insightsSection": {
+    "badge": "Own intelligence",
+    "title": "Tech built to nourish body, mind, and neighborhood.",
+    "description": "Alma turns voice notes into insights, blends local weather with cravings, and suggests small moves to keep energy steady.",
+    "cards": {
+      "engine": {
+        "title": "Nutrition engine",
+        "detail": "Blend modern science with ancestral wisdom for every plate."
+      },
+      "journal": {
+        "title": "Mindful journal",
+        "detail": "Voice notes transcribed with automatic emotion tags."
+      },
+      "energy": {
+        "title": "Energy trends",
+        "detail": "Simple charts to anticipate dips and prevent them."
+      },
+      "recipes": {
+        "title": "Contextual recipes",
+        "detail": "Suggestions aware of your ingredients, weather, and budget."
+      }
+    }
+  },
+  "closingSection": {
+    "badge": "Private beta",
+    "title": "Want Alma to care for your daily decisions?",
+    "description": "Leave your contact to receive a guided demo and priority access when seats open.",
+    "primaryCta": "Save my spot",
+    "secondaryCta": "Read the manifesto"
+  },
+  "coachDemo": {
+    "badge": "Conversational demo",
+    "title": "This is what a 60-second chat with Alma feels like.",
+    "speaker": "Alma",
+    "yourTurn": "Your turn",
+    "timer": "60 seconds",
+    "recipe": "Custom recipe",
+    "reset": "Restart",
+    "finished": "We use these answers to balance your energy with what you have at home.",
+    "summaryTitle": "Recipe prepared for you",
+    "summaryIntro": "Alma would pair {{ingredient}} with a special twist for an {{energy}}-friendly meal.",
+  "summaryMood": "We also honor {{mood}} to finish the plan.",
+  "summaryFallbackIngredient": "your favorite ingredient",
+  "summaryFallbackEnergy": "your current energy",
+  "summaryFallbackMood": "your vibe today",
+    "summaryMissing": "We keep the final step and secret ingredients for subscribers. Leave your email to receive the full recipe.",
+    "emailLabel": "Email",
+    "emailPlaceholder": "name@email.com",
+    "subscribeCta": "Send me the recipe",
+    "planInvite": "With the full plan you unlock unlimited recipes and app access.",
+    "planCta": "View plans",
+    "subscribedThanks": "Thanks for subscribing. The complete recipe is on its way.",
+    "steps": {
+      "energy": {
+        "question": "How's your energy right now?",
+        "helper": "Helps us spot dips and send preventive snacks.",
+        "options": ["High", "Medium", "Need a rescue"]
+      },
+      "pantry": {
+        "question": "Which ingredient do you definitely want to use?",
+        "helper": "Pick your star products.",
+        "options": ["Chickpeas", "Avocado", "Berries"]
+      },
+      "mood": {
+        "question": "Prefer to cook or order something?",
+        "helper": "We mix your vibe with nearby spots and budget.",
+        "options": ["Quick cook", "Fresh bite outside", "Surprise me"]
+      }
+    }
+  },
+  "general": {
+    "stepLabel": "Step"
+  }
+}

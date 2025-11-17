@@ -1,0 +1,211 @@
+{
+  "language": {
+    "label": "Idioma",
+    "scrollLeft": "Ver anteriores",
+    "scrollRight": "Ver siguientes"
+  },
+  "hero": {
+    "betaPill": "Agente Alma · beta privada",
+    "title": "Analizamos tu barrio y tu alacena para que comer mejor sea sencillo.",
+    "description": "Alma escucha tus horarios y tu ánimo, revisa lo que tenés en casa y lo cruza con los comercios confiables de tu zona. Así cualquier persona puede elegir algo saludable sin perder tiempo.",
+    "primaryCta": "Probar ritual demo",
+    "secondaryCta": "Descubrir el plan",
+    "bullets": {
+      "care": "Seguimiento amable de tus hábitos diarios",
+      "places": "Relevamos locales confiables cerca tuyo",
+      "alerts": "Avisos claros cuando tu energía baja"
+    },
+    "previewCards": {
+      "suggestion": {
+        "label": "Sugerencia del momento",
+        "title": "Tostaditas energéticas",
+        "detail": "Palta + garbanzos crocantes + limón. 12 g de proteína."
+      },
+      "places": {
+        "label": "Locales cercanos",
+        "title": "Green Mood (200 m)",
+        "detail": "Bowls desde $4500 · abierto hasta las 23 h."
+      },
+      "streak": {
+        "label": "Racha",
+        "title": "12 días cuidándote",
+        "detail": "+240 puntos · ritual de mañana listo para usar."
+      }
+    }
+  },
+  "features": {
+    "routines": {
+      "title": "Rutinas y ánimo",
+      "description": "Registramos energía, hambre emocional y antojos para anticipar recaídas."
+    },
+    "pantry": {
+      "title": "Despensa viva",
+      "description": "Escaneamos tu alacena, avisamos vencimientos y sugerimos compras claras."
+    },
+    "neighborhood": {
+      "title": "Radar de barrio",
+      "description": "Ubicamos tiendas y restaurantes nobles por cercanía, precio y horario real."
+    }
+  },
+  "coachSection": {
+    "badge": "Modo coach",
+    "title": "Charlas breves para decidir qué comer sin culpa.",
+    "description": "Cada chat resume cómo te sentís, qué ingrediente querés usar y cuánto querés gastar. Con eso Alma arma recetas, misiones y recordatorios que parecen mensajes de un amigo cercano.",
+    "bullets": {
+      "care": "Consejos creados con especialistas y un tono humano.",
+      "time": "Registrás tu día en menos de un minuto.",
+      "result": "Terminás con un plato o plan B cercano listo para ejecutar."
+    },
+    "cta": "Ver mapa de decisiones"
+  },
+  "livePanelSection": {
+    "badge": "Panel en vivo",
+    "title": "Todo tu universo alimentario en una sola mirada.",
+    "cta": "Ver demo interactiva",
+    "pantry": {
+      "title": "Despensa zen",
+      "stat": "7 ingredientes listos",
+      "detail": "Avisamos que la cúrcuma se termina en 3 días para reponer a tiempo.",
+      "badge": "Sin faltantes críticos"
+    },
+    "mood": {
+      "title": "Ánimo y hambre",
+      "stat": "Energía estable",
+      "detail": "A las 17 h suele aparecer el antojo dulce, por eso sugerimos un snack especiado.",
+      "badge": "Nueva sugerencia"
+    },
+    "places": {
+      "title": "Locales aliados",
+      "stat": "4 abiertos ahora",
+      "detail": "Green Mood, Huerta Viva y dos almacenes orgánicos a menos de 400 m.",
+      "badge": "Modo caminata"
+    }
+  },
+  "ritualSection": {
+    "badge": "Ritual diario",
+    "title": "Cinco minutos para cambiar cómo te alimentás.",
+    "reminder": "Notificaciones propias, cero spam.",
+    "steps": {
+      "one": {
+        "title": "Check-in lúdico",
+        "detail": "Tres toques para contar hambre, ánimo y ganas de cocinar."
+      },
+      "two": {
+        "title": "Receta express",
+        "detail": "Usamos lo que hay en tu cocina y proponemos reemplazos accesibles."
+      },
+      "three": {
+        "title": "Mensaje cercano",
+        "detail": "Un recordatorio amable que te devuelve al plan sin culpas."
+      }
+    }
+  },
+  "futureSection": {
+    "badge": "Lo que se viene",
+    "title": "Automatizamos recordatorios y compras conscientes.",
+    "description": "Trabajamos en reportes semanales que leen tus audios, listas inteligentes que se llenan solas y avisos que cuidan tu salud antes que los algoritmos.",
+    "items": {
+      "insight": "Resumen mindful cada domingo.",
+      "missions": "Retos cooperativos para sostener la motivación.",
+      "map": "Radar saludable actualizado cada mañana."
+    }
+  },
+  "missionsSection": {
+    "badge": "Misiones activas",
+    "title": "Gamificación mindful para sostener el hábito.",
+    "streakInfo": "Rachas promedio de la beta: 18 días",
+    "items": {
+      "ayurveda": {
+        "status": "En curso",
+        "points": "+60 XP",
+        "title": "Misiones Ayurveda",
+        "description": "Respiración, agua tibia con limón y registro emocional antes del desayuno."
+      },
+      "pantry": {
+        "status": "Queda 1 ítem",
+        "points": "+45 XP",
+        "title": "Despensa express",
+        "description": "Escaneá 5 productos y anotá cómo te hacen sentir."
+      },
+      "explorer": {
+        "status": "Planificado",
+        "points": "+80 XP",
+        "title": "Explorador de barrios",
+        "description": "Probá un local saludable y compartí feedback con la comunidad."
+      }
+    }
+  },
+  "insightsSection": {
+    "badge": "Inteligencia propia",
+    "title": "Tecnología pensada para nutrir cuerpo, mente y barrio.",
+    "description": "Alma traduce tus notas de voz en insights, cruza el clima de tu barrio con tus antojos y propone acciones simples para mantener la energía.",
+    "cards": {
+      "engine": {
+        "title": "Motor nutricional",
+        "detail": "Combinamos saberes modernos y ancestrales para cada plato."
+      },
+      "journal": {
+        "title": "Bitácora mindful",
+        "detail": "Notas de voz transcritas con etiquetas emocionales automáticas."
+      },
+      "energy": {
+        "title": "Tendencias de energía",
+        "detail": "Gráficas simples para anticipar bajones y prevenirlos."
+      },
+      "recipes": {
+        "title": "Recetas contextuales",
+        "detail": "Sugerencias que miran tus ingredientes, clima y presupuesto."
+      }
+    }
+  },
+  "closingSection": {
+    "badge": "Beta privada",
+    "title": "¿Querés que Alma cuide tus decisiones diarias?",
+    "description": "Dejá tu contacto y te enviamos una demo guiada más acceso prioritario cuando abramos cupos.",
+    "primaryCta": "Reservar lugar",
+    "secondaryCta": "Ver manifiesto"
+  },
+  "coachDemo": {
+    "badge": "Demo conversacional",
+    "title": "Así se siente una charla de 60 segundos con Alma.",
+    "speaker": "Alma",
+    "yourTurn": "Tu turno",
+    "timer": "60 segundos",
+    "recipe": "Receta personalizada",
+    "reset": "Reiniciar",
+    "finished": "Usamos estos datos para equilibrar tu energía con lo que hay en casa.",
+    "summaryTitle": "Receta lista para vos",
+    "summaryIntro": "Alma combinaría {{ingredient}} con un toque especial para una comida acorde a tu estado {{energy}}.",
+  "summaryMood": "También respetamos {{mood}} para completar el plan.",
+  "summaryFallbackIngredient": "tu ingrediente favorito",
+  "summaryFallbackEnergy": "tu energía actual",
+  "summaryFallbackMood": "tu forma de comer hoy",
+    "summaryMissing": "Guardamos el paso final y los ingredientes secretos para quienes se suscriben. Dejanos tu correo y te enviamos esta receta completa.",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "nombre@correo.com",
+    "subscribeCta": "Quiero la receta",
+    "planInvite": "Con el plan completo podés desbloquear recetas ilimitadas y usar la app sin límites.",
+    "planCta": "Ver planes",
+    "subscribedThanks": "Gracias por suscribirte. En pocos minutos recibirás la receta completa.",
+    "steps": {
+      "energy": {
+        "question": "¿Cómo está tu energía ahora?",
+        "helper": "Nos ayuda a detectar bajones y proponer snacks preventivos.",
+        "options": ["Alta", "Media", "Necesito rescate"]
+      },
+      "pantry": {
+        "question": "¿Qué ingrediente querés usar sí o sí?",
+        "helper": "Elegí tus productos estrella.",
+        "options": ["Garbanzos", "Palta", "Frutas rojas"]
+      },
+      "mood": {
+        "question": "¿Preferís cocinar o pedir algo?",
+        "helper": "Mezclamos tus ganas con locales cercanos y tu presupuesto.",
+        "options": ["Cocinar rápido", "Algo fresco afuera", "Sorprendeme"]
+      }
+    }
+  },
+  "general": {
+    "stepLabel": "Paso"
+  }
+}

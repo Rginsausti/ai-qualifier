@@ -1,0 +1,211 @@
+{
+  "language": {
+    "label": "言語",
+    "scrollLeft": "左へスクロール",
+    "scrollRight": "右へスクロール"
+  },
+  "hero": {
+    "betaPill": "Alma エージェント · プライベートベータ",
+    "title": "近所とキッチンを分析して、健康的な食事をもっと気軽に。",
+    "description": "Alma はあなたの生活リズムや気分を聞き取り、家にある食材を確認し、近くの信頼できるお店と結びつけます。誰でも迷わずヘルシーな一歩を選べます。",
+    "primaryCta": "デモを試す",
+    "secondaryCta": "プランを見る",
+    "bullets": {
+      "care": "習慣をやさしくトラッキング",
+      "places": "近所のおすすめスポット",
+      "alerts": "エネルギーが下がる前にお知らせ"
+    },
+    "previewCards": {
+      "suggestion": {
+        "label": "今の提案",
+        "title": "パワートースト",
+        "detail": "アボカド + カリカリひよこ豆 + レモン。たんぱく質12g。"
+      },
+      "places": {
+        "label": "近くのお店",
+        "title": "Green Mood (200 m)",
+        "detail": "ボウル 4500円〜 · 23時まで営業"
+      },
+      "streak": {
+        "label": "連続記録",
+        "title": "12日連続でセルフケア",
+        "detail": "+240 pt · 朝のリチュアル解放"
+      }
+    }
+  },
+  "features": {
+    "routines": {
+      "title": "ルーティンと気分",
+      "description": "エネルギー、感情的な空腹、食の欲求を記録してリスクを先回り。"
+    },
+    "pantry": {
+      "title": "ライブパントリー",
+      "description": "在庫をスキャンし、賞味期限を通知、買い物リストも提案します。"
+    },
+    "neighborhood": {
+      "title": "近所レーダー",
+      "description": "距離・価格・営業時間で良質なお店を表示。"
+    }
+  },
+  "coachSection": {
+    "badge": "コーチモード",
+    "title": "罪悪感のない食事決定をサポート。",
+    "description": "会話ごとに気分、使いたい食材、想定予算をまとめます。Alma がそれをレシピやミッション、優しいリマインダーに変換します。",
+    "bullets": {
+      "care": "専門家と作った人間味のあるアドバイス",
+      "time": "1分以内で記録完了",
+      "result": "すぐ作れる料理か近くのプランBを提示"
+    },
+    "cta": "意思決定マップを見る"
+  },
+  "livePanelSection": {
+    "badge": "ライブパネル",
+    "title": "食に関するすべてをひと目で把握。",
+    "cta": "インタラクティブデモ",
+    "pantry": {
+      "title": "ゼン・パントリー",
+      "stat": "7食材スタンバイ",
+      "detail": "ターメリックが3日で切れるので補充をお知らせ。",
+      "badge": "欠品なし"
+    },
+    "mood": {
+      "title": "気分と空腹",
+      "stat": "エネルギー安定",
+      "detail": "17時ごろ甘いものが欲しくなるのでスパイススナックを提案。",
+      "badge": "新しいヒント"
+    },
+    "places": {
+      "title": "提携スポット",
+      "stat": "現在4店舗営業中",
+      "detail": "Green Mood、Huerta Viva と2つのオーガニックショップが400m以内。",
+      "badge": "お散歩モード"
+    }
+  },
+  "ritualSection": {
+    "badge": "デイリーリチュアル",
+    "title": "5分で食習慣をアップデート。",
+    "reminder": "独自通知、スパムなし。",
+    "steps": {
+      "one": {
+        "title": "ライトなチェックイン",
+        "detail": "空腹度・気分・料理したい度を3タップで。"
+      },
+      "two": {
+        "title": "エクスプレスレシピ",
+        "detail": "家にある食材から手軽な提案と代替案。"
+      },
+      "three": {
+        "title": "あたたかいメッセージ",
+        "detail": "そっと軌道修正してくれるリマインダー。"
+      }
+    }
+  },
+  "futureSection": {
+    "badge": "今後の予定",
+    "title": "リマインダーと買い物を自動化。",
+    "description": "音声メモを要約する週次レポート、自動で満たされるリスト、健康を最優先する通知を開発中。",
+    "items": {
+      "insight": "毎週日曜のマインドフルサマリー",
+      "missions": "モチベ維持の協働チャレンジ",
+      "map": "毎朝更新されるヘルシーレーダー"
+    }
+  },
+  "missionsSection": {
+    "badge": "進行中のミッション",
+    "title": "習慣を支えるマインドフルなゲーミフィケーション。",
+    "streakInfo": "ベータ平均連続日数: 18日",
+    "items": {
+      "ayurveda": {
+        "status": "進行中",
+        "points": "+60 XP",
+        "title": "アーユルヴェーダ・ミッション",
+        "description": "呼吸、レモン白湯、朝食前の感情ログ。"
+      },
+      "pantry": {
+        "status": "残り1項目",
+        "points": "+45 XP",
+        "title": "エクスプレス・パントリー",
+        "description": "5つの商品をスキャンして気分を記録。"
+      },
+      "explorer": {
+        "status": "計画中",
+        "points": "+80 XP",
+        "title": "ネイバーフッド・エクスプローラー",
+        "description": "ヘルシーなお店を試してフィードバック共有。"
+      }
+    }
+  },
+  "insightsSection": {
+    "badge": "独自インテリジェンス",
+    "title": "からだ・こころ・まちを満たすテクノロジー。",
+    "description": "Alma は音声メモをインサイトに変え、天気と欲求を掛け合わせ、エネルギーを保つ小さな行動を提案します。",
+    "cards": {
+      "engine": {
+        "title": "栄養エンジン",
+        "detail": "最新科学と伝統知を一皿ごとに融合。"
+      },
+      "journal": {
+        "title": "マインドフル日誌",
+        "detail": "音声を文字起こしし感情タグを自動付与。"
+      },
+      "energy": {
+        "title": "エナジートレンド",
+        "detail": "シンプルなチャートで低下を予測。"
+      },
+      "recipes": {
+        "title": "コンテキストレシピ",
+        "detail": "食材・天気・予算に合わせた提案。"
+      }
+    }
+  },
+  "closingSection": {
+    "badge": "プライベートベータ",
+    "title": "毎日の選択を Alma に任せてみませんか?",
+    "description": "連絡先を残していただければ、ガイド付きデモと優先アクセスをお送りします。",
+    "primaryCta": "参加を予約",
+    "secondaryCta": "マニフェストを見る"
+  },
+  "coachDemo": {
+    "badge": "会話デモ",
+    "title": "Alma との60秒チャットを体感。",
+    "speaker": "Alma",
+    "yourTurn": "あなたの番",
+    "timer": "60秒",
+    "recipe": "パーソナルレシピ",
+    "reset": "リセット",
+    "finished": "回答をもとに、家にあるものとエネルギーを整える提案をします。",
+    "summaryTitle": "あなた専用のレシピ",
+    "summaryIntro": "Alma は {{ingredient}} にひと工夫を加えて、{{energy}} な状態に合う一品を仕上げます。",
+  "summaryMood": "さらに {{mood}} も踏まえてプランを完成させます。",
+  "summaryFallbackIngredient": "お気に入りの食材",
+  "summaryFallbackEnergy": "今のエネルギー",
+  "summaryFallbackMood": "今日の気分",
+    "summaryMissing": "最後の工程と秘密の材料は登録者だけにお届け。メールを教えていただければ完全版を送ります。",
+    "emailLabel": "メール",
+    "emailPlaceholder": "you@example.com",
+    "subscribeCta": "レシピを受け取る",
+    "planInvite": "フルプランならレシピもアプリ機能も無制限。",
+    "planCta": "プランを見る",
+    "subscribedThanks": "登録ありがとうございます。まもなくレシピをお届けします。",
+    "steps": {
+      "energy": {
+        "question": "今のエネルギーは?",
+        "helper": "落ち込みを察知して予防スナックを提案します。",
+        "options": ["高い", "ふつう", "助けが必要"]
+      },
+      "pantry": {
+        "question": "絶対に使いたい食材は?",
+        "helper": "お気に入りを選んでください。",
+        "options": ["ひよこ豆", "アボカド", "ベリー"]
+      },
+      "mood": {
+        "question": "今日は料理? それともテイクアウト?",
+        "helper": "気分と近くのお店・予算をマッチさせます。",
+        "options": ["さっと作る", "外でさっぱり", "おまかせ"]
+      }
+    }
+  },
+  "general": {
+    "stepLabel": "ステップ"
+  }
+}
