@@ -1,0 +1,83 @@
+/* Golden metallic text effect for step labels */
+.golden-text-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.golden-text-container::before {
+  content: "";
+  position: absolute;
+  width: clamp(8rem, 45vw, 14rem);
+  height: clamp(2rem, 6vw, 4rem);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.85) 0%, rgba(255, 242, 188, 0.7) 45%, rgba(255, 231, 153, 0.35) 65%, rgba(255, 231, 153, 0) 100%);
+  filter: blur(18px);
+  opacity: 0.95;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.golden-text {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: clamp(.85rem, 1.5vw, 2.2rem);
+    letter-spacing: 1px;
+    -webkit-text-stroke: 4px transparent;
+    text-transform: uppercase;
+    display: inline-flex;
+    position: relative;
+}
+
+.golden-text::before {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-image: repeating-linear-gradient(105deg, #ffb338 0%, #3e2904 5%, #ffb338 12%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(5px 15px 15px #000);
+    transform: scaleY(1.05);
+    transform-origin: top;
+    z-index: -1;
+}
+
+.golden-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-image: repeating-linear-gradient(5deg, #ffb338 0%, #77571d 23%, #ffb338 81%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: #1e2127;
+    transform: scale(1);
+    z-index: 1;
+}
+
+
+.golden-text span {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  color: transparent;
+  pointer-events: none;
+  user-select: none;
+}
+
+.golden-text-shadow {
+  text-shadow:
+    0 1px 0 #c6bb9f,
+    0 2px 2px rgba(0, 0, 0, 0.25),
+    0 4px 6px rgba(0, 0, 0, 0.15),
+    0 6px 12px rgba(0, 0, 0, 0.1);
+}

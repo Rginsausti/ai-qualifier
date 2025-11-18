@@ -4,6 +4,98 @@
     "scrollLeft": "Vedi precedenti",
     "scrollRight": "Vedi successivi"
   },
+  "dashboard": {
+    "locale": "it-IT",
+    "header": {
+      "badge": "Pannello giornaliero",
+      "title": "Ciao Alma",
+      "alerts": "Notifiche gentili"
+    },
+    "hero": {
+      "badge": "Energia calibrata",
+      "title": "La tua giornata è equilibrata",
+      "description": "La tua assunzione segue il tuo ritmo ormonale. Seguiamo desideri e promemoria per mantenere l'energia stabile.",
+      "primaryCta": "Vedi il rituale di oggi",
+      "secondaryCta": "Registra audio",
+      "calories": "Calorie",
+      "goal": "di",
+      "ready": "completo"
+    },
+    "mindful": {
+      "energy": "Energia",
+      "hunger": "Desiderio",
+      "mood": "Umore"
+    },
+    "plan": {
+      "morning": {
+        "tag": "Rituale",
+        "title": "Colazione energizzante",
+        "detail": "Bowl con frutta e semi per iniziare la giornata."
+      },
+      "lunch": {
+        "tag": "Pasto",
+        "title": "Pranzo equilibrato",
+        "detail": "Legumi + verdure + proteine leggere."
+      },
+      "checkin": {
+        "tag": "Pausa",
+        "title": "Check-in serale",
+        "detail": "Breve riflessione sulla tua energia giornaliera."
+      }
+    },
+    "macros": {
+      "protein": {
+        "label": "Proteine",
+        "detail": "Obiettivo giornaliero"
+      },
+      "carbs": {
+        "label": "Carboidrati",
+        "detail": "Obiettivo giornaliero"
+      },
+      "fats": {
+        "label": "Grassi",
+        "detail": "Obiettivo giornaliero"
+      }
+    },
+    "water": {
+      "badge": "Idratazione",
+      "title": "Acqua del giorno",
+      "detail": "Registra bicchieri reali per evitare gonfiore serale.",
+      "goal": "Obiettivo",
+      "cta": "Aggiungi un bicchiere"
+    },
+    "streak": {
+      "badge": "Serie mindful",
+      "title": "Giorni in sintonia",
+      "detail": "Hai combinato check-in, acqua e un piatto vegetale ogni giorno.",
+      "days": "giorni",
+      "next": "Prossimo obiettivo",
+      "cta": "Vedi premi attivi"
+    },
+    "quickwins": {
+      "badge": "Scorciatoie",
+      "title": "Azioni rapide",
+      "voice": "Nota vocale",
+      "voiceDetail": "Registra audio 1 min",
+      "pantryscan": "Scansiona dispensa",
+      "pantryscanDetail": "Aggiungi 3 prodotti",
+      "walk": "Camminata mindful",
+      "walkDetail": "15 min all'aperto"
+    },
+    "neighborhood": {
+      "badge": "Vicino a te",
+      "title": "Quartiere mindful",
+      "cta": "Vedi mappa completa",
+      "greenMood": {
+        "name": "Green Mood",
+        "detail": "Bowl e smoothie biologici"
+      },
+      "huerta": {
+        "name": "Huerta Viva",
+        "detail": "Mercato di prodotti freschi"
+      }
+    }
+  },
   "hero": {
     "betaPill": "Agente Alma · beta privata",
     "title": "Analizziamo il tuo quartiere e la tua dispensa per rendere facile mangiare meglio.",
@@ -31,6 +123,171 @@
         "title": "12 giorni di cura personale",
         "detail": "+240 punti · rituale mattutino sbloccato."
       }
+    },
+    "motto": {
+      "badge": "Collage erboristeria",
+      "title": "Mangiare sano = mangiare gustoso",
+      "subtitle": "Un collage tattile di erbe e agrumi che ricorda quanto prendersi cura di sé possa essere saporito.",
+      "alt": "Collage erboristico con ingredienti freschi e appunti"
+    }
+  },
+  "onboarding": {
+    "badge": "Onboarding",
+    "title": "Conosciamo la tua energia",
+    "stepCounter": "Passo {{current}} / {{total}}",
+    "back": "Indietro",
+    "next": "Avanti",
+    "progressHint": "Facciamo una domanda per volta per mantenere la mente leggera.",
+    "welcome": {
+      "badge": "Beta guidata",
+      "title": "Benvenuta nel tuo rituale personalizzato",
+      "description": "Ti porremo quattro domande delicate per capire come accompagnarti. Ogni risposta sblocca suggerimenti su misura.",
+      "cta": "Inizia"
+    },
+    "goal": {
+      "stepLabel": "Passo 2",
+      "title": "Quali obiettivi vuoi attivare?",
+      "description": "Seleziona tutte le opzioni che ti rappresentano oggi.",
+      "options": {
+        "lose": {
+          "label": "Perdere peso",
+          "description": "Dimagrire in modo gentile e sostenibile."
+        },
+        "gain": {
+          "label": "Aumentare massa",
+          "description": "Creare tono e forza senza diete estreme."
+        },
+        "healthy": {
+          "label": "Mangiare sano",
+          "description": "Organizzare pasti equilibrati ogni giorno."
+        }
+      }
+    },
+    "biometric": {
+      "stepLabel": "Passo 3",
+      "title": "Regoliamo i tuoi dati biometrici",
+      "description": "Fai scorrere per impostare i valori attuali. Non serve altro.",
+      "weightLabel": "Peso",
+      "heightLabel": "Altezza",
+      "weightUnit": "kg",
+      "heightUnit": "cm"
+    },
+    "unitToggle": {
+      "metric": "Kg · cm",
+      "imperial": "Lb · piedi"
+    },
+    "restrictions": {
+      "allergens": {
+        "stepLabel": "Passo 4",
+        "title": "Hai allergie o intolleranze?",
+        "description": "Seleziona tutte quelle che ti riguardano. Rispetteremo queste restrizioni in ogni raccomandazione.",
+        "subtitle": "Allergeni principali",
+        "milk": "Latticini",
+        "eggs": "Uova",
+        "peanuts": "Arachidi",
+        "treeNuts": "Frutta secca",
+        "soy": "Soia",
+        "wheat": "Grano",
+        "fish": "Pesce",
+        "shellfish": "Frutti di mare",
+        "sesame": "Sesamo"
+      },
+      "intolerances": {
+        "subtitle": "Intolleranze digestive",
+        "gluten": "Glutine",
+        "lactose": "Lattosio",
+        "fructose": "Fruttosio"
+      },
+      "lifestyle": {
+        "stepLabel": "Passo 5",
+        "title": "Segui uno stile di vita alimentare particolare?",
+        "description": "Scegli quello che ti descrive meglio o salta questo passaggio.",
+        "vegetarian": {
+          "label": "Vegetariano",
+          "description": "Senza carne o pesce"
+        },
+        "vegan": {
+          "label": "Vegano",
+          "description": "Senza prodotti animali"
+        },
+        "pescatarian": {
+          "label": "Pescetariano",
+          "description": "Con pesce, senza carne"
+        },
+        "paleo": {
+          "label": "Paleo",
+          "description": "Senza cereali o alimenti trasformati"
+        },
+        "keto": {
+          "label": "Keto",
+          "description": "Basso contenuto di carboidrati"
+        },
+        "lowCarb": {
+          "label": "Low carb",
+          "description": "Limita farine e zuccheri semplici"
+        },
+        "mediterranean": {
+          "label": "Mediterraneo",
+          "description": "A base vegetale con grassi sani"
+        }
+      },
+      "additional": {
+        "stepLabel": "Passo 6",
+        "title": "Altre restrizioni?",
+        "description": "Puoi aggiungere diete terapeutiche, preferenze culturali o qualsiasi dettaglio aggiuntivo.",
+        "therapeutic": {
+          "subtitle": "Diete terapeutiche",
+          "diabetes": "Diabete",
+          "renal": "Renale",
+          "lowFodmap": "Low FODMAP",
+          "cardiovascular": "Cardiovascolare"
+        },
+        "cultural": {
+          "subtitle": "Preferenze culturali",
+          "halal": "Halal",
+          "kosher": "Kosher",
+          "hindu": "Indù",
+          "buddhist": "Buddista"
+        },
+        "other": {
+          "label": "Altre restrizioni",
+          "placeholder": "Scrivi qualsiasi dettaglio aggiuntivo..."
+        }
+      },
+      "summary": {
+        "title": "Restrizioni registrate",
+        "allergens": "Allergeni",
+        "intolerances": "Intolleranze",
+        "therapeutic": "Terapeutiche",
+        "cultural": "Culturali",
+        "other": "Altre"
+      }
+    },
+    "result": {
+      "stepLabel": "Passo 7",
+      "title": "Stiamo calibrando il tuo piano",
+      "description": "Abbiamo calcolato un obiettivo quotidiano basato sui tuoi intenti: {{goals}}.",
+      "loading": "Calcolo in corso...",
+      "readyBadge": "Pronto",
+      "subtitle": "La tua quota giornaliera suggerita",
+      "adjustmentNote": "La aggiorneremo ogni settimana in base ai tuoi registri.",
+      "homeCta": "Vai alla home",
+      "restart": "Ricomincia il flusso",
+      "examplesTitle": "Come appare nel piatto",
+      "examplesIntro": "Dividiamo l'obiettivo in 20 unità base per collegarlo a cibi quotidiani.",
+      "examples": {
+        "apple": "Mela croccante",
+        "chiaPudding": "Budino di chia con latte vegetale",
+        "avocadoToast": "Toast con avocado e semi",
+        "baseTwenty": "≈ {{units}} su 20 unità base",
+        "percentOfGoal": "{{percent}}% del tuo obiettivo"
+      }
+    },
+    "visuals": {
+      "welcomeAlt": "Illustrazione calda di benvenuto con ingredienti naturali",
+      "goalAlt": "Collage fotografico di obiettivi e alimenti salutari",
+      "biometricsAlt": "Pannello biometrico con grafici e cursori",
+      "resultAlt": "Anteprima di raccomandazioni personalizzate"
     }
   },
   "features": {

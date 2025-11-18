@@ -7,11 +7,20 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const STORAGE_KEY = "alma-language";
 
-export function LanguageSwitcher() {
+type LanguageSwitcherProps = {
+  className?: string;
+  variant?: "default" | "minimal";
+};
+
+const cx = (...classes: Array<string | false | null | undefined>) =>
+  classes.filter(Boolean).join(" ");
+
+export function LanguageSwitcher({ className = "", variant = "default" }: LanguageSwitcherProps) {
   const { i18n, t } = useTranslation();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const showControls = variant === "default";
 
   const activeCode = useMemo(() => {
     const current = i18n.language?.split("-")[0]?.toLowerCase();
@@ -91,29 +100,48 @@ export function LanguageSwitcher() {
   }, [activeCode]);
 
   return (
-    <div className="w-full space-y-2 sm:w-auto">
+    <div className={cx("w-full space-y-2 sm:w-auto", variant === "minimal" && "space-y-1 sm:max-w-sm", className)}>
       <span className="text-[0.6rem] font-semibold uppercase tracking-[0.45em] text-slate-500/80">
         {t("language.label")}
       </span>
-      <div className="flex w-full items-center gap-2 sm:w-auto">
-        <button
-          type="button"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:text-slate-900 disabled:opacity-30"
-          onClick={() => handleScroll("left")}
-          disabled={!canScrollLeft}
-          aria-label={t("language.scrollLeft")}
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
+      <div
+        className={cx(
+          "flex w-full items-center gap-2 sm:w-auto",
+          variant === "minimal" &&
+            "rounded-full border border-slate-200/60 bg-white/80 px-2 py-1 shadow-inner shadow-white"
+        )}
+      >
+        {showControls && (
+          <button
+            type="button"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:text-slate-900 disabled:opacity-30"
+            onClick={() => handleScroll("left")}
+            disabled={!canScrollLeft}
+            aria-label={t("language.scrollLeft")}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+        )}
         <div
-          className="relative w-full overflow-hidden rounded-2xl border border-slate-200/70 bg-white/95 px-3 py-2 shadow-sm shadow-slate-200/60"
+          className={cx(
+            "relative w-full overflow-hidden",
+            variant === "default" &&
+              "rounded-2xl border border-slate-200/70 bg-white/95 px-3 py-2 shadow-sm shadow-slate-200/60"
+          )}
           aria-label={t("language.label")}
         >
-          <div className="pointer-events-none absolute inset-y-2 left-0 w-8 rounded-l-2xl bg-gradient-to-r from-white via-white/80 to-transparent"></div>
-          <div className="pointer-events-none absolute inset-y-2 right-0 w-8 rounded-r-2xl bg-gradient-to-l from-white via-white/80 to-transparent"></div>
+          {variant === "default" && (
+            <>
+              <div className="pointer-events-none absolute inset-y-2 left-0 w-8 rounded-l-2xl bg-gradient-to-r from-white via-white/80 to-transparent"></div>
+              <div className="pointer-events-none absolute inset-y-2 right-0 w-8 rounded-r-2xl bg-gradient-to-l from-white via-white/80 to-transparent"></div>
+            </>
+          )}
           <div
             ref={scrollRef}
-            className="flex w-full gap-1 overflow-x-auto pr-2 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-slate-500 scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className={cx(
+              "flex w-full gap-1 overflow-x-auto pr-2 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-slate-500 scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+              variant === "minimal" && "pr-0"
+            )}
           >
           {AVAILABLE_LANGUAGES.map((language) => {
             const isActive = activeCode === language.code;
@@ -123,7 +151,11 @@ export function LanguageSwitcher() {
                 type="button"
                 onClick={() => handleChange(language.code)}
                 data-active={isActive}
-                className="shrink-0 whitespace-nowrap rounded-full px-3 py-1 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 data-[active=true]:bg-slate-900 data-[active=true]:text-white data-[active=true]:shadow-lg data-[active=true]:shadow-slate-900/15"
+                className={cx(
+                  "shrink-0 whitespace-nowrap rounded-full px-3 py-1 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900",
+                  variant === "minimal" && "text-[0.65rem] px-2",
+                  "data-[active=true]:bg-slate-900 data-[active=true]:text-white data-[active=true]:shadow-lg data-[active=true]:shadow-slate-900/15"
+                )}
               >
                 {language.label}
               </button>
@@ -131,15 +163,17 @@ export function LanguageSwitcher() {
           })}
           </div>
         </div>
-        <button
-          type="button"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:text-slate-900 disabled:opacity-30"
-          onClick={() => handleScroll("right")}
-          disabled={!canScrollRight}
-          aria-label={t("language.scrollRight")}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
+        {showControls && (
+          <button
+            type="button"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:text-slate-900 disabled:opacity-30"
+            onClick={() => handleScroll("right")}
+            disabled={!canScrollRight}
+            aria-label={t("language.scrollRight")}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        )}
       </div>
     </div>
   );

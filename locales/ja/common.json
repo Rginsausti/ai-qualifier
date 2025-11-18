@@ -4,6 +4,98 @@
     "scrollLeft": "左へスクロール",
     "scrollRight": "右へスクロール"
   },
+  "dashboard": {
+    "locale": "ja-JP",
+    "header": {
+      "badge": "毎日のパネル",
+      "title": "こんにちは Alma",
+      "alerts": "やさしい通知"
+    },
+    "hero": {
+      "badge": "調整されたエネルギー",
+      "title": "あなたの一日はバランスがとれています",
+      "description": "あなたの摂取量はホルモンのリズムに従います。私たちは欲求とリマインダーを追跡してエネルギーを安定させます。",
+      "primaryCta": "今日の儀式を見る",
+      "secondaryCta": "音声を記録",
+      "calories": "カロリー",
+      "goal": "の",
+      "ready": "完了"
+    },
+    "mindful": {
+      "energy": "エネルギー",
+      "hunger": "欲求",
+      "mood": "気分"
+    },
+    "plan": {
+      "morning": {
+        "tag": "儀式",
+        "title": "エネルギーの朝食",
+        "detail": "フルーツと種子のボウルで一日を始めましょう。"
+      },
+      "lunch": {
+        "tag": "食事",
+        "title": "バランスの取れたランチ",
+        "detail": "豆類 + 野菜 + 軽いタンパク質。"
+      },
+      "checkin": {
+        "tag": "休憩",
+        "title": "夜のチェックイン",
+        "detail": "あなたの一日のエネルギーについての簡単な振り返り。"
+      }
+    },
+    "macros": {
+      "protein": {
+        "label": "タンパク質",
+        "detail": "一日の目標"
+      },
+      "carbs": {
+        "label": "炭水化物",
+        "detail": "一日の目標"
+      },
+      "fats": {
+        "label": "脂質",
+        "detail": "一日の目標"
+      }
+    },
+    "water": {
+      "badge": "水分補給",
+      "title": "今日の水",
+      "detail": "実際のグラスを記録して夜の膨満を防ぎます。",
+      "goal": "目標",
+      "cta": "グラスを追加"
+    },
+    "streak": {
+      "badge": "マインドフルな連続",
+      "title": "同調の日数",
+      "detail": "毎日チェックイン、水、野菜料理を組み合わせました。",
+      "days": "日",
+      "next": "次のマイルストーン",
+      "cta": "アクティブな報酬を見る"
+    },
+    "quickwins": {
+      "badge": "ショートカット",
+      "title": "クイックアクション",
+      "voice": "音声メモ",
+      "voiceDetail": "1分の音声を記録",
+      "pantryscan": "パントリーをスキャン",
+      "pantryscanDetail": "3つの製品を追加",
+      "walk": "マインドフルな散歩",
+      "walkDetail": "屋外で15分"
+    },
+    "neighborhood": {
+      "badge": "あなたの近く",
+      "title": "マインドフルな近所",
+      "cta": "完全な地図を見る",
+      "greenMood": {
+        "name": "Green Mood",
+        "detail": "オーガニックボウルとスムージー"
+      },
+      "huerta": {
+        "name": "Huerta Viva",
+        "detail": "新鮮な農産物市場"
+      }
+    }
+  },
   "hero": {
     "betaPill": "Alma エージェント · プライベートベータ",
     "title": "近所とキッチンを分析して、健康的な食事をもっと気軽に。",
@@ -31,6 +123,171 @@
         "title": "12日連続でセルフケア",
         "detail": "+240 pt · 朝のリチュアル解放"
       }
+    },
+    "motto": {
+      "badge": "ハーブコラージュ",
+      "title": "ヘルシーに食べる = おいしく食べる",
+      "subtitle": "ハーブとシトラスを重ねた質感ボードが、セルフケアは楽しく味わえることを思い出させてくれます。",
+      "alt": "ハーブや柑橘、手書きメモを並べた手作りコラージュ"
+    }
+  },
+  "onboarding": {
+    "badge": "オンボーディング",
+    "title": "あなたのエネルギーを知ろう",
+    "stepCounter": "ステップ {{current}} / {{total}}",
+    "back": "戻る",
+    "next": "次へ",
+    "progressHint": "頭をクリアに保つため、質問はいつもひとつずつです。",
+    "welcome": {
+      "badge": "ガイド付きベータ",
+      "title": "あなた専用のリチュアルへようこそ",
+      "description": "やさしい4つの質問で、どんなサポートが心地よいかを知ります。答えるたびにあなた向けの提案が開きます。",
+      "cta": "はじめる"
+    },
+    "goal": {
+      "stepLabel": "ステップ 2",
+      "title": "今の目標をすべて教えてください",
+      "description": "当てはまるものをいくつでも選べます。",
+      "options": {
+        "lose": {
+          "label": "体重を落としたい",
+          "description": "やさしく、持続できる形で余分な脂肪を減らす。"
+        },
+        "gain": {
+          "label": "筋肉をつけたい",
+          "description": "極端な食事制限なしでトーンと強さを育てる。"
+        },
+        "healthy": {
+          "label": "より健康的に食べたい",
+          "description": "毎日の食事をバランスよく整える。"
+        }
+      }
+    },
+    "biometric": {
+      "stepLabel": "ステップ 3",
+      "title": "バイオメトリクスを調整",
+      "description": "スライダーで現在の値に合わせるだけ。これ以上の情報は必要ありません。",
+      "weightLabel": "体重",
+      "heightLabel": "身長",
+      "weightUnit": "kg",
+      "heightUnit": "cm"
+    },
+    "unitToggle": {
+      "metric": "kg・cm",
+      "imperial": "lb・フィート"
+    },
+    "restrictions": {
+      "allergens": {
+        "stepLabel": "ステップ 4",
+        "title": "アレルギーや不耐症はありますか？",
+        "description": "該当するものをすべて選択してください。すべてのレコメンデーションでこれらの制限を尊重します。",
+        "subtitle": "主なアレルゲン",
+        "milk": "乳製品",
+        "eggs": "卵",
+        "peanuts": "ピーナッツ",
+        "treeNuts": "木の実",
+        "soy": "大豆",
+        "wheat": "小麦",
+        "fish": "魚",
+        "shellfish": "甲殻類",
+        "sesame": "ごま"
+      },
+      "intolerances": {
+        "subtitle": "消化不耐症",
+        "gluten": "グルテン",
+        "lactose": "乳糖",
+        "fructose": "果糖"
+      },
+      "lifestyle": {
+        "stepLabel": "ステップ 5",
+        "title": "特定の食生活スタイルを実践していますか？",
+        "description": "最も当てはまるものを選ぶか、このステップをスキップしてください。",
+        "vegetarian": {
+          "label": "ベジタリアン",
+          "description": "肉と魚なし"
+        },
+        "vegan": {
+          "label": "ビーガン",
+          "description": "動物性食品なし"
+        },
+        "pescatarian": {
+          "label": "ペスカタリアン",
+          "description": "魚はあり、肉なし"
+        },
+        "paleo": {
+          "label": "パレオ",
+          "description": "穀物と加工食品なし"
+        },
+        "keto": {
+          "label": "ケト",
+          "description": "低炭水化物"
+        },
+        "lowCarb": {
+          "label": "ローカーボ",
+          "description": "精製された粉や砂糖を控える"
+        },
+        "mediterranean": {
+          "label": "地中海式",
+          "description": "植物ベースと健康的な脂質"
+        }
+      },
+      "additional": {
+        "stepLabel": "ステップ 6",
+        "title": "他に制限はありますか？",
+        "description": "治療食、文化的嗜好、その他の詳細を追加できます。",
+        "therapeutic": {
+          "subtitle": "治療食",
+          "diabetes": "糖尿病",
+          "renal": "腎臓",
+          "lowFodmap": "低FODMAP",
+          "cardiovascular": "心臓血管"
+        },
+        "cultural": {
+          "subtitle": "文化的嗜好",
+          "halal": "ハラール",
+          "kosher": "コーシャ",
+          "hindu": "ヒンドゥー",
+          "buddhist": "仏教"
+        },
+        "other": {
+          "label": "その他の制限",
+          "placeholder": "追加の詳細を入力してください..."
+        }
+      },
+      "summary": {
+        "title": "登録された制限",
+        "allergens": "アレルゲン",
+        "intolerances": "不耐症",
+        "therapeutic": "治療的",
+        "cultural": "文化的",
+        "other": "その他"
+      }
+    },
+    "result": {
+      "stepLabel": "ステップ 7",
+      "title": "プランを最終調整しています",
+      "description": "選んだ目標（{{goals}}）にもとづいて1日の目安を計算しました。",
+      "loading": "計算中...",
+      "readyBadge": "完了",
+      "subtitle": "おすすめの日次目標",
+      "adjustmentNote": "あなたの記録に合わせて毎週やさしくアップデートします。",
+      "homeCta": "ホームへ戻る",
+      "restart": "フローをやり直す",
+      "examplesTitle": "お皿に置き換えると",
+      "examplesIntro": "1日の目標を20のベースユニットに分け、身近な食べ物でイメージできるようにしました。",
+      "examples": {
+        "apple": "りんご1個",
+        "chiaPudding": "チアシードプリン（植物ミルク）",
+        "avocadoToast": "アボカド＆シードのトースト",
+        "baseTwenty": "ベース20単位中 約{{units}}",
+        "percentOfGoal": "目標の{{percent}}%"
+      }
+    },
+    "visuals": {
+      "welcomeAlt": "自然素材と柔らかな色のウェルカムイラスト",
+      "goalAlt": "ヘルシーな目標と食材のコラージュ",
+      "biometricsAlt": "グラフとスライダーが並ぶバイオメトリック画面",
+      "resultAlt": "パーソナライズされた提案のプレビュー"
     }
   },
   "features": {
