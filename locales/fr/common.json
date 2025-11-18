@@ -223,8 +223,8 @@
           "description": "Faible en glucides"
         },
         "lowCarb": {
-          "label": "Low carb",
-          "description": "Limite farines et sucres rapides"
+          "label": "Low carb doux",
+          "description": "Réduit farines raffinées et sucres rapides, sans extrêmes"
         },
         "mediterranean": {
           "label": "Méditerranéen",
@@ -276,7 +276,7 @@
       "examplesTitle": "À quoi cela ressemble dans l'assiette",
       "examplesIntro": "Nous divisons ton objectif en 20 unités de base pour relier la donnée à des aliments quotidiens.",
       "examples": {
-        "apple": "Pomme croquante",
+        "apple": "Demi pomme croquante",
         "chiaPudding": "Pudding de chia au lait végétal",
         "avocadoToast": "Toast à l'avocat et graines",
         "baseTwenty": "≈ {{units}} sur 20 unités de base",

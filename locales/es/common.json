@@ -223,8 +223,8 @@
           "description": "Bajo en carbohidratos"
         },
         "lowCarb": {
-          "label": "Low carb",
-          "description": "Limita harinas y azúcares simples"
+          "label": "Low carb amable",
+          "description": "Reduce harinas refinadas y azúcares rápidos"
         },
         "mediterranean": {
           "label": "Mediterráneo",
@@ -276,7 +276,7 @@
       "examplesTitle": "Cómo se ve en tu plato",
       "examplesIntro": "Tomamos una base de 20 unidades para que visualices tu meta con alimentos cotidianos.",
       "examples": {
-        "apple": "Manzana fresca",
+        "apple": "Media manzana fresca",
         "chiaPudding": "Pudin de chía con leche vegetal",
         "avocadoToast": "Tostada de palta con semillas",
         "baseTwenty": "≈ {{units}} de 20 unidades base",

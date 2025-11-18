@@ -223,8 +223,8 @@
           "description": "Baixo em carboidratos"
         },
         "lowCarb": {
-          "label": "Low carb",
-          "description": "Limita farinhas e açúcares rápidos"
+          "label": "Low carb gentil",
+          "description": "Reduz farinhas refinadas e açúcares rápidos sem radicalizar"
         },
         "mediterranean": {
           "label": "Mediterrâneo",
@@ -276,7 +276,7 @@
       "examplesTitle": "Como isso aparece no prato",
       "examplesIntro": "Dividimos a meta em 20 unidades base para relacioná-la a alimentos cotidianos.",
       "examples": {
-        "apple": "Maçã crocante",
+        "apple": "Meia maçã crocante",
         "chiaPudding": "Pudim de chia com leite vegetal",
         "avocadoToast": "Torrada de abacate com sementes",
         "baseTwenty": "≈ {{units}} de 20 unidades base",

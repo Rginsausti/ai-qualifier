@@ -25,7 +25,7 @@
 .golden-text {
     background-clip: text;
     -webkit-background-clip: text;
-    color: transparent;
+    color: #c9b273;
     font-family: 'Playfair Display', serif;
     font-weight: 900;
     font-size: clamp(.85rem, 1.5vw, 2.2rem);

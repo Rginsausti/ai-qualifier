@@ -223,8 +223,8 @@
           "description": "Low carbohydrates"
         },
         "lowCarb": {
-          "label": "Low carb",
-          "description": "Limits refined carbs and sugars"
+          "label": "Balanced low carb",
+          "description": "Cuts refined carbs and quick sugars without extremes"
         },
         "mediterranean": {
           "label": "Mediterranean",
@@ -276,7 +276,7 @@
       "examplesTitle": "How it looks on your plate",
       "examplesIntro": "We break your target into a base of 20 units so everyday foods feel tangible.",
       "examples": {
-        "apple": "Crisp apple",
+        "apple": "Half a crisp apple",
         "chiaPudding": "Chia pudding with plant milk",
         "avocadoToast": "Avocado toast with seeds",
         "baseTwenty": "≈ {{units}} of 20 base units",

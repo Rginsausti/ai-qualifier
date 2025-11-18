@@ -223,8 +223,8 @@
           "description": "Basso contenuto di carboidrati"
         },
         "lowCarb": {
-          "label": "Low carb",
-          "description": "Limita farine e zuccheri semplici"
+          "label": "Low carb gentile",
+          "description": "Riduce farine raffinate e zuccheri veloci senza estremi"
         },
         "mediterranean": {
           "label": "Mediterraneo",
@@ -276,7 +276,7 @@
       "examplesTitle": "Come appare nel piatto",
       "examplesIntro": "Dividiamo l'obiettivo in 20 unità base per collegarlo a cibi quotidiani.",
       "examples": {
-        "apple": "Mela croccante",
+        "apple": "Mezza mela croccante",
         "chiaPudding": "Budino di chia con latte vegetale",
         "avocadoToast": "Toast con avocado e semi",
         "baseTwenty": "≈ {{units}} su 20 unità base",

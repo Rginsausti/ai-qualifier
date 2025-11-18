@@ -223,8 +223,8 @@
           "description": "Kohlenhydratarm"
         },
         "lowCarb": {
-          "label": "Low Carb",
-          "description": "Reduziert Mehl und einfachen Zucker"
+          "label": "Sanftes Low Carb",
+          "description": "Weniger raffinierte Mehle und schnelle Zucker, ohne Extreme"
         },
         "mediterranean": {
           "label": "Mediterran",
@@ -276,7 +276,7 @@
         "examplesTitle": "So sieht es auf deinem Teller aus",
         "examplesIntro": "Wir teilen dein Ziel in 20 Basis-Einheiten, damit Alltagslebensmittel greifbar werden.",
         "examples": {
-          "apple": "Knackiger Apfel",
+          "apple": "Eine halbe knackige Apfel",
           "chiaPudding": "Chia-Pudding mit Pflanzenmilch",
           "avocadoToast": "Avocado-Toast mit Saaten",
           "baseTwenty": "≈ {{units}} von 20 Basiseinheiten",

@@ -223,8 +223,8 @@
           "description": "低炭水化物"
         },
         "lowCarb": {
-          "label": "ローカーボ",
-          "description": "精製された粉や砂糖を控える"
+          "label": "やさしいローカーボ",
+          "description": "精製粉と速い糖質を控えつつ、無理なく続けるスタイル"
         },
         "mediterranean": {
           "label": "地中海式",
@@ -276,7 +276,7 @@
       "examplesTitle": "お皿に置き換えると",
       "examplesIntro": "1日の目標を20のベースユニットに分け、身近な食べ物でイメージできるようにしました。",
       "examples": {
-        "apple": "りんご1個",
+        "apple": "りんご1/2個",
         "chiaPudding": "チアシードプリン（植物ミルク）",
         "avocadoToast": "アボカド＆シードのトースト",
         "baseTwenty": "ベース20単位中 約{{units}}",
