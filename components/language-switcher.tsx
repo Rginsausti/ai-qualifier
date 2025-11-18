@@ -101,7 +101,7 @@ export function LanguageSwitcher({ className = "", variant = "default" }: Langua
 
   return (
     <div className={cx("w-full space-y-2 sm:w-auto", variant === "minimal" && "space-y-1 sm:max-w-sm", className)}>
-      <span className="text-[0.6rem] font-semibold uppercase tracking-[0.45em] text-slate-500/80">
+      <span className="block w-full text-center text-[0.6rem] font-semibold uppercase tracking-[0.45em] text-slate-500/80 sm:text-left">
         {t("language.label")}
       </span>
       <div

@@ -82,6 +82,86 @@
       "walk": "Mindful walk",
       "walkDetail": "15 min outdoors"
     },
+    "quicklog": {
+      "badge": "Quick check-in",
+      "title": "How are you arriving today?",
+      "description": "Log energy, hunger and cravings in under a minute.",
+      "saved": "Entry saved",
+      "cta": "Save entry",
+      "reset": "Clear fields",
+      "energy": {
+        "label": "Energy",
+        "options": {
+          "high": "Charged",
+          "medium": "Steady",
+          "low": "Need rescue"
+        }
+      },
+      "hunger": {
+        "label": "Hunger signal",
+        "helper": "Slide to share how intense it feels.",
+        "scale": {
+          "low": "Light",
+          "medium": "Medium",
+          "high": "Strong"
+        }
+      },
+      "craving": {
+        "label": "Current craving",
+        "options": {
+          "sweet": "Something sweet",
+          "savory": "Something savory",
+          "fresh": "Something fresh"
+        }
+      },
+      "notes": {
+        "label": "Quick note",
+        "placeholder": "Eg: Slept 5h, intense meetings, need grounding"
+      },
+      "summary": {
+        "title": "Micro summary",
+        "empty": "Pick energy and craving to unlock a suggestion.",
+        "detail": "With {{energy}} energy and {{hunger}} hunger, we suggest {{recommendation}}.",
+        "note": "Notes"
+      },
+      "recommendations": {
+        "sweet": "a spiced cacao snack with berries",
+        "savory": "a warm wrap with crunchy greens",
+        "fresh": "a cold infusion with citrus slices"
+      }
+    },
+    "missions": {
+      "badge": "Missions",
+      "title": "Mindful quests in motion",
+      "subtitle": "Focus on 24-hour rituals that keep momentum.",
+      "cta": "View mission map",
+      "items": {
+        "ayurveda": {
+          "badge": "Morning ritual",
+          "title": "Ayurveda breath & sip",
+          "detail": "Breathing, warm water with lemon and mood tagging before eating.",
+          "progressLabel": "Step {{current}} / {{total}}",
+          "reward": "+60 XP",
+          "status": "Active"
+        },
+        "pantry": {
+          "badge": "Pantry scan",
+          "title": "Despensa express",
+          "detail": "Scan five items, log how they make you feel and reorder essentials.",
+          "progressLabel": "Item {{current}} / {{total}}",
+          "reward": "+45 XP",
+          "status": "1 left"
+        },
+        "explorer": {
+          "badge": "Neighborhood",
+          "title": "Mindful explorer",
+          "detail": "Try a trusted local spot and share feedback with the crew.",
+          "progressLabel": "Visit {{current}} / {{total}}",
+          "reward": "+80 XP",
+          "status": "Planned"
+        }
+      }
+    },
     "neighborhood": {
       "badge": "Near you",
       "title": "Mindful neighborhood",

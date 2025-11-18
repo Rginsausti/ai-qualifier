@@ -82,6 +82,86 @@
       "walk": "Mindful-Spaziergang",
       "walkDetail": "15 Min. im Freien"
     },
+    "quicklog": {
+      "badge": "Schneller Check-in",
+      "title": "Wie startest du heute?",
+      "description": "Erfasse Energie, Hunger und Gelüste in unter einer Minute.",
+      "saved": "Eintrag gespeichert",
+      "cta": "Eintrag sichern",
+      "reset": "Felder leeren",
+      "energy": {
+        "label": "Energie",
+        "options": {
+          "high": "Voller Fokus",
+          "medium": "Stabil",
+          "low": "Brauche Rettung"
+        }
+      },
+      "hunger": {
+        "label": "Hungersignal",
+        "helper": "Schiebe den Regler, um die echte Intensität zu teilen.",
+        "scale": {
+          "low": "Leicht",
+          "medium": "Mittel",
+          "high": "Stark"
+        }
+      },
+      "craving": {
+        "label": "Aktuelles Gelüst",
+        "options": {
+          "sweet": "Etwas Süßes",
+          "savory": "Etwas Herzhaftes",
+          "fresh": "Etwas Frisches"
+        }
+      },
+      "notes": {
+        "label": "Kurze Notiz",
+        "placeholder": "z. B. 5h geschlafen, Meeting-Marathon, brauche Erdung"
+      },
+      "summary": {
+        "title": "Mini-Überblick",
+        "empty": "Wähle Energie und Gelüst, um eine Empfehlung zu sehen.",
+        "detail": "Mit {{energy}} Energie und {{hunger}} Hunger empfehlen wir {{recommendation}}.",
+        "note": "Notizen"
+      },
+      "recommendations": {
+        "sweet": "einen gewürzten Kakao-Snack mit Beeren",
+        "savory": "einen warmen Wrap mit knackigem Grün",
+        "fresh": "einen kalten Aufguss mit Zitrus"
+      }
+    },
+    "missions": {
+      "badge": "Missionen",
+      "title": "Mindful-Missionen im Gange",
+      "subtitle": "24-Stunden-Rituale, die deinen Flow halten.",
+      "cta": "Missionskarte anzeigen",
+      "items": {
+        "ayurveda": {
+          "badge": "Morgenritual",
+          "title": "Ayurveda Atem & Sip",
+          "detail": "Atmung, warmes Zitronenwasser und Stimmungslog vor dem Essen.",
+          "progressLabel": "Schritt {{current}} / {{total}}",
+          "reward": "+60 XP",
+          "status": "Aktiv"
+        },
+        "pantry": {
+          "badge": "Vorrat",
+          "title": "Vorrats-Express",
+          "detail": "Scanne fünf Produkte, notiere ihr Gefühl und plane den Nachkauf.",
+          "progressLabel": "Produkt {{current}} / {{total}}",
+          "reward": "+45 XP",
+          "status": "Noch 1"
+        },
+        "explorer": {
+          "badge": "Nachbarschaft",
+          "title": "Mindful Explorer",
+          "detail": "Teste einen vertrauenswürdigen Spot und teile Feedback mit der Crew.",
+          "progressLabel": "Besuch {{current}} / {{total}}",
+          "reward": "+80 XP",
+          "status": "Geplant"
+        }
+      }
+    },
     "neighborhood": {
       "badge": "In Ihrer Nähe",
       "title": "Mindful-Nachbarschaft",

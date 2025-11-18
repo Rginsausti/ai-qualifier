@@ -82,6 +82,86 @@
       "walk": "Marche mindful",
       "walkDetail": "15 min en plein air"
     },
+    "quicklog": {
+      "badge": "Check-in express",
+      "title": "Comment tu arrives aujourd'hui ?",
+      "description": "Enregistre énergie, faim et envies en moins d'une minute.",
+      "saved": "Saisie enregistrée",
+      "cta": "Sauvegarder",
+      "reset": "Tout effacer",
+      "energy": {
+        "label": "Énergie",
+        "options": {
+          "high": "Chargée",
+          "medium": "Stable",
+          "low": "Besoin d'un boost"
+        }
+      },
+      "hunger": {
+        "label": "Signal de faim",
+        "helper": "Fais glisser pour montrer l'intensité réelle.",
+        "scale": {
+          "low": "Légère",
+          "medium": "Modérée",
+          "high": "Intense"
+        }
+      },
+      "craving": {
+        "label": "Envie du moment",
+        "options": {
+          "sweet": "Envie sucrée",
+          "savory": "Envie salée",
+          "fresh": "Envie fraîche"
+        }
+      },
+      "notes": {
+        "label": "Note rapide",
+        "placeholder": "Ex : dormi 5 h, réunion intense, besoin de douceur"
+      },
+      "summary": {
+        "title": "Mini résumé",
+        "empty": "Choisis énergie et envie pour débloquer la suggestion.",
+        "detail": "Avec une énergie {{energy}} et une faim {{hunger}}, on te propose {{recommendation}}.",
+        "note": "Notes"
+      },
+      "recommendations": {
+        "sweet": "un snack cacao épicé avec fruits rouges",
+        "savory": "un wrap tiède aux légumes croquants",
+        "fresh": "une infusion glacée aux agrumes"
+      }
+    },
+    "missions": {
+      "badge": "Missions",
+      "title": "Missions mindful en cours",
+      "subtitle": "Des rituels de 24 h pour garder l'élan.",
+      "cta": "Voir la carte des missions",
+      "items": {
+        "ayurveda": {
+          "badge": "Rituel du matin",
+          "title": "Respire Ayurveda",
+          "detail": "Respiration, eau tiède citronnée et journal émotionnel avant le repas.",
+          "progressLabel": "Étape {{current}} / {{total}}",
+          "reward": "+60 XP",
+          "status": "En cours"
+        },
+        "pantry": {
+          "badge": "Garde-manger",
+          "title": "Garde-manger express",
+          "detail": "Scanne cinq produits, dis comment ils te font sentir et réapprovisionne l'essentiel.",
+          "progressLabel": "Produit {{current}} / {{total}}",
+          "reward": "+45 XP",
+          "status": "Reste 1"
+        },
+        "explorer": {
+          "badge": "Quartier",
+          "title": "Explorateur mindful",
+          "detail": "Teste une adresse alliée et partage ton feedback avec la communauté.",
+          "progressLabel": "Visite {{current}} / {{total}}",
+          "reward": "+80 XP",
+          "status": "Planifié"
+        }
+      }
+    },
     "neighborhood": {
       "badge": "Près de vous",
       "title": "Quartier mindful",

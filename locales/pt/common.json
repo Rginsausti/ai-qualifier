@@ -82,6 +82,86 @@
       "walk": "Caminhada mindful",
       "walkDetail": "15 min ao ar livre"
     },
+    "quicklog": {
+      "badge": "Check-in rápido",
+      "title": "Como você chega hoje?",
+      "description": "Registre energia, fome e desejos em menos de um minuto.",
+      "saved": "Registro salvo",
+      "cta": "Salvar registro",
+      "reset": "Limpar campos",
+      "energy": {
+        "label": "Energia",
+        "options": {
+          "high": "Ligada",
+          "medium": "Estável",
+          "low": "Preciso de resgate"
+        }
+      },
+      "hunger": {
+        "label": "Sinal de fome",
+        "helper": "Arraste para contar a intensidade real.",
+        "scale": {
+          "low": "Leve",
+          "medium": "Média",
+          "high": "Forte"
+        }
+      },
+      "craving": {
+        "label": "Desejo do momento",
+        "options": {
+          "sweet": "Algo doce",
+          "savory": "Algo salgado",
+          "fresh": "Algo refrescante"
+        }
+      },
+      "notes": {
+        "label": "Nota rápida",
+        "placeholder": "Ex.: dormi 5h, tarde intensa, preciso desacelerar"
+      },
+      "summary": {
+        "title": "Micro resumo",
+        "empty": "Escolha energia e desejo para ver a sugestão.",
+        "detail": "Com energia {{energy}} e fome {{hunger}}, sugerimos {{recommendation}}.",
+        "note": "Notas"
+      },
+      "recommendations": {
+        "sweet": "um snack com cacau e frutas vermelhas",
+        "savory": "um wrap morno com folhas crocantes",
+        "fresh": "uma infusão gelada com cítricos"
+      }
+    },
+    "missions": {
+      "badge": "Missões",
+      "title": "Missões mindful em andamento",
+      "subtitle": "Foco em rituais de 24 h para manter o ritmo.",
+      "cta": "Ver mapa de missões",
+      "items": {
+        "ayurveda": {
+          "badge": "Ritual matinal",
+          "title": "Respire Ayurveda",
+          "detail": "Respiração, água morna com limão e registro emocional antes da refeição.",
+          "progressLabel": "Passo {{current}} / {{total}}",
+          "reward": "+60 XP",
+          "status": "Em curso"
+        },
+        "pantry": {
+          "badge": "Despensa viva",
+          "title": "Despensa express",
+          "detail": "Escaneie cinco itens, descreva como se sente e reprograme o essencial.",
+          "progressLabel": "Item {{current}} / {{total}}",
+          "reward": "+45 XP",
+          "status": "Falta 1"
+        },
+        "explorer": {
+          "badge": "Bairro",
+          "title": "Explorador mindful",
+          "detail": "Experimente um local aliado e compartilhe feedback com a comunidade.",
+          "progressLabel": "Visita {{current}} / {{total}}",
+          "reward": "+80 XP",
+          "status": "Planejado"
+        }
+      }
+    },
     "neighborhood": {
       "badge": "Perto de você",
       "title": "Bairro mindful",

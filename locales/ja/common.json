@@ -82,6 +82,86 @@
       "walk": "マインドフルな散歩",
       "walkDetail": "屋外で15分"
     },
+    "quicklog": {
+      "badge": "クイックチェックイン",
+      "title": "今日はどんな気分？",
+      "description": "1分以内でエネルギー・空腹感・欲求を記録。",
+      "saved": "記録を保存しました",
+      "cta": "記録する",
+      "reset": "リセット",
+      "energy": {
+        "label": "エネルギー",
+        "options": {
+          "high": "エネルギー高め",
+          "medium": "落ち着いている",
+          "low": "助けがほしい"
+        }
+      },
+      "hunger": {
+        "label": "空腹シグナル",
+        "helper": "スライダーで今の強さを伝えてください。",
+        "scale": {
+          "low": "弱い",
+          "medium": "ふつう",
+          "high": "強い"
+        }
+      },
+      "craving": {
+        "label": "今の欲求",
+        "options": {
+          "sweet": "甘いもの",
+          "savory": "しょっぱいもの",
+          "fresh": "さっぱり"
+        }
+      },
+      "notes": {
+        "label": "ひとことメモ",
+        "placeholder": "例: 睡眠5h・会議続き・気分転換したい"
+      },
+      "summary": {
+        "title": "ミニサマリー",
+        "empty": "エネルギーと欲求を選ぶと提案が表示されます。",
+        "detail": "エネルギー{{energy}}・空腹{{hunger}}の今は、{{recommendation}}がおすすめ。",
+        "note": "メモ"
+      },
+      "recommendations": {
+        "sweet": "カカオとベリーのスパイススナック",
+        "savory": "温かいラップとシャキシャキ野菜",
+        "fresh": "柑橘のアイスハーブティー"
+      }
+    },
+    "missions": {
+      "badge": "ミッション",
+      "title": "進行中のマインドフルミッション",
+      "subtitle": "24時間のリチュアルでリズムをキープ。",
+      "cta": "ミッションマップを見る",
+      "items": {
+        "ayurveda": {
+          "badge": "朝の儀式",
+          "title": "アーユル呼吸＆白湯",
+          "detail": "呼吸・レモン白湯・感情ログを食前に行う。",
+          "progressLabel": "ステップ {{current}} / {{total}}",
+          "reward": "+60 XP",
+          "status": "進行中"
+        },
+        "pantry": {
+          "badge": "パントリー",
+          "title": "パントリーエクスプレス",
+          "detail": "5アイテムをスキャンして気分を書き、必需品を補充。",
+          "progressLabel": "アイテム {{current}} / {{total}}",
+          "reward": "+45 XP",
+          "status": "あと1つ"
+        },
+        "explorer": {
+          "badge": "近所",
+          "title": "マインドフルエクスプローラー",
+          "detail": "信頼できる近所スポットを試し、コミュニティに共有。",
+          "progressLabel": "訪問 {{current}} / {{total}}",
+          "reward": "+80 XP",
+          "status": "予定中"
+        }
+      }
+    },
     "neighborhood": {
       "badge": "あなたの近く",
       "title": "マインドフルな近所",

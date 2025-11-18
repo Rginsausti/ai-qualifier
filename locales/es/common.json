@@ -82,6 +82,86 @@
       "walk": "Caminata mindful",
       "walkDetail": "15 min al aire libre"
     },
+    "quicklog": {
+      "badge": "Check-in rápido",
+      "title": "¿Cómo venís hoy?",
+      "description": "Guardá energía, hambre y antojos en menos de un minuto.",
+      "saved": "Registro guardado",
+      "cta": "Guardar registro",
+      "reset": "Limpiar campos",
+      "energy": {
+        "label": "Energía",
+        "options": {
+          "high": "Encendida",
+          "medium": "Estable",
+          "low": "Necesito rescate"
+        }
+      },
+      "hunger": {
+        "label": "Señal de hambre",
+        "helper": "Deslizá para contar la intensidad real.",
+        "scale": {
+          "low": "Ligera",
+          "medium": "Media",
+          "high": "Fuerte"
+        }
+      },
+      "craving": {
+        "label": "Antojo del momento",
+        "options": {
+          "sweet": "Algo dulce",
+          "savory": "Algo salado",
+          "fresh": "Algo fresco"
+        }
+      },
+      "notes": {
+        "label": "Nota rápida",
+        "placeholder": "Ej: dormí 5 h, tarde de reuniones, necesito calma"
+      },
+      "summary": {
+        "title": "Mini resumen",
+        "empty": "Elegí energía y antojo para ver la sugerencia.",
+        "detail": "Con energía {{energy}} y hambre {{hunger}}, te sugerimos {{recommendation}}.",
+        "note": "Notas"
+      },
+      "recommendations": {
+        "sweet": "un snack especiado con cacao y frutos rojos",
+        "savory": "un wrap tibio con verdes crujientes",
+        "fresh": "una infusión fría con rodajas cítricas"
+      }
+    },
+    "missions": {
+      "badge": "Misiones",
+      "title": "Rituales mindful en curso",
+      "subtitle": "Enfoques de 24 h para sostener la energía.",
+      "cta": "Ver mapa de misiones",
+      "items": {
+        "ayurveda": {
+          "badge": "Ritual matutino",
+          "title": "Respira Ayurveda",
+          "detail": "Respiración, agua tibia con limón y registro emocional antes de comer.",
+          "progressLabel": "Paso {{current}} / {{total}}",
+          "reward": "+60 XP",
+          "status": "En curso"
+        },
+        "pantry": {
+          "badge": "Despensa viva",
+          "title": "Despensa express",
+          "detail": "Escaneá cinco productos, contá cómo te hacen sentir y reordená lo esencial.",
+          "progressLabel": "Ítem {{current}} / {{total}}",
+          "reward": "+45 XP",
+          "status": "Falta 1"
+        },
+        "explorer": {
+          "badge": "Barrio",
+          "title": "Explorador mindful",
+          "detail": "Probá un local aliado y compartí feedback con la comunidad.",
+          "progressLabel": "Visita {{current}} / {{total}}",
+          "reward": "+80 XP",
+          "status": "Planificado"
+        }
+      }
+    },
     "neighborhood": {
       "badge": "Cerca tuyo",
       "title": "Vecindario mindful",

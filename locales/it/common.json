@@ -82,6 +82,86 @@
       "walk": "Camminata mindful",
       "walkDetail": "15 min all'aperto"
     },
+      "quicklog": {
+        "badge": "Check-in rapido",
+        "title": "Come arrivi oggi?",
+        "description": "Registra energia, fame e voglie in meno di un minuto.",
+        "saved": "Registrazione salvata",
+        "cta": "Salva registro",
+        "reset": "Svuota campi",
+        "energy": {
+          "label": "Energia",
+          "options": {
+            "high": "Carica",
+            "medium": "Stabile",
+            "low": "Serve soccorso"
+          }
+        },
+        "hunger": {
+          "label": "Segnale di fame",
+          "helper": "Sposta il cursore per indicare l'intensità reale.",
+          "scale": {
+            "low": "Leggera",
+            "medium": "Media",
+            "high": "Intensa"
+          }
+        },
+        "craving": {
+          "label": "Voglia del momento",
+          "options": {
+            "sweet": "Qualcosa di dolce",
+            "savory": "Qualcosa di salato",
+            "fresh": "Qualcosa di fresco"
+          }
+        },
+        "notes": {
+          "label": "Nota rapida",
+          "placeholder": "Es.: ho dormito 5h, giornata intensa, voglio calma"
+        },
+        "summary": {
+          "title": "Mini riepilogo",
+          "empty": "Seleziona energia e voglia per sbloccare il suggerimento.",
+          "detail": "Con energia {{energy}} e fame {{hunger}} ti proponiamo {{recommendation}}.",
+          "note": "Note"
+        },
+        "recommendations": {
+          "sweet": "uno snack speziato al cacao con frutti rossi",
+          "savory": "un wrap tiepido con verdi croccanti",
+          "fresh": "un'infusione fredda agli agrumi"
+        }
+      },
+      "missions": {
+        "badge": "Missioni",
+        "title": "Missioni mindful in corso",
+        "subtitle": "Rituali di 24 h per mantenere lo slancio.",
+        "cta": "Vedi mappa delle missioni",
+        "items": {
+          "ayurveda": {
+            "badge": "Rituale del mattino",
+            "title": "Respira Ayurveda",
+            "detail": "Respiro, acqua tiepida al limone e diario emotivo prima del pasto.",
+            "progressLabel": "Passo {{current}} / {{total}}",
+            "reward": "+60 XP",
+            "status": "In corso"
+          },
+          "pantry": {
+            "badge": "Dispensa viva",
+            "title": "Dispensa express",
+            "detail": "Scansiona cinque prodotti, descrivi come ti fanno sentire e riordina l'essenziale.",
+            "progressLabel": "Elemento {{current}} / {{total}}",
+            "reward": "+45 XP",
+            "status": "Ne manca 1"
+          },
+          "explorer": {
+            "badge": "Quartiere",
+            "title": "Esploratore mindful",
+            "detail": "Prova un locale di fiducia e condividi feedback con la community.",
+            "progressLabel": "Visita {{current}} / {{total}}",
+            "reward": "+80 XP",
+            "status": "Pianificata"
+          }
+        }
+      },
     "neighborhood": {
       "badge": "Vicino a te",
       "title": "Quartiere mindful",

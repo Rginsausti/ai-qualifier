@@ -1,6 +1,8 @@
 "use client";
 
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { MissionHighlights } from "@/components/mission-highlights";
+import { QuickLogPanel } from "@/components/quick-log";
 import { useTranslation } from "react-i18next";
 import {
   ArrowRight,
@@ -181,12 +183,17 @@ export default function Home() {
             </h1>
             <p className="capitalize text-sm text-slate-500">{formattedDate}</p>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
             <button className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm shadow-white/40 transition hover:border-slate-400">
               <BellRing className="h-4 w-4" />
               {getCopy("dashboard.header.alerts", "Notificaciones suaves")}
             </button>
-            <LanguageSwitcher />
+            <div className="flex w-full justify-center sm:w-auto sm:justify-end">
+              <LanguageSwitcher
+                variant="minimal"
+                className="w-full max-w-xl rounded-3xl border border-white/70 bg-white/90 px-3 py-2 shadow-sm shadow-white/60"
+              />
+            </div>
           </div>
         </header>
 
@@ -281,6 +288,14 @@ export default function Home() {
               </article>
             ))}
           </div>
+        </section>
+
+        <section className="mt-10">
+          <QuickLogPanel />
+        </section>
+
+        <section className="mt-10">
+          <MissionHighlights />
         </section>
 
         <section className="mt-10 grid gap-6 md:grid-cols-3">
