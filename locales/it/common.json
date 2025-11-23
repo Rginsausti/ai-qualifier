@@ -82,86 +82,86 @@
       "walk": "Camminata mindful",
       "walkDetail": "15 min all'aperto"
     },
-      "quicklog": {
-        "badge": "Check-in rapido",
-        "title": "Come arrivi oggi?",
-        "description": "Registra energia, fame e voglie in meno di un minuto.",
-        "saved": "Registrazione salvata",
-        "cta": "Salva registro",
-        "reset": "Svuota campi",
-        "energy": {
-          "label": "Energia",
-          "options": {
-            "high": "Carica",
-            "medium": "Stabile",
-            "low": "Serve soccorso"
-          }
-        },
-        "hunger": {
-          "label": "Segnale di fame",
-          "helper": "Sposta il cursore per indicare l'intensità reale.",
-          "scale": {
-            "low": "Leggera",
-            "medium": "Media",
-            "high": "Intensa"
-          }
-        },
-        "craving": {
-          "label": "Voglia del momento",
-          "options": {
-            "sweet": "Qualcosa di dolce",
-            "savory": "Qualcosa di salato",
-            "fresh": "Qualcosa di fresco"
-          }
-        },
-        "notes": {
-          "label": "Nota rapida",
-          "placeholder": "Es.: ho dormito 5h, giornata intensa, voglio calma"
-        },
-        "summary": {
-          "title": "Mini riepilogo",
-          "empty": "Seleziona energia e voglia per sbloccare il suggerimento.",
-          "detail": "Con energia {{energy}} e fame {{hunger}} ti proponiamo {{recommendation}}.",
-          "note": "Note"
-        },
-        "recommendations": {
-          "sweet": "uno snack speziato al cacao con frutti rossi",
-          "savory": "un wrap tiepido con verdi croccanti",
-          "fresh": "un'infusione fredda agli agrumi"
+    "quicklog": {
+      "badge": "Check-in rapido",
+      "title": "Come arrivi oggi?",
+      "description": "Registra energia, fame e voglie in meno di un minuto.",
+      "saved": "Registrazione salvata",
+      "cta": "Salva registro",
+      "reset": "Svuota campi",
+      "energy": {
+        "label": "Energia",
+        "options": {
+          "high": "Carica",
+          "medium": "Stabile",
+          "low": "Serve soccorso"
         }
       },
-      "missions": {
-        "badge": "Missioni",
-        "title": "Missioni mindful in corso",
-        "subtitle": "Rituali di 24 h per mantenere lo slancio.",
-        "cta": "Vedi mappa delle missioni",
-        "items": {
-          "ayurveda": {
-            "badge": "Rituale del mattino",
-            "title": "Respira Ayurveda",
-            "detail": "Respiro, acqua tiepida al limone e diario emotivo prima del pasto.",
-            "progressLabel": "Passo {{current}} / {{total}}",
-            "reward": "+60 XP",
-            "status": "In corso"
-          },
-          "pantry": {
-            "badge": "Dispensa viva",
-            "title": "Dispensa express",
-            "detail": "Scansiona cinque prodotti, descrivi come ti fanno sentire e riordina l'essenziale.",
-            "progressLabel": "Elemento {{current}} / {{total}}",
-            "reward": "+45 XP",
-            "status": "Ne manca 1"
-          },
-          "explorer": {
-            "badge": "Quartiere",
-            "title": "Esploratore mindful",
-            "detail": "Prova un locale di fiducia e condividi feedback con la community.",
-            "progressLabel": "Visita {{current}} / {{total}}",
-            "reward": "+80 XP",
-            "status": "Pianificata"
-          }
+      "hunger": {
+        "label": "Segnale di fame",
+        "helper": "Sposta il cursore per indicare l'intensità reale.",
+        "scale": {
+          "low": "Leggera",
+          "medium": "Media",
+          "high": "Intensa"
         }
       },
+      "craving": {
+        "label": "Voglia del momento",
+        "options": {
+          "sweet": "Qualcosa di dolce",
+          "savory": "Qualcosa di salato",
+          "fresh": "Qualcosa di fresco"
+        }
+      },
+      "notes": {
+        "label": "Nota rapida",
+        "placeholder": "Es.: ho dormito 5h, giornata intensa, voglio calma"
+      },
+      "summary": {
+        "title": "Mini riepilogo",
+        "empty": "Seleziona energia e voglia per sbloccare il suggerimento.",
+        "detail": "Con energia {{energy}} e fame {{hunger}} ti proponiamo {{recommendation}}.",
+        "note": "Note"
+      },
+      "recommendations": {
+        "sweet": "uno snack speziato al cacao con frutti rossi",
+        "savory": "un wrap tiepido con verdi croccanti",
+        "fresh": "un'infusione fredda agli agrumi"
+      }
+    },
+    "missions": {
+      "badge": "Missioni",
+      "title": "Missioni mindful in corso",
+      "subtitle": "Rituali di 24 h per mantenere lo slancio.",
+      "cta": "Vedi mappa delle missioni",
+      "items": {
+        "ayurveda": {
+          "badge": "Rituale del mattino",
+          "title": "Respira Ayurveda",
+          "detail": "Respiro, acqua tiepida al limone e diario emotivo prima del pasto.",
+          "progressLabel": "Passo {{current}} / {{total}}",
+          "reward": "+60 XP",
+          "status": "In corso"
+        },
+        "pantry": {
+          "badge": "Dispensa viva",
+          "title": "Dispensa express",
+          "detail": "Scansiona cinque prodotti, descrivi come ti fanno sentire e riordina l'essenziale.",
+          "progressLabel": "Elemento {{current}} / {{total}}",
+          "reward": "+45 XP",
+          "status": "Ne manca 1"
+        },
+        "explorer": {
+          "badge": "Quartiere",
+          "title": "Esploratore mindful",
+          "detail": "Prova un locale di fiducia e condividi feedback con la community.",
+          "progressLabel": "Visita {{current}} / {{total}}",
+          "reward": "+80 XP",
+          "status": "Pianificata"
+        }
+      }
+    },
     "neighborhood": {
       "badge": "Vicino a te",
       "title": "Quartiere mindful",
@@ -513,10 +513,10 @@
     "finished": "Usiamo queste risposte per bilanciare la tua energia con ciò che hai in casa.",
     "summaryTitle": "Ricetta pronta per te",
     "summaryIntro": "Alma abbinerebbe {{ingredient}} con un tocco speciale per un pasto adatto al tuo stato {{energy}}.",
-  "summaryMood": "Consideriamo anche {{mood}} per chiudere il piano.",
-  "summaryFallbackIngredient": "il tuo ingrediente preferito",
-  "summaryFallbackEnergy": "la tua energia attuale",
-  "summaryFallbackMood": "il tuo umore di oggi",
+    "summaryMood": "Consideriamo anche {{mood}} per chiudere il piano.",
+    "summaryFallbackIngredient": "il tuo ingrediente preferito",
+    "summaryFallbackEnergy": "la tua energia attuale",
+    "summaryFallbackMood": "il tuo umore di oggi",
     "summaryMissing": "Conserviamo l'ultimo passaggio e gli ingredienti segreti per chi si iscrive. Lascia la tua email e invieremo la ricetta completa.",
     "emailLabel": "Email",
     "emailPlaceholder": "tu@posta.com",
@@ -528,21 +528,77 @@
       "energy": {
         "question": "Com'è la tua energia adesso?",
         "helper": "Aiuta a individuare cali e proporre snack preventivi.",
-        "options": ["Alta", "Media", "Ho bisogno di aiuto"]
+        "options": [
+          "Alta",
+          "Media",
+          "Ho bisogno di aiuto"
+        ]
       },
       "pantry": {
         "question": "Quale ingrediente vuoi usare a tutti i costi?",
         "helper": "Scegli i tuoi prodotti preferiti.",
-        "options": ["Ceci", "Avocado", "Frutti rossi"]
+        "options": [
+          "Ceci",
+          "Avocado",
+          "Frutti rossi"
+        ]
       },
       "mood": {
         "question": "Preferisci cucinare o ordinare qualcosa?",
         "helper": "Incrociamo il tuo umore con i locali vicini e il budget.",
-        "options": ["Cucinare veloce", "Qualcosa di fresco fuori", "Sorprendimi"]
+        "options": [
+          "Cucinare veloce",
+          "Qualcosa di fresco fuori",
+          "Sorprendimi"
+        ]
       }
     }
   },
   "general": {
     "stepLabel": "Passo"
+  },
+  "chat": {
+    "back": "Indietro",
+    "title": "Coach Alma",
+    "online": "Online",
+    "welcome": {
+      "title": "Ciao, sono Alma.",
+      "description": "Conosco i tuoi obiettivi e preferenze. Chiedimi cosa mangiare, come sostituire un ingrediente o dimmi come ti senti."
+    },
+    "inputPlaceholder": "Scrivi il tuo messaggio..."
+  },
+  "auth": {
+    "login": {
+      "badge": "Accesso Sicuro",
+      "title": "Accedi a Alma",
+      "description": "Il tuo spazio personale per nutrire corpo e mente.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "tu@email.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "primaryCta": "Accedi",
+      "seedInfo": "Non hai un account? Crea un utente di prova qui sotto.",
+      "seedTitle": "Crea utente di prova",
+      "seedDescription": "Genera un accesso rapido per provare la beta.",
+      "seedCta": "Crea utente",
+      "seedEmailPlaceholder": "prova@email.com",
+      "seedPasswordPlaceholder": "min. 6 caratteri",
+      "errors": {
+        "missingFields": "Per favore compila tutti i campi.",
+        "generic": "Si è verificato un errore durante l'accesso.",
+        "seedInvalid": "Email non valida o password troppo corta.",
+        "invalidCredentials": "Credenziali non valide. Controlla email e password.",
+        "emailNotConfirmed": "Email non confermata. Controlla la tua casella di posta.",
+        "userNotFound": "Utente non trovato con questa email.",
+        "userAlreadyRegistered": "L'utente è già registrato.",
+        "passwordTooShort": "La password deve essere di almeno 6 caratteri.",
+        "invalidEmail": "Email non valida."
+      },
+      "success": "Benvenuto! Accesso effettuato come {{email}}",
+      "loggedInAs": "Connesso come {{email}}",
+      "tokenLabel": "Token di sessione:",
+      "logout": "Esci",
+      "seedSuccess": "Utente creato con ID: {{userId}}"
+    }
   }
 }

@@ -4,6 +4,40 @@
     "scrollLeft": "Ver anteriores",
     "scrollRight": "Ver próximos"
   },
+  "auth": {
+    "login": {
+      "badge": "Acesso Seguro",
+      "title": "Entrar na Alma",
+      "description": "Seu espaço pessoal para nutrir corpo e mente.",
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "voce@email.com",
+      "passwordLabel": "Senha",
+      "passwordPlaceholder": "••••••••",
+      "primaryCta": "Entrar",
+      "seedInfo": "Não tem conta? Crie um usuário de teste abaixo.",
+      "seedTitle": "Criar usuário de teste",
+      "seedDescription": "Gere acesso rápido para testar a beta.",
+      "seedCta": "Criar usuário",
+      "seedEmailPlaceholder": "teste@email.com",
+      "seedPasswordPlaceholder": "mín. 6 caracteres",
+      "errors": {
+        "missingFields": "Por favor, preencha todos os campos.",
+        "generic": "Ocorreu um erro. Tente novamente.",
+        "seedInvalid": "E-mail inválido ou senha muito curta.",
+        "invalidCredentials": "E-mail ou senha incorretos.",
+        "emailNotConfirmed": "Verifique seu e-mail para confirmar a conta.",
+        "userNotFound": "Não encontramos um usuário com esse e-mail.",
+        "userAlreadyRegistered": "Usuário já registrado.",
+        "passwordTooShort": "A senha deve ter pelo menos 6 caracteres.",
+        "invalidEmail": "Formato de e-mail inválido."
+      },
+      "success": "Bem-vindo! Conectado como {{email}}",
+      "loggedInAs": "Conectado como {{email}}",
+      "tokenLabel": "Token de sessão:",
+      "logout": "Sair",
+      "seedSuccess": "Usuário criado com ID: {{userId}}"
+    }
+  },
   "dashboard": {
     "locale": "pt-BR",
     "header": {
@@ -513,10 +547,10 @@
     "finished": "Usamos essas respostas para equilibrar sua energia com o que existe em casa.",
     "summaryTitle": "Receita pronta para você",
     "summaryIntro": "A Alma combinaria {{ingredient}} com um toque especial para uma refeição perfeita para o estado {{energy}}.",
-  "summaryMood": "Também consideramos {{mood}} para fechar o plano.",
-  "summaryFallbackIngredient": "seu ingrediente favorito",
-  "summaryFallbackEnergy": "sua energia atual",
-  "summaryFallbackMood": "seu clima de hoje",
+    "summaryMood": "Também consideramos {{mood}} para fechar o plano.",
+    "summaryFallbackIngredient": "seu ingrediente favorito",
+    "summaryFallbackEnergy": "sua energia atual",
+    "summaryFallbackMood": "seu clima de hoje",
     "summaryMissing": "Guardamos o passo final e os ingredientes secretos para assinantes. Deixe seu e-mail e enviaremos a receita completa.",
     "emailLabel": "E-mail",
     "emailPlaceholder": "voce@email.com",
@@ -528,21 +562,43 @@
       "energy": {
         "question": "Como está sua energia agora?",
         "helper": "Ajuda a detectar quedas e sugerir lanches preventivos.",
-        "options": ["Alta", "Média", "Preciso de resgate"]
+        "options": [
+          "Alta",
+          "Média",
+          "Preciso de resgate"
+        ]
       },
       "pantry": {
         "question": "Qual ingrediente você quer usar de qualquer jeito?",
         "helper": "Escolha seus itens favoritos.",
-        "options": ["Grão-de-bico", "Abacate", "Frutas vermelhas"]
+        "options": [
+          "Grão-de-bico",
+          "Abacate",
+          "Frutas vermelhas"
+        ]
       },
       "mood": {
         "question": "Prefere cozinhar ou pedir algo?",
         "helper": "Cruzamos seu clima com lugares próximos e orçamento.",
-        "options": ["Cozinhar rápido", "Algo fresco fora", "Surpreenda-me"]
+        "options": [
+          "Cozinhar rápido",
+          "Algo fresco fora",
+          "Surpreenda-me"
+        ]
       }
     }
   },
   "general": {
     "stepLabel": "Passo"
+  },
+  "chat": {
+    "back": "Voltar",
+    "title": "Coach Alma",
+    "online": "Online",
+    "welcome": {
+      "title": "Olá, sou a Alma.",
+      "description": "Conheço os teus objetivos e preferências. Pergunta-me o que comer, como substituir um ingrediente ou diz-me como te sentes."
+    },
+    "inputPlaceholder": "Escreve a tua mensagem..."
   }
 }

@@ -1,0 +1,25 @@
+name: DB Migrate (manual)
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  migrate-db:
+    name: Run migrations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install supabase CLI
+        run: |
+          curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+          sudo apt-get install -y nodejs
+          npm i -g supabase
+
+      - name: Run migrations
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          supabase db query < db/migrations/001_create_ai_responses.sql --project-ref $SUPABASE_URL --service-key $SUPABASE_SERVICE_ROLE_KEY || supabase db query < db/migrations/001_create_ai_responses.sql

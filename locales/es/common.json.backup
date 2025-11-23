@@ -4,40 +4,6 @@
     "scrollLeft": "Scroll left",
     "scrollRight": "Scroll right"
   },
-  "auth": {
-    "login": {
-      "badge": "Secure Access",
-      "title": "Enter Alma",
-      "description": "Your personal space to nourish body and mind.",
-      "emailLabel": "Email",
-      "emailPlaceholder": "you@email.com",
-      "passwordLabel": "Password",
-      "passwordPlaceholder": "••••••••",
-      "primaryCta": "Login",
-      "seedInfo": "Don't have an account? Create a test user below.",
-      "seedTitle": "Create test user",
-      "seedDescription": "Generate quick access to test the beta.",
-      "seedCta": "Create user",
-      "seedEmailPlaceholder": "demo@email.com",
-      "seedPasswordPlaceholder": "min. 6 characters",
-      "errors": {
-        "missingFields": "Please complete all fields.",
-        "generic": "An error occurred. Please try again.",
-        "seedInvalid": "Invalid email or password too short.",
-        "invalidCredentials": "Invalid email or password.",
-        "emailNotConfirmed": "Please verify your email to confirm your account.",
-        "userNotFound": "We couldn't find a user with that email.",
-        "userAlreadyRegistered": "User already registered.",
-        "passwordTooShort": "Password must be at least 6 characters.",
-        "invalidEmail": "Invalid email format."
-      },
-      "success": "Welcome! Logged in as {{email}}",
-      "loggedInAs": "Connected as {{email}}",
-      "tokenLabel": "Session token:",
-      "logout": "Log out",
-      "seedSuccess": "User created with ID: {{userId}}"
-    }
-  },
   "dashboard": {
     "locale": "en-US",
     "header": {
@@ -588,8 +554,60 @@
       }
     }
   },
+  "recentSessions": {
+    "badge": "Recent sessions",
+    "title": "What testers are craving",
+    "loading": "Refreshing...",
+    "liveFeed": "Live feed",
+    "error": "We couldn't load the history.",
+    "empty": "No new chats yet. Run the demo to unlock the first one.",
+    "localeUnknown": "No locale",
+    "moodLabel": "Mood: {{mood}}",
+    "relativeFallback": "Moments ago"
+  },
+  "auth": {
+    "login": {
+      "badge": "Beta access",
+      "title": "Sign in with email + password",
+      "description": "This demo uses Supabase Auth (JWT). Create a tester user or log in with existing credentials to fetch a token.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@email.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least 6 characters",
+      "primaryCta": "Sign in",
+      "success": "Welcome back, {{email}}",
+      "logout": "Sign out",
+      "loggedInAs": "Active session: {{email}}",
+      "tokenLabel": "Active JWT:",
+      "seedInfo": "Need credentials? Use the form below to seed a user directly in Supabase.",
+      "seedTitle": "Create user",
+      "seedDescription": "We call the protected /api/auth/register route which relies on the service role key.",
+      "seedCta": "Register credentials",
+      "seedSuccess": "User created with ID {{userId}}",
+      "errors": {
+        "generic": "We couldn't complete the action. Try again.",
+        "missingFields": "Email and password are required.",
+        "seedInvalid": "Provide a valid email and a password with at least 6 characters."
+      }
+    }
+  },
   "general": {
     "stepLabel": "Step"
+  },
+  "logging": {
+    "title": "Log Food",
+    "options": {
+      "photo": "Photo",
+      "voice": "Voice",
+      "scan": "Scan",
+      "text": "Text"
+    },
+    "analyzing": "Analyzing with AI...",
+    "result": {
+      "title": "Food Detected!"
+    },
+    "confirm": "Confirm",
+    "retry": "Try Again"
   },
   "chat": {
     "back": "Back",

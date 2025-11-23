@@ -513,10 +513,10 @@
     "finished": "回答をもとに、家にあるものとエネルギーを整える提案をします。",
     "summaryTitle": "あなた専用のレシピ",
     "summaryIntro": "Alma は {{ingredient}} にひと工夫を加えて、{{energy}} な状態に合う一品を仕上げます。",
-  "summaryMood": "さらに {{mood}} も踏まえてプランを完成させます。",
-  "summaryFallbackIngredient": "お気に入りの食材",
-  "summaryFallbackEnergy": "今のエネルギー",
-  "summaryFallbackMood": "今日の気分",
+    "summaryMood": "さらに {{mood}} も踏まえてプランを完成させます。",
+    "summaryFallbackIngredient": "お気に入りの食材",
+    "summaryFallbackEnergy": "今のエネルギー",
+    "summaryFallbackMood": "今日の気分",
     "summaryMissing": "最後の工程と秘密の材料は登録者だけにお届け。メールを教えていただければ完全版を送ります。",
     "emailLabel": "メール",
     "emailPlaceholder": "you@example.com",
@@ -528,21 +528,77 @@
       "energy": {
         "question": "今のエネルギーは?",
         "helper": "落ち込みを察知して予防スナックを提案します。",
-        "options": ["高い", "ふつう", "助けが必要"]
+        "options": [
+          "高い",
+          "ふつう",
+          "助けが必要"
+        ]
       },
       "pantry": {
         "question": "絶対に使いたい食材は?",
         "helper": "お気に入りを選んでください。",
-        "options": ["ひよこ豆", "アボカド", "ベリー"]
+        "options": [
+          "ひよこ豆",
+          "アボカド",
+          "ベリー"
+        ]
       },
       "mood": {
         "question": "今日は料理? それともテイクアウト?",
         "helper": "気分と近くのお店・予算をマッチさせます。",
-        "options": ["さっと作る", "外でさっぱり", "おまかせ"]
+        "options": [
+          "さっと作る",
+          "外でさっぱり",
+          "おまかせ"
+        ]
       }
     }
   },
   "general": {
     "stepLabel": "ステップ"
+  },
+  "chat": {
+    "back": "戻る",
+    "title": "コーチAlma",
+    "online": "オンライン",
+    "welcome": {
+      "title": "こんにちは、Almaです。",
+      "description": "あなたの目標と好みを知っています。何を食べるか、材料をどう置き換えるか、または気分を教えてください。"
+    },
+    "inputPlaceholder": "メッセージを入力..."
+  },
+  "auth": {
+    "login": {
+      "badge": "安全なアクセス",
+      "title": "Almaにログイン",
+      "description": "心と体を育むあなたのパーソナルスペース。",
+      "emailLabel": "メールアドレス",
+      "emailPlaceholder": "taro@example.jp",
+      "passwordLabel": "パスワード",
+      "passwordPlaceholder": "••••••••",
+      "primaryCta": "ログイン",
+      "seedInfo": "アカウントをお持ちでないですか？以下でテストユーザーを作成してください。",
+      "seedTitle": "テストユーザーを作成",
+      "seedDescription": "ベータ版を試すためのクイックアクセスを生成します。",
+      "seedCta": "ユーザーを作成",
+      "seedEmailPlaceholder": "test@example.jp",
+      "seedPasswordPlaceholder": "6文字以上",
+      "errors": {
+        "missingFields": "すべてのフィールドに入力してください。",
+        "generic": "ログイン中にエラーが発生しました。",
+        "seedInvalid": "メールが無効か、パスワードが短すぎます。",
+        "invalidCredentials": "認証情報が無効です。メールとパスワードを確認してください。",
+        "emailNotConfirmed": "メールが確認されていません。受信トレイを確認してください。",
+        "userNotFound": "そのメールアドレスのユーザーは見つかりませんでした。",
+        "userAlreadyRegistered": "ユーザーは既に登録されています。",
+        "passwordTooShort": "パスワードは6文字以上である必要があります。",
+        "invalidEmail": "無効なメールアドレスです。"
+      },
+      "success": "ようこそ！ {{email}} としてログインしました",
+      "loggedInAs": "{{email}} として接続中",
+      "tokenLabel": "セッショントークン:",
+      "logout": "ログアウト",
+      "seedSuccess": "ユーザーID: {{userId}} で作成されました"
+    }
   }
 }

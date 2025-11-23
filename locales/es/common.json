@@ -4,6 +4,40 @@
     "scrollLeft": "Ver anteriores",
     "scrollRight": "Ver siguientes"
   },
+  "auth": {
+    "login": {
+      "badge": "Acceso Seguro",
+      "title": "Ingresá a Alma",
+      "description": "Tu espacio personal para nutrir cuerpo y mente.",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "tu@email.com",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "••••••••",
+      "primaryCta": "Ingresar",
+      "seedInfo": "¿No tenés cuenta? Creá un usuario de prueba abajo.",
+      "seedTitle": "Crear usuario de prueba",
+      "seedDescription": "Generá un acceso rápido para probar la beta.",
+      "seedCta": "Crear usuario",
+      "seedEmailPlaceholder": "prueba@email.com",
+      "seedPasswordPlaceholder": "mín. 6 caracteres",
+      "errors": {
+        "missingFields": "Por favor completá todos los campos.",
+        "generic": "Ocurrió un error. Intentá nuevamente.",
+        "seedInvalid": "Email inválido o contraseña muy corta.",
+        "invalidCredentials": "Email o contraseña incorrectos.",
+        "emailNotConfirmed": "Verificá tu correo para confirmar la cuenta.",
+        "userNotFound": "No encontramos un usuario con ese email.",
+        "userAlreadyRegistered": "El usuario ya está registrado.",
+        "passwordTooShort": "La contraseña debe tener al menos 6 caracteres.",
+        "invalidEmail": "El formato del email no es válido."
+      },
+      "success": "¡Bienvenido! Sesión iniciada como {{email}}",
+      "loggedInAs": "Conectado como {{email}}",
+      "tokenLabel": "Token de sesión:",
+      "logout": "Cerrar sesión",
+      "seedSuccess": "Usuario creado con ID: {{userId}}"
+    }
+  },
   "dashboard": {
     "locale": "es-AR",
     "header": {
@@ -393,7 +427,7 @@
       "time": "Registrás tu día en menos de un minuto.",
       "result": "Terminás con un plato o plan B cercano listo para ejecutar."
     },
-    "cta": "Ver mapa de decisiones"
+    "cta": "Chatear con Alma"
   },
   "livePanelSection": {
     "badge": "Panel en vivo",
@@ -513,10 +547,10 @@
     "finished": "Usamos estos datos para equilibrar tu energía con lo que hay en casa.",
     "summaryTitle": "Receta lista para vos",
     "summaryIntro": "Alma combinaría {{ingredient}} con un toque especial para una comida acorde a tu estado {{energy}}.",
-  "summaryMood": "También respetamos {{mood}} para completar el plan.",
-  "summaryFallbackIngredient": "tu ingrediente favorito",
-  "summaryFallbackEnergy": "tu energía actual",
-  "summaryFallbackMood": "tu forma de comer hoy",
+    "summaryMood": "También respetamos {{mood}} para completar el plan.",
+    "summaryFallbackIngredient": "tu ingrediente favorito",
+    "summaryFallbackEnergy": "tu energía actual",
+    "summaryFallbackMood": "tu forma de comer hoy",
     "summaryMissing": "Guardamos el paso final y los ingredientes secretos para quienes se suscriben. Dejanos tu correo y te enviamos esta receta completa.",
     "emailLabel": "Correo electrónico",
     "emailPlaceholder": "nombre@correo.com",
@@ -528,21 +562,43 @@
       "energy": {
         "question": "¿Cómo está tu energía ahora?",
         "helper": "Nos ayuda a detectar bajones y proponer snacks preventivos.",
-        "options": ["Alta", "Media", "Necesito rescate"]
+        "options": [
+          "Alta",
+          "Media",
+          "Necesito rescate"
+        ]
       },
       "pantry": {
         "question": "¿Qué ingrediente querés usar sí o sí?",
         "helper": "Elegí tus productos estrella.",
-        "options": ["Garbanzos", "Palta", "Frutas rojas"]
+        "options": [
+          "Garbanzos",
+          "Palta",
+          "Frutas rojas"
+        ]
       },
       "mood": {
         "question": "¿Preferís cocinar o pedir algo?",
         "helper": "Mezclamos tus ganas con locales cercanos y tu presupuesto.",
-        "options": ["Cocinar rápido", "Algo fresco afuera", "Sorprendeme"]
+        "options": [
+          "Cocinar rápido",
+          "Algo fresco afuera",
+          "Sorprendeme"
+        ]
       }
     }
   },
   "general": {
     "stepLabel": "Paso"
+  },
+  "chat": {
+    "back": "Volver",
+    "title": "Coach Alma",
+    "online": "En línea",
+    "welcome": {
+      "title": "Hola, soy Alma.",
+      "description": "Conozco tus metas y preferencias. Pregúntame qué comer, cómo reemplazar un ingrediente o cuéntame cómo te sientes."
+    },
+    "inputPlaceholder": "Escribe tu mensaje..."
   }
 }

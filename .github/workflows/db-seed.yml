@@ -1,0 +1,26 @@
+name: DB Seed (manual)
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  seed-db:
+    name: Seed coach_sessions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install supabase CLI
+        run: |
+          curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+          sudo apt-get install -y nodejs
+          npm i -g supabase
+
+      - name: Run seed SQL
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          echo "Running DB seed..."
+          supabase db query < db/seeds/coach_sessions.sql --project-ref $SUPABASE_URL --service-key $SUPABASE_SERVICE_ROLE_KEY || supabase db query < db/seeds/coach_sessions.sql

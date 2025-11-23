@@ -352,16 +352,16 @@
       "subtitle": "Dein vorgeschlagenes Tagesziel",
       "adjustmentNote": "Wir passen es jede Woche mit deinen Einträgen an.",
       "homeCta": "Zur Startseite",
-        "restart": "Flow neu starten",
-        "examplesTitle": "So sieht es auf deinem Teller aus",
-        "examplesIntro": "Wir teilen dein Ziel in 20 Basis-Einheiten, damit Alltagslebensmittel greifbar werden.",
-        "examples": {
-          "apple": "Eine halbe knackige Apfel",
-          "chiaPudding": "Chia-Pudding mit Pflanzenmilch",
-          "avocadoToast": "Avocado-Toast mit Saaten",
-          "baseTwenty": "≈ {{units}} von 20 Basiseinheiten",
-          "percentOfGoal": "{{percent}}% deines Ziels"
-        }
+      "restart": "Flow neu starten",
+      "examplesTitle": "So sieht es auf deinem Teller aus",
+      "examplesIntro": "Wir teilen dein Ziel in 20 Basis-Einheiten, damit Alltagslebensmittel greifbar werden.",
+      "examples": {
+        "apple": "Eine halbe knackige Apfel",
+        "chiaPudding": "Chia-Pudding mit Pflanzenmilch",
+        "avocadoToast": "Avocado-Toast mit Saaten",
+        "baseTwenty": "≈ {{units}} von 20 Basiseinheiten",
+        "percentOfGoal": "{{percent}}% deines Ziels"
+      }
     },
     "visuals": {
       "welcomeAlt": "Warme Willkommensillustration mit natürlichen Zutaten",
@@ -513,10 +513,10 @@
     "finished": "Wir nutzen diese Angaben, um deine Energie mit dem Vorrat zu verbinden.",
     "summaryTitle": "Rezept für dich bereit",
     "summaryIntro": "Alma würde {{ingredient}} mit einem besonderen Twist kombinieren – perfekt für dein {{energy}}-Level.",
-  "summaryMood": "Wir berücksichtigen außerdem {{mood}}, um den Plan abzurunden.",
-  "summaryFallbackIngredient": "deine Lieblingszutat",
-  "summaryFallbackEnergy": "dein aktuelles Energielevel",
-  "summaryFallbackMood": "deine Stimmung heute",
+    "summaryMood": "Wir berücksichtigen außerdem {{mood}}, um den Plan abzurunden.",
+    "summaryFallbackIngredient": "deine Lieblingszutat",
+    "summaryFallbackEnergy": "dein aktuelles Energielevel",
+    "summaryFallbackMood": "deine Stimmung heute",
     "summaryMissing": "Der letzte Schritt und die geheimen Zutaten bleiben Abonnentinnen vorbehalten. Hinterlasse deine E-Mail und wir senden das komplette Rezept.",
     "emailLabel": "E-Mail",
     "emailPlaceholder": "du@email.com",
@@ -528,21 +528,77 @@
       "energy": {
         "question": "Wie ist dein Energielevel gerade?",
         "helper": "Hilft uns, Tiefs früh zu erkennen und Snacks vorzuschlagen.",
-        "options": ["Hoch", "Mittel", "Brauche Rettung"]
+        "options": [
+          "Hoch",
+          "Mittel",
+          "Brauche Rettung"
+        ]
       },
       "pantry": {
         "question": "Welche Zutat möchtest du unbedingt verwenden?",
         "helper": "Wähle deine Star-Produkte.",
-        "options": ["Kichererbsen", "Avocado", "Beeren"]
+        "options": [
+          "Kichererbsen",
+          "Avocado",
+          "Beeren"
+        ]
       },
       "mood": {
         "question": "Lieber kochen oder etwas holen?",
         "helper": "Wir matchen deine Laune mit Orten in der Nähe und Budget.",
-        "options": ["Schnell kochen", "Frisches To-go", "Überrasche mich"]
+        "options": [
+          "Schnell kochen",
+          "Frisches To-go",
+          "Überrasche mich"
+        ]
       }
     }
   },
   "general": {
     "stepLabel": "Schritt"
+  },
+  "chat": {
+    "back": "Zurück",
+    "title": "Coach Alma",
+    "online": "Online",
+    "welcome": {
+      "title": "Hallo, ich bin Alma.",
+      "description": "Ich kenne deine Ziele und Vorlieben. Frag mich, was du essen sollst, wie du eine Zutat ersetzen kannst oder erzähl mir, wie du dich fühlst."
+    },
+    "inputPlaceholder": "Schreibe deine Nachricht..."
+  },
+  "auth": {
+    "login": {
+      "badge": "Sicherer Zugang",
+      "title": "Bei Alma anmelden",
+      "description": "Ihr persönlicher Raum, um Körper und Geist zu nähren.",
+      "emailLabel": "E-Mail",
+      "emailPlaceholder": "du@email.com",
+      "passwordLabel": "Passwort",
+      "passwordPlaceholder": "••••••••",
+      "primaryCta": "Anmelden",
+      "seedInfo": "Kein Konto? Erstellen Sie unten einen Testbenutzer.",
+      "seedTitle": "Testbenutzer erstellen",
+      "seedDescription": "Generieren Sie einen schnellen Zugang, um die Beta zu testen.",
+      "seedCta": "Benutzer erstellen",
+      "seedEmailPlaceholder": "test@email.com",
+      "seedPasswordPlaceholder": "mind. 6 Zeichen",
+      "errors": {
+        "missingFields": "Bitte füllen Sie alle Felder aus.",
+        "generic": "Ein Fehler ist bei der Anmeldung aufgetreten.",
+        "seedInvalid": "Ungültige E-Mail oder Passwort zu kurz.",
+        "invalidCredentials": "Ungültige Anmeldeinformationen. Überprüfen Sie E-Mail und Passwort.",
+        "emailNotConfirmed": "E-Mail nicht bestätigt. Bitte überprüfen Sie Ihren Posteingang.",
+        "userNotFound": "Benutzer mit dieser E-Mail nicht gefunden.",
+        "userAlreadyRegistered": "Benutzer ist bereits registriert.",
+        "passwordTooShort": "Passwort muss mindestens 6 Zeichen lang sein.",
+        "invalidEmail": "Ungültige E-Mail."
+      },
+      "success": "Willkommen! Angemeldet als {{email}}",
+      "loggedInAs": "Verbunden als {{email}}",
+      "tokenLabel": "Sitzungstoken:",
+      "logout": "Abmelden",
+      "seedSuccess": "Benutzer erstellt mit ID: {{userId}}"
+    }
   }
 }

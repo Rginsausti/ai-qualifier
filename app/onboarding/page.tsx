@@ -1,11 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+// import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useState, useMemo } from "react";
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { saveOnboardingData } from "@/lib/actions";
+import { getSupabaseClient } from "@/lib/supabase/client";
 import welcomeHero from "@/public/images/image.jpg";
 import goalHero from "@/public/images/onboarding.jpg";
 import biometricsHero from "@/public/images/onboarding-biometrics.jpg";
@@ -67,6 +70,38 @@ export default function OnboardingPage() {
   // Step 7: Result
   const [isCalculating, setIsCalculating] = useState(false);
   const [calculatedCalories, setCalculatedCalories] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
+  const router = useRouter();
+
+  const handleFinish = async () => {
+    setIsSaving(true);
+    try {
+      const supabase = getSupabaseClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      await saveOnboardingData({
+        goals: Array.from(selectedGoals),
+        weight,
+        height,
+        unitSystem,
+        allergens: Array.from(allergens),
+        intolerances: Array.from(intolerances),
+        lifestyle,
+        therapeutic: Array.from(therapeutic),
+        cultural: Array.from(cultural),
+        otherRestrictions,
+        calculatedCalories
+      }, user?.id);
+      
+      router.push("/");
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      // Navigate anyway
+      router.push("/");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const weightLabel = unitSystem === "metric" ? "kg" : "lb";
   const heightLabel = unitSystem === "metric" ? "cm" : "ft";
@@ -657,13 +692,14 @@ export default function OnboardingPage() {
                   <p className="text-sm text-slate-500">{t("onboarding.result.adjustmentNote")}</p>
                 </div>
                 <div className="flex w-full max-w-xl flex-col gap-4 sm:flex-row">
-                  <Link
-                    href="/"
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-900 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5 sm:flex-1"
+                  <button
+                    onClick={handleFinish}
+                    disabled={isSaving}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-900 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5 disabled:opacity-70 sm:flex-1"
                   >
-                    {t("onboarding.result.homeCta")}
-                    <ArrowRight className="h-5 w-5" />
-                  </Link>
+                    {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : t("onboarding.result.homeCta")}
+                    {!isSaving && <ArrowRight className="h-5 w-5" />}
+                  </button>
                   <button
                     onClick={() => {
                       setCurrentStep(1);
