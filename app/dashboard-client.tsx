@@ -1,4 +1,5 @@
 "use client";
+// Force rebuild
 
 import Image from "next/image";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -8,7 +9,7 @@ import { CoachSection } from "@/components/coach-section";
 import { MultimodalInput } from "@/components/logging/MultimodalInput";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { analyzeFoodFromText, logNutrition, logWater } from "@/lib/actions";
 import {
     ArrowRight,
@@ -160,6 +161,12 @@ export default function DashboardClient({
         day: "numeric",
         month: "long",
     }).format(today);
+
+    // Automatic Timezone Detection
+    useEffect(() => {
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        document.cookie = `user_timezone=${timezone}; path=/; max-age=31536000`;
+    }, []);
 
     const heroTarget = dailyStats?.goals.calories || 2100;
     const heroCurrent = dailyStats?.nutrition.calories || 0;
@@ -389,13 +396,13 @@ export default function DashboardClient({
                     </div>
                 </section>
 
-                <div className="my-6 flex justify-center">
+                <div className="my-6 -mx-6 flex justify-center sm:-mx-10">
                     <Image
                         src="/images/separador_trimmed_1.png"
                         alt="Separator"
                         width={1000}
                         height={100}
-                        className="h-auto w-full object-contain"
+                        className="h-auto w-full object-cover"
                     />
                 </div>
 
@@ -415,13 +422,13 @@ export default function DashboardClient({
                     <CoachSection onCtaClick={() => router.push("/chat")} />
                 </section>
 
-                <div className="my-6 flex justify-center">
+                <div className="my-6 -mx-6 flex justify-center sm:-mx-10">
                     <Image
                         src="/images/separador_trimmed_4.png"
                         alt="Separator"
                         width={1000}
                         height={100}
-                        className="h-auto w-full object-contain"
+                        className="h-auto w-full object-cover"
                     />
                 </div>
 
@@ -548,13 +555,13 @@ export default function DashboardClient({
                     </article>
                 </section>
 
-                <div className="my-6 flex justify-center">
+                <div className="my-6 -mx-6 flex justify-center sm:-mx-10">
                     <Image
                         src="/images/separador_trimmed_3.png"
                         alt="Separator"
                         width={1000}
                         height={100}
-                        className="h-auto w-full object-contain"
+                        className="h-auto w-full object-cover"
                     />
                 </div>
 

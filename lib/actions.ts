@@ -2,6 +2,65 @@
 
 import { getSupabaseServiceClient } from "@/lib/supabase/server-client";
 import { cookies } from "next/headers";
+
+// ============================================================================
+// Type Definitions
+// ============================================================================
+
+/**
+ * Represents a daily ritual/habit completion
+ */
+export type DailyRitual = {
+    id?: string;
+    user_id?: string;
+    ritual_type: 'morning' | 'lunch' | 'snack' | 'dinner' | 'bedtime';
+    completed_at?: string;
+    notes?: string;
+    created_at?: string;
+};
+
+/**
+ * Represents a pantry inventory item
+ */
+export type PantryItem = {
+    id?: string;
+    user_id?: string;
+    item_name: string;
+    category?: 'protein' | 'carbs' | 'vegetables' | 'fruits' | 'snacks' | 'beverages';
+    quantity?: number;
+    unit?: 'kg' | 'g' | 'L' | 'ml' | 'units';
+    expiry_date?: string;
+    notes?: string;
+    created_at?: string;
+    updated_at?: string;
+};
+
+/**
+ * Represents a mindful moment/mood check-in
+ */
+export type MindfulMoment = {
+    id?: string;
+    user_id?: string;
+    moment_type: 'energy' | 'hunger' | 'mood' | 'stress';
+    value: string; // e.g., 'high', 'medium', 'low', 'happy', 'anxious'
+    notes?: string;
+    location_lat?: number;
+    location_lng?: number;
+    created_at?: string;
+};
+
+/**
+ * Represents a physical activity session
+ */
+export type PhysicalActivity = {
+    id?: string;
+    user_id?: string;
+    activity_type: 'walk' | 'run' | 'yoga' | 'gym' | 'other';
+    duration_minutes?: number;
+    distance_km?: number;
+    notes?: string;
+    created_at?: string;
+};
 import { createClient } from "@/lib/supabase/server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -224,14 +283,31 @@ export async function getDailyStats(userId: string) {
     const supabase = await createClient();
 
     // Debug: Log the time we are querying for
-    const now = new Date();
-    // Rolling 24h window to ensure we see data if timezone logic is tricky
-    // This is a temporary fix to verify data persistence.
-    // Ideally we want "Start of Local Day", but we don't know user's offset easily here.
-    // We'll query for the last 24 hours.
-    const startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+    const cookieStore = await cookies();
+    const timezone = cookieStore.get("user_timezone")?.value || "UTC";
 
-    console.log(`getDailyStats: Querying for user ${userId} since ${startTime}`);
+    const now = new Date();
+
+    // Calculate start of day in user's timezone
+    // We manually adjust because date-fns-tz might be overkill if we just want offset,
+    // but let's try a robust way using native Intl if we want to avoid deps, 
+    // OR just use the offset logic if we trust the cookie.
+
+    // Actually, let's use a simple offset approach since we don't want to break the build 
+    // if date-fns-tz types are tricky.
+    // But wait, I installed date-fns-tz. Let's use it.
+
+    // Dynamic import to avoid top-level failures if package issues
+    const { toZonedTime, fromZonedTime } = require('date-fns-tz');
+
+    const zonedNow = toZonedTime(now, timezone);
+    const zonedStartOfDay = new Date(zonedNow);
+    zonedStartOfDay.setHours(0, 0, 0, 0);
+
+    const startOfDayUTC = fromZonedTime(zonedStartOfDay, timezone);
+    const startTime = startOfDayUTC.toISOString();
+
+    console.log(`getDailyStats: Querying for user ${userId} since ${startTime} (Timezone: ${timezone})`);
 
     // Get Nutrition
     const { data: nutritionData, error: nutritionError } = await supabase

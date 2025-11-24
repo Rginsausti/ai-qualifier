@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  headlessx:
+    image: saifyxpro/headlessx:latest
+    container_name: eatapp_headlessx
+    ports:
+      - "3100:3000"
+    environment:
+      # Maximum concurrent browser instances
+      - HEADLESS_MAX_CONCURRENT=3
+      # Timeout for rendering (30 seconds)
+      - HEADLESS_TIMEOUT=30000
+      # Enable stealth mode by default
+      - HEADLESS_STEALTH=true
+      # Enable behavior simulation
+      - HEADLESS_BEHAVIOR_SIM=true
+    restart: unless-stopped
+    volumes:
+      # Persist browser profiles and cache
+      - headlessx-data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  headlessx-data:
+    driver: local
