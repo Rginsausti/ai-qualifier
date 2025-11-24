@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { MissionHighlights } from "@/components/mission-highlights";
 import { QuickLogPanel } from "@/components/quick-log";
@@ -251,14 +252,25 @@ export default function DashboardClient({
 
             <main className="relative z-10 mx-auto max-w-6xl px-6 py-12 sm:px-10">
                 <header className="mb-10 flex flex-wrap items-center justify-between gap-6">
-                    <div className="space-y-2">
-                        <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
-                            {getCopy("dashboard.header.badge", "Panel diario")}
-                        </p>
-                        <h1 className="text-4xl font-semibold tracking-tight text-slate-900">
-                            {getCopy("dashboard.header.title", "Hola Alma")}
-                        </h1>
-                        <p className="capitalize text-sm text-slate-500">{formattedDate}</p>
+                    <div className="flex items-center gap-0">
+                        <div className="relative h-44 w-44 -ml-6">
+                            <Image
+                                src="/images/girl-avatar.png"
+                                alt="Alma Avatar"
+                                fill
+                                className="object-contain drop-shadow-xl"
+                                priority
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                                {getCopy("dashboard.header.badge", "Panel diario")}
+                            </p>
+                            <h1 className="text-4xl font-semibold tracking-tight text-slate-900">
+                                {getCopy("dashboard.header.title", "Hola, soy Alma")}
+                            </h1>
+                            <p className="capitalize text-sm text-slate-500">{formattedDate}</p>
+                        </div>
                     </div>
                     <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
                         <button
@@ -377,6 +389,16 @@ export default function DashboardClient({
                     </div>
                 </section>
 
+                <div className="my-6 flex justify-center">
+                    <Image
+                        src="/images/separador_trimmed_1.png"
+                        alt="Separator"
+                        width={1000}
+                        height={100}
+                        className="h-auto w-full object-contain"
+                    />
+                </div>
+
                 <section className="mt-10">
                     <QuickLogPanel
                         notes={notes}
@@ -392,6 +414,16 @@ export default function DashboardClient({
                 <section className="mt-10">
                     <CoachSection onCtaClick={() => router.push("/chat")} />
                 </section>
+
+                <div className="my-6 flex justify-center">
+                    <Image
+                        src="/images/separador_trimmed_4.png"
+                        alt="Separator"
+                        width={1000}
+                        height={100}
+                        className="h-auto w-full object-contain"
+                    />
+                </div>
 
                 <section className="mt-10 grid gap-6 md:grid-cols-3">
                     {macroCards.map((card) => {
@@ -515,6 +547,16 @@ export default function DashboardClient({
                         </button>
                     </article>
                 </section>
+
+                <div className="my-6 flex justify-center">
+                    <Image
+                        src="/images/separador_trimmed_3.png"
+                        alt="Separator"
+                        width={1000}
+                        height={100}
+                        className="h-auto w-full object-contain"
+                    />
+                </div>
 
                 <section className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,_3fr)_minmax(0,_2fr)]">
                     <article className="rounded-3xl border border-white/60 bg-white/80 p-6 shadow-lg shadow-emerald-100">
