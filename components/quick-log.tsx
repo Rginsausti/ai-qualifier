@@ -10,6 +10,7 @@ import {
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
+import { saveQuickLog } from "@/lib/actions";
 
 const energyOptions: Array<{
   value: "high" | "medium" | "low";
@@ -42,14 +43,22 @@ const cravingOptions: Array<{
   { value: "fresh", icon: Salad },
 ];
 
-export function QuickLogPanel() {
+export function QuickLogPanel({
+  notes,
+  onNotesChange,
+  onVoiceClick,
+}: {
+  notes: string;
+  onNotesChange: (notes: string) => void;
+  onVoiceClick: () => void;
+}) {
   const { t } = useTranslation();
   const [energy, setEnergy] = useState<"high" | "medium" | "low" | null>(null);
   const [hunger, setHunger] = useState(3);
   const [craving, setCraving] = useState<"sweet" | "savory" | "fresh" | null>(
     null
   );
-  const [notes, setNotes] = useState("");
+  // const [notes, setNotes] = useState(""); // Lifted up
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
 
@@ -77,12 +86,24 @@ export function QuickLogPanel() {
     });
   }, [craving, energy, hungerLevel, t]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsSaving(true);
-    setTimeout(() => {
+    try {
+      const result = await saveQuickLog({
+        energy,
+        hunger,
+        craving,
+        notes,
+      });
+
+      if (result.success) {
+        setLastSavedAt(new Date());
+      }
+    } catch (error) {
+      console.error("Failed to save log:", error);
+    } finally {
       setIsSaving(false);
-      setLastSavedAt(new Date());
-    }, 900);
+    }
   };
 
   return (
@@ -184,16 +205,25 @@ export function QuickLogPanel() {
         </div>
 
         <div>
-          <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-            {t("dashboard.quicklog.notes.label")}
-            <textarea
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              placeholder={t("dashboard.quicklog.notes.placeholder") ?? ""}
-              rows={3}
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900"
-            />
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+              {t("dashboard.quicklog.notes.label")}
+            </label>
+            <button
+              type="button"
+              onClick={onVoiceClick}
+              className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-600 hover:text-emerald-700"
+            >
+              {t("dashboard.quicklog.notes.voice", "Grabar nota")}
+            </button>
+          </div>
+          <textarea
+            value={notes}
+            onChange={(event) => onNotesChange(event.target.value)}
+            placeholder={t("dashboard.quicklog.notes.placeholder") ?? ""}
+            rows={3}
+            className="mt-2 w-full rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900"
+          />
         </div>
 
         <div className="rounded-2xl bg-slate-50/70 p-4 text-sm text-slate-700">
@@ -225,7 +255,7 @@ export function QuickLogPanel() {
             setEnergy(null);
             setHunger(3);
             setCraving(null);
-            setNotes("");
+            onNotesChange("");
           }}
           className="inline-flex items-center justify-center rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-900"
         >
