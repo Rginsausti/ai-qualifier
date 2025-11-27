@@ -526,6 +526,18 @@
       "recipes": {
         "title": "Recetas contextuales",
         "detail": "Sugerencias que miran tus ingredientes, clima y presupuesto."
+      },
+      "mood": {
+        "title": "Ánimo y hambre",
+        "stat": "Energía estable",
+        "detail": "A las 17 h suele aparecer el antojo dulce, por eso sugerimos un snack especiado.",
+        "badge": "Nueva sugerencia"
+      },
+      "places": {
+        "title": "Locales aliados",
+        "stat": "4 abiertos ahora",
+        "detail": "Green Mood, Huerta Viva y dos almacenes orgánicos a menos de 400 m.",
+        "badge": "Modo caminata"
       }
     }
   },
@@ -600,5 +612,30 @@
       "description": "Conozco tus metas y preferencias. Pregúntame qué comer, cómo reemplazar un ingrediente o cuéntame cómo te sientes."
     },
     "inputPlaceholder": "Escribe tu mensaje..."
+  },
+  "productSearch": {
+    "title": "Buscar productos cercanos",
+    "subtitle": "Encontrá los mejores precios en supermercados de tu zona",
+    "locationRequired": "Necesitamos tu ubicación",
+    "locationDescription": "Para mostrarte productos cercanos, necesitamos acceder a tu ubicación.",
+    "enableLocation": "Activar ubicación",
+    "locationDeniedHelp": "Por favor, habilitá el acceso a la ubicación en la configuración de tu navegador.",
+    "searchPlaceholder": "¿Qué estás buscando? (ej: leche descremada)",
+    "searching": "Buscando productos en tiendas cercanas...",
+    "resultsFound": "{{count}} productos encontrados",
+    "cached": "Caché",
+    "storesSearched": "tiendas consultadas",
+    "noResults": "No encontramos productos. Intentá con otra búsqueda."
+  },
+  "common": {
+    "loading": "Cargando...",
+    "search": "Buscar"
+  },
+  "errors": {
+    "geolocationNotSupported": "Tu navegador no soporta geolocalización",
+    "locationDenied": "Permiso de ubicación denegado",
+    "locationRequired": "Necesitamos tu ubicación para buscar",
+    "queryTooShort": "La búsqueda debe tener al menos 2 caracteres",
+    "searchFailed": "Error al buscar productos. Intentá nuevamente."
   }
 }

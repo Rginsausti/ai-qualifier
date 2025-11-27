@@ -10,12 +10,23 @@ export type NearbyStore = {
     osm_id: number;
     name: string;
     brand?: string;
-    store_type: 'supermarket' | 'convenience' | 'health_food';
+    store_type:
+        | 'supermarket'
+        | 'convenience'
+        | 'health_food'
+        | 'produce'
+        | 'butcher'
+        | 'fishmonger'
+        | 'bakery'
+        | 'deli'
+        | 'restaurant'
+        | 'cafe';
     latitude: number;
     longitude: number;
-    address?: string;
+    address?: string | Record<string, unknown> | null;
     website_url?: string;
     distance?: number; // meters from user
+    scraping_enabled?: boolean;
 };
 
 /**
@@ -27,12 +38,17 @@ const BRAND_MAPPINGS: Record<string, string> = {
     'supermercados coto': 'COTO',
     'carrefour': 'CARREFOUR',
     'carrefour express': 'CARREFOUR',
+    'carrefour market': 'CARREFOUR',
+    'express carrefour': 'CARREFOUR',
     'jumbo': 'JUMBO',
     'vea': 'VEA',
     'disco': 'DISCO',
     'dia': 'DIA',
-    'día%': 'DIA',
+    'dia%': 'DIA',
+    'dia express': 'DIA',
 };
+
+const SUPPORTED_BRANDS = new Set(['COTO', 'CARREFOUR', 'JUMBO', 'VEA', 'DISCO']);
 
 /**
  * Website URL map (brand → base URL)
@@ -52,13 +68,38 @@ const BRAND_URLS: Record<string, string> = {
 function normalizeBrand(osmBrand?: string): string | undefined {
     if (!osmBrand) return undefined;
 
-    const lowercased = osmBrand.toLowerCase().trim();
+    const sanitized = osmBrand
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+
     for (const [pattern, canonical] of Object.entries(BRAND_MAPPINGS)) {
-        if (lowercased.includes(pattern)) {
+        if (sanitized.includes(pattern)) {
             return canonical;
         }
     }
     return undefined;
+}
+
+const STORE_TYPES: NearbyStore['store_type'][] = [
+    'supermarket',
+    'convenience',
+    'health_food',
+    'produce',
+    'butcher',
+    'fishmonger',
+    'bakery',
+    'deli',
+    'restaurant',
+    'cafe',
+];
+
+function normalizeStoreType(value?: string | null): NearbyStore['store_type'] {
+    if (value && STORE_TYPES.includes(value as NearbyStore['store_type'])) {
+        return value as NearbyStore['store_type'];
+    }
+    return 'supermarket';
 }
 
 /**
@@ -129,6 +170,8 @@ export async function findNearbyStores(
             // Calculate distance from user
             const distance = calculateDistance(lat, lon, storeLat, storeLon);
 
+            const scrapingEnabled = Boolean(brand && SUPPORTED_BRANDS.has(brand));
+
             const store: NearbyStore = {
                 osm_id: element.id,
                 name: tags.name || 'Supermercado sin nombre',
@@ -141,6 +184,7 @@ export async function findNearbyStores(
                     undefined,
                 website_url: brand ? BRAND_URLS[brand] : tags.website,
                 distance,
+                scraping_enabled: scrapingEnabled,
             };
 
             // Deduplicate by OSM ID
@@ -150,12 +194,16 @@ export async function findNearbyStores(
         }
 
         // Convert to array and sort by distance
-        const stores = Array.from(storesMap.values()).sort((a, b) =>
+        let stores = Array.from(storesMap.values()).sort((a, b) =>
             (a.distance || 0) - (b.distance || 0)
         );
 
         // Persist to database for caching
         await persistStores(stores);
+        await attachStoreMetadata(stores);
+
+        // Ensure we include previously descubiertos desde Supabase
+        stores = await mergeWithDatabaseStores(stores, lat, lon, radiusMeters);
 
         return stores;
     } catch (error) {
@@ -206,6 +254,7 @@ async function persistStores(stores: NearbyStore[]): Promise<void> {
                     longitude: store.longitude,
                     address: store.address,
                     website_url: store.website_url,
+                    scraping_enabled: store.scraping_enabled ?? false,
                     updated_at: new Date().toISOString(),
                 },
                 { onConflict: 'osm_id' }
@@ -214,6 +263,122 @@ async function persistStores(stores: NearbyStore[]): Promise<void> {
     } catch (error) {
         console.error('Error persisting stores:', error);
     }
+}
+
+async function attachStoreMetadata(stores: NearbyStore[]): Promise<void> {
+    if (stores.length === 0) return;
+
+    try {
+        const supabase = await createClient();
+        const osmIds = stores.map((store) => store.osm_id);
+        const { data, error } = await supabase
+            .from('nearby_stores')
+            .select('id, osm_id, brand, scraping_enabled')
+            .in('osm_id', osmIds);
+
+        if (error || !data) {
+            if (error) {
+                console.error('Error loading store metadata:', error);
+            }
+            return;
+        }
+
+        const lookup = new Map<number, { id: string; brand: string | null; scraping_enabled: boolean | null }>();
+        data.forEach((row) => {
+            lookup.set(row.osm_id, {
+                id: row.id,
+                brand: row.brand,
+                scraping_enabled: row.scraping_enabled,
+            });
+        });
+
+        stores.forEach((store) => {
+            const details = lookup.get(store.osm_id);
+            if (!details) return;
+            store.id = details.id;
+            if (!store.brand && details.brand) {
+                store.brand = details.brand;
+            }
+            if (typeof store.scraping_enabled !== 'boolean' && typeof details.scraping_enabled === 'boolean') {
+                store.scraping_enabled = details.scraping_enabled;
+            }
+        });
+    } catch (error) {
+        console.error('Error hydrating store metadata:', error);
+    }
+}
+
+async function mergeWithDatabaseStores(
+    stores: NearbyStore[],
+    lat: number,
+    lon: number,
+    radiusMeters: number
+): Promise<NearbyStore[]> {
+    const supabase = await createClient();
+    const latDelta = radiusMeters / 111320;
+    const lonDenominator = Math.max(Math.cos((lat * Math.PI) / 180), 0.0001);
+    const lonDelta = radiusMeters / (111320 * lonDenominator);
+
+    const { data, error } = await supabase
+        .from('nearby_stores')
+        .select('id, osm_id, name, brand, store_type, latitude, longitude, address, website_url, scraping_enabled')
+        .eq('scraping_enabled', true)
+        .gte('latitude', lat - latDelta)
+        .lte('latitude', lat + latDelta)
+        .gte('longitude', lon - lonDelta)
+        .lte('longitude', lon + lonDelta);
+
+    if (error || !data) {
+        if (error) {
+            console.error('Error merging stores from Supabase:', error);
+        }
+        return stores;
+    }
+
+    const storeMap = new Map<number, NearbyStore>();
+    stores.forEach((store) => {
+        storeMap.set(store.osm_id, store);
+    });
+
+    data.forEach((row) => {
+        if (!row.osm_id || !row.latitude || !row.longitude) {
+            return;
+        }
+
+        const distance = calculateDistance(lat, lon, row.latitude, row.longitude);
+        const existing = storeMap.get(row.osm_id);
+
+        if (existing) {
+            existing.id = existing.id || row.id;
+            existing.brand = existing.brand || row.brand || undefined;
+            existing.store_type = existing.store_type || normalizeStoreType(row.store_type as string | null);
+            existing.latitude = row.latitude;
+            existing.longitude = row.longitude;
+            existing.address = existing.address || (row.address as NearbyStore['address']);
+            existing.website_url = existing.website_url || row.website_url || undefined;
+            existing.scraping_enabled = typeof existing.scraping_enabled === 'boolean'
+                ? existing.scraping_enabled
+                : Boolean(row.scraping_enabled);
+            existing.distance = existing.distance ?? distance;
+            return;
+        }
+
+        storeMap.set(row.osm_id, {
+            id: row.id,
+            osm_id: row.osm_id,
+            name: row.name || 'Supermercado sin nombre',
+            brand: row.brand || undefined,
+            store_type: normalizeStoreType(row.store_type as string | null),
+            latitude: row.latitude,
+            longitude: row.longitude,
+            address: row.address as NearbyStore['address'],
+            website_url: row.website_url || undefined,
+            distance,
+            scraping_enabled: Boolean(row.scraping_enabled),
+        });
+    });
+
+    return Array.from(storeMap.values()).sort((a, b) => (a.distance || 0) - (b.distance || 0));
 }
 
 /**

@@ -1,91 +1,85 @@
-import { StoreConfig } from '../headless-scraper';
+import axios from 'axios';
+import { StoreAdapter, Product } from '../types';
 
-/**
- * Carrefour Argentina Adapter
- * Platform: VTEX IO (React-based e-commerce)
- * Challenges: Heavy JavaScript, lazy loading, geolocation-based pricing
- */
+const CARREFOUR_BASE_URL = 'https://www.carrefour.com.ar';
 
-/**
- * Gets Carrefour-specific scraping configuration
- * @param storeId - VTEX store ID
- * @param postalCode - User postal code for pricing
- */
-export function getCarrefourConfig(
-    storeId?: string,
-    postalCode?: string
-): StoreConfig {
-    // VTEX segment cookie structure
-    const vtexSegment = storeId && postalCode ? JSON.stringify({
-        campaigns: null,
-        channel: "1",
-        priceTables: null,
-        regionId: storeId,
-        utm_campaign: null,
-        utm_source: null,
-        utmi_campaign: null,
-        currencyCode: "ARS",
-        currencySymbol: "$",
-        countryCode: "ARG",
-        postalCode: postalCode,
-    }) : undefined;
-
-    return {
-        brand: 'CARREFOUR',
-        searchUrlTemplate: '/{query}?_q={query}&map=ft',
-        cookies: vtexSegment ? {
-            'vtex_segment': vtexSegment,
-        } : undefined,
-        waitSelector: '.vtex-search-result-3-x-gallery, .vtex-product-summary',
-        scrollBehavior: true, // CRITICAL: Infinite scroll for lazy loading
-        additionalWait: 3000, // Allow React hydration
-    };
+interface CarrefourApiProduct {
+    productName?: string;
+    brand?: string;
+    link?: string;
+    linkText?: string;
+    items?: Array<{
+        name?: string;
+        measurementUnit?: string;
+        unitMultiplier?: number;
+        images?: Array<{ imageUrl?: string | null }>;
+        sellers?: Array<{
+            sellerDefault?: boolean;
+            commertialOffer?: {
+                Price?: number;
+                ListPrice?: number;
+                IsAvailable?: boolean;
+            };
+        }>;
+    }>;
 }
 
-/**
- * Extracts Carrefour store ID from address
- * This would need a mapping table or API call in production
- */
-export function findCarrefourStoreId(
-    latitude: number,
-    longitude: number
-): string | undefined {
-    // Placeholder - in production, call Carrefour's store locator API
-    // or maintain a static mapping table
-    return undefined;
+async function fetchProducts(query: string): Promise<CarrefourApiProduct[]> {
+    const url = `${CARREFOUR_BASE_URL}/api/catalog_system/pub/products/search/${encodeURIComponent(query)}`;
+
+    const response = await axios.get<CarrefourApiProduct[]>(url, {
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; EatAppBot/1.0)'
+        },
+        timeout: 25000
+    });
+
+    return Array.isArray(response.data) ? response.data : [];
 }
 
-/**
- * Provides parsing hints for Groq (Carrefour-specific)
- */
-export const CARREFOUR_PARSING_HINTS = `
-Estructura HTML de Carrefour (VTEX):
-- Productos en divs con clase "vtex-product-summary"
-- Precio actual: span con "sellingPrice" o "bestPrice"
-- Precio regular: span con "listPrice" (si hay descuento)
-- Claims nutricionales: buscar badges con "Sin TACC", "Orgánico", etc.
-- Imágenes: img dentro de .vtex-product-summary-2-x-imageContainer
-- URLs: Buscar <a> con href que contenga "/p"
-`;
+function normalizeProduct(product: CarrefourApiProduct): Product[] {
+    if (!product.items?.length) return [];
 
-/**
- * Validates if a URL belongs to Carrefour
- */
-export function isCarrefourUrl(url: string): boolean {
-    return url.includes('carrefour.com.ar');
+    const productUrl = product.link && product.link.startsWith('http')
+        ? product.link
+        : `${CARREFOUR_BASE_URL}${product.link ?? `/${product.linkText ?? ''}/p`}`;
+
+    return product.items.flatMap((item) => {
+        if (!item) return [];
+
+        const imageUrl = item.images?.find((img) => !!img?.imageUrl)?.imageUrl ?? null;
+        const seller = (item.sellers ?? []).find((candidate) =>
+            candidate?.sellerDefault && candidate.commertialOffer?.IsAvailable
+        ) ?? item.sellers?.[0];
+
+        if (!seller?.commertialOffer?.Price) return [];
+
+        const priceRegular = seller.commertialOffer.ListPrice && seller.commertialOffer.ListPrice > 0
+            ? seller.commertialOffer.ListPrice
+            : null;
+
+        const normalized: Product = {
+            product_name: item.name || product.productName || 'Producto Carrefour',
+            brand: product.brand || null,
+            price_current: seller.commertialOffer.Price,
+            price_regular: priceRegular,
+            unit: item.measurementUnit ?? null,
+            quantity: item.unitMultiplier ?? null,
+            image_url: imageUrl,
+            product_url: productUrl,
+            nutritional_claims: []
+        };
+
+        return [normalized];
+    });
 }
 
-/**
- * Postal code lookup from coordinates (simplified)
- */
-export function getPostalCodeFromCoords(
-    lat: number,
-    lon: number
-): string {
-    // Simplified - in production use reverse geocoding API
-    // Buenos Aires center
-    if (lat > -35 && lat < -34 && lon > -59 && lon < -58) {
-        return '1000'; // CABA generic
+export const carrefourAdapter: StoreAdapter = {
+    brand: 'CARREFOUR',
+    scrape: async (query: string) => {
+        const apiProducts = await fetchProducts(query);
+
+        return apiProducts.flatMap(normalizeProduct)
+            .filter((product) => product.price_current > 0);
     }
-    return '0000'; // Default
-}
+};

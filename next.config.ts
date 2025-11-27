@@ -4,6 +4,14 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "carrefourar.vteximg.com.br",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

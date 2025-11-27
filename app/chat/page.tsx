@@ -20,6 +20,7 @@ export default function ChatPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [userId, setUserId] = useState<string | null>(null);
+    const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -28,6 +29,20 @@ export default function ChatPage() {
         supabase.auth.getUser().then((response: any) => {
             setUserId(response.data.user?.id ?? null);
         });
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setLocation({
+                        lat: position.coords.latitude,
+                        lon: position.coords.longitude,
+                    });
+                },
+                (error) => {
+                    console.error("Error getting location:", error);
+                }
+            );
+        }
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -53,6 +68,7 @@ export default function ChatPage() {
                     messages: [...messages, userMessage].map(({ role, content }) => ({ role, content })),
                     locale: i18n.language,
                     userId,
+                    location,
                 }),
             });
 
@@ -74,12 +90,12 @@ export default function ChatPage() {
                 const { done, value } = await reader.read();
                 if (done) break;
                 const text = decoder.decode(value, { stream: true });
-                
+
                 setMessages((prev) => {
                     const newMessages = [...prev];
                     const lastMsgIndex = newMessages.length - 1;
                     const lastMsg = newMessages[lastMsgIndex];
-                    
+
                     if (lastMsg && lastMsg.role === "assistant") {
                         newMessages[lastMsgIndex] = {
                             ...lastMsg,

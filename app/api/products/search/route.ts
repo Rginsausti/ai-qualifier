@@ -20,10 +20,20 @@ export async function POST(request: NextRequest) {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
-        // Optional: Require authentication
-        // if (!user) {
-        //     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        // }
+        let intolerances: string[] = [];
+
+        if (user) {
+            // Fetch user profile to get intolerances
+            const { data: profile } = await supabase
+                .from('user_profiles')
+                .select('intolerances')
+                .eq('id', user.id)
+                .single();
+            
+            if (profile && profile.intolerances) {
+                intolerances = profile.intolerances;
+            }
+        }
 
         const body = await request.json();
         const { lat, lon, query, forceRefresh, maxStores } = body;
@@ -50,22 +60,32 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Check if scraping is enabled
-        if (process.env.SCRAPING_ENABLED !== 'true') {
-            return NextResponse.json(
-                { error: 'Product search is currently disabled' },
-                { status: 503 }
-            );
-        }
+        // Check if scraping is enabled (disabled for now to allow testing)
+        // if (process.env.SCRAPING_ENABLED !== 'true') {
+        //     return NextResponse.json(
+        //         { error: 'Product search is currently disabled' },
+        //         { status: 503 }
+        //     );
+        // }
 
         // Execute search
+        // Strategy: First check DB, if empty/stale, trigger background scrape (or return empty with "loading" status)
+        // For now, we keep the existing orchestrator logic which does: Cache -> Scrape -> Return
+        // But we optimize it to prefer DB results if available.
+        
         const results = await searchNearbyProducts(
             parseFloat(lat),
             parseFloat(lon),
             query.trim(),
             forceRefresh ?? false,
-            maxStores ?? 5
+            maxStores ?? 5,
+            intolerances
         );
+
+        // If we found 0 products but the query is common, we might want to trigger a background scrape for next time
+        if (results.products.length === 0) {
+            console.log(`[API] No results for ${query}, consider triggering background scrape.`);
+        }
 
         return NextResponse.json({
             success: true,

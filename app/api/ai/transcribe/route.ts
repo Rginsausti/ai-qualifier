@@ -17,11 +17,7 @@ export async function POST(req: Request) {
     const groqFormData = new FormData();
     groqFormData.append("file", file, "recording.webm");
     groqFormData.append("model", "whisper-large-v3");
-    groqFormData.append("language", "es"); // Force Spanish for better accuracy
-    groqFormData.append("response_format", "verbose_json"); // Get more details
-    groqFormData.append("temperature", "0"); // More deterministic transcription
-
-    console.log("Transcribing audio with Groq Whisper...");
+    groqFormData.append("response_format", "json");
 
     const response = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
       method: "POST",
@@ -38,8 +34,6 @@ export async function POST(req: Request) {
     }
 
     const data = await response.json();
-    console.log("Transcription successful:", data.text);
-
     return NextResponse.json({ text: data.text });
 
   } catch (error) {

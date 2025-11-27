@@ -2,65 +2,6 @@
 
 import { getSupabaseServiceClient } from "@/lib/supabase/server-client";
 import { cookies } from "next/headers";
-
-// ============================================================================
-// Type Definitions
-// ============================================================================
-
-/**
- * Represents a daily ritual/habit completion
- */
-export type DailyRitual = {
-    id?: string;
-    user_id?: string;
-    ritual_type: 'morning' | 'lunch' | 'snack' | 'dinner' | 'bedtime';
-    completed_at?: string;
-    notes?: string;
-    created_at?: string;
-};
-
-/**
- * Represents a pantry inventory item
- */
-export type PantryItem = {
-    id?: string;
-    user_id?: string;
-    item_name: string;
-    category?: 'protein' | 'carbs' | 'vegetables' | 'fruits' | 'snacks' | 'beverages';
-    quantity?: number;
-    unit?: 'kg' | 'g' | 'L' | 'ml' | 'units';
-    expiry_date?: string;
-    notes?: string;
-    created_at?: string;
-    updated_at?: string;
-};
-
-/**
- * Represents a mindful moment/mood check-in
- */
-export type MindfulMoment = {
-    id?: string;
-    user_id?: string;
-    moment_type: 'energy' | 'hunger' | 'mood' | 'stress';
-    value: string; // e.g., 'high', 'medium', 'low', 'happy', 'anxious'
-    notes?: string;
-    location_lat?: number;
-    location_lng?: number;
-    created_at?: string;
-};
-
-/**
- * Represents a physical activity session
- */
-export type PhysicalActivity = {
-    id?: string;
-    user_id?: string;
-    activity_type: 'walk' | 'run' | 'yoga' | 'gym' | 'other';
-    duration_minutes?: number;
-    distance_km?: number;
-    notes?: string;
-    created_at?: string;
-};
 import { createClient } from "@/lib/supabase/server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -108,7 +49,7 @@ export async function saveOnboardingData(data: any, userId?: string) {
 export async function getUserProfile(userId?: string) {
     const cookieStore = await cookies();
     const profileCookie = cookieStore.get("user_profile_temp");
-
+    
     // 1. Try Cookie First (Fastest)
     if (profileCookie) {
         try {
@@ -126,7 +67,7 @@ export async function getUserProfile(userId?: string) {
             .select("*")
             .eq("user_id", userId)
             .single();
-
+            
         if (!error && data) {
             return data;
         }
@@ -166,20 +107,20 @@ export async function saveQuickLog(data: {
 
 export async function getRecentQuickLogs(userId: string, limit = 3) {
     const supabase = getSupabaseServiceClient();
-
+    
     const { data } = await supabase
         .from("quick_logs")
         .select("*")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(limit);
-
+        
     return data || [];
 }
 
 export async function calculateStreak(userId: string) {
     const supabase = getSupabaseServiceClient();
-
+    
     // Fetch dates of all logs
     const { data } = await supabase
         .from("quick_logs")
@@ -189,7 +130,7 @@ export async function calculateStreak(userId: string) {
 
     if (!data || data.length === 0) return 0;
 
-    const uniqueDates = Array.from(new Set(data.map(log =>
+    const uniqueDates = Array.from(new Set(data.map(log => 
         new Date(log.created_at).toISOString().split('T')[0]
     )));
 
@@ -280,34 +221,17 @@ export async function logWater(amount: number) {
 }
 
 export async function getDailyStats(userId: string) {
-    const supabase = await createClient();
-
+    const supabase = getSupabaseServiceClient();
+    
     // Debug: Log the time we are querying for
-    const cookieStore = await cookies();
-    const timezone = cookieStore.get("user_timezone")?.value || "UTC";
-
     const now = new Date();
-
-    // Calculate start of day in user's timezone
-    // We manually adjust because date-fns-tz might be overkill if we just want offset,
-    // but let's try a robust way using native Intl if we want to avoid deps, 
-    // OR just use the offset logic if we trust the cookie.
-
-    // Actually, let's use a simple offset approach since we don't want to break the build 
-    // if date-fns-tz types are tricky.
-    // But wait, I installed date-fns-tz. Let's use it.
-
-    // Dynamic import to avoid top-level failures if package issues
-    const { toZonedTime, fromZonedTime } = require('date-fns-tz');
-
-    const zonedNow = toZonedTime(now, timezone);
-    const zonedStartOfDay = new Date(zonedNow);
-    zonedStartOfDay.setHours(0, 0, 0, 0);
-
-    const startOfDayUTC = fromZonedTime(zonedStartOfDay, timezone);
-    const startTime = startOfDayUTC.toISOString();
-
-    console.log(`getDailyStats: Querying for user ${userId} since ${startTime} (Timezone: ${timezone})`);
+    // Rolling 24h window to ensure we see data if timezone logic is tricky
+    // This is a temporary fix to verify data persistence.
+    // Ideally we want "Start of Local Day", but we don't know user's offset easily here.
+    // We'll query for the last 24 hours.
+    const startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+    
+    console.log(`getDailyStats: Querying for user ${userId} since ${startTime}`);
 
     // Get Nutrition
     const { data: nutritionData, error: nutritionError } = await supabase
@@ -326,7 +250,7 @@ export async function getDailyStats(userId: string) {
         .gte("created_at", startTime);
 
     if (waterError) console.error("getDailyStats: Water Error", waterError);
-
+    
     console.log(`getDailyStats: Found ${waterData?.length || 0} water logs`);
 
     // Get Goals
@@ -374,26 +298,27 @@ export async function analyzeFoodFromText(text: string) {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                model: "llama-3.3-70b-versatile", // Updated to active model
+                model: "llama-3.3-70b-versatile",
                 messages: [
                     {
                         role: "system",
-                        content: `Eres un nutricionista experto. Analiza el texto del usuario y extrae información nutricional.
+                        content: `Eres un nutricionista experto. Analiza el texto del usuario y determina si describe comida/bebida con calorías o una toma de agua/hidratación.
                         Responde SOLO con JSON válido, sin markdown ni explicaciones.
                         Formato:
                         {
-                            "name": "nombre del alimento",
-                            "calories": número_de_calorías,
-                            "protein": gramos_de_proteína,
+                            "type": "food" | "water",
+                            "name": "nombre del alimento o bebida",
+                            "calories": numero_de_calorias,
+                            "protein": gramos_de_proteina,
                             "carbs": gramos_de_carbohidratos,
-                            "fats": gramos_de_grasas
+                            "fats": gramos_de_grasas,
+                            "water_ml": mililitros_de_agua
                         }
-                        
-                        Ejemplos:
-                        - "3 huevos duros" = {"name": "3 huevos duros", "calories": 234, "protein": 19, "carbs": 2, "fats": 16}
-                        - "taza de café" = {"name": "café negro", "calories": 2, "protein": 0, "carbs": 0, "fats": 0}
-                        
-                        Si no puedes determinar la información, usa estimaciones razonables.`
+                        Reglas:
+                        - Si el texto se refiere a agua (vasos, botellas, litros, etc.), establece type="water", fija macros y calorías en 0 e infiere water_ml (1 vaso estándar = 250 ml, 1 botella pequeña = 500 ml, 1 litro = 1000 ml).
+                        - Si describe comida o bebidas con calorías, establece type="food" y calcula macros/calorías (water_ml = 0).
+                        - Si mezcla ambos, prioriza el elemento principal del mensaje.
+                        - Usa la mejor estimación posible cuando falte información.`
                     },
                     {
                         role: "user",
@@ -415,25 +340,31 @@ export async function analyzeFoodFromText(text: string) {
         console.log("analyzeFoodFromText: Full response:", JSON.stringify(data, null, 2));
 
         const content = data.choices[0].message.content;
-        console.log("analyzeFoodFromText: Content:", content);
-
-        // Try to parse JSON, handling markdown code blocks
-        let jsonContent = content.trim();
-
-        // Remove markdown code blocks if present
-        if (jsonContent.startsWith("```")) {
-            jsonContent = jsonContent.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+        if (!content) {
+            console.error("analyzeFoodFromText: Empty content");
+            return null;
         }
 
-        const parsed = JSON.parse(jsonContent);
-        console.log("analyzeFoodFromText: Parsed successfully:", parsed);
+        let jsonContent = content.trim();
+        if (jsonContent.startsWith("```")) {
+            jsonContent = jsonContent
+                .replace(/```json\n?/g, "")
+                .replace(/```\n?/g, "")
+                .trim();
+        }
 
-        return parsed;
+        try {
+            const parsed = JSON.parse(jsonContent);
+            console.log("analyzeFoodFromText: Parsed successfully:", parsed);
+            return parsed;
+        } catch (parseError) {
+            console.error("analyzeFoodFromText: JSON parse error", parseError, jsonContent);
+            return null;
+        }
     } catch (error) {
         console.error("analyzeFoodFromText: Exception:", error);
         if (error instanceof Error) {
             console.error("analyzeFoodFromText: Error message:", error.message);
-            console.error("analyzeFoodFromText: Error stack:", error.stack);
         }
         return null;
     }

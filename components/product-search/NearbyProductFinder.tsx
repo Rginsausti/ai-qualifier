@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Image from 'next/image';
+import { MapPin, Search, AlertCircle, Loader2, ShoppingBag, Tag, Navigation } from 'lucide-react';
 
 export type ProductResult = {
     product_name: string;
@@ -15,6 +16,8 @@ export type ProductResult = {
     store_name: string;
     store_brand?: string;
     distance_meters: number;
+    store_lat: number;
+    store_lon: number;
 };
 
 type SearchResults = {
@@ -22,6 +25,7 @@ type SearchResults = {
     stores_searched: number;
     cache_hit: boolean;
     search_latency_ms: number;
+    filtered_out_count?: number;
 };
 
 export default function NearbyProductFinder() {
@@ -99,54 +103,42 @@ export default function NearbyProductFinder() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             {/* Header */}
-            <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {t('productSearch.title')}
+            <div className="space-y-2">
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                    {t('productSearch.badge', 'Explorador Local')}
+                </p>
+                <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
+                    {t('productSearch.title', 'Encuentra productos cercanos')}
                 </h2>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    {t('productSearch.subtitle')}
+                <p className="text-base text-slate-600">
+                    {t('productSearch.subtitle', 'Busca opciones saludables en tiendas a tu alrededor.')}
                 </p>
             </div>
 
             {/* Geolocation Request */}
             {!location && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 text-center">
-                    <svg
-                        className="mx-auto h-12 w-12 text-blue-500"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                    </svg>
-                    <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-                        {t('productSearch.locationRequired')}
+                <div className="rounded-3xl border border-white/60 bg-white/80 p-8 text-center shadow-xl shadow-emerald-100">
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                        <MapPin className="h-8 w-8" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-slate-900">
+                        {t('productSearch.locationRequired', 'Necesitamos tu ubicación')}
                     </h3>
-                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                        {t('productSearch.locationDescription')}
+                    <p className="mt-2 text-slate-500">
+                        {t('productSearch.locationDescription', 'Para mostrarte productos disponibles cerca de ti, necesitamos acceder a tu ubicación actual.')}
                     </p>
                     <button
                         onClick={requestLocation}
-                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        className="mt-6 inline-flex items-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/20 transition hover:bg-slate-800 hover:-translate-y-0.5"
                     >
-                        {t('productSearch.enableLocation')}
+                        <Navigation className="h-4 w-4" />
+                        {t('productSearch.enableLocation', 'Activar ubicación')}
                     </button>
                     {locationDenied && (
-                        <p className="mt-2 text-sm text-red-600 dark:text-red-400">
-                            {t('productSearch.locationDeniedHelp')}
+                        <p className="mt-4 text-sm text-rose-500">
+                            {t('productSearch.locationDeniedHelp', 'Por favor, habilita la ubicación en la configuración de tu navegador.')}
                         </p>
                     )}
                 </div>
@@ -154,63 +146,90 @@ export default function NearbyProductFinder() {
 
             {/* Search Input */}
             {location && (
-                <div className="flex gap-2">
-                    <input
-                        type="text"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                        placeholder={t('productSearch.searchPlaceholder')}
-                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
-                    />
+                <div className="relative flex items-center gap-3 rounded-3xl border border-white/60 bg-white/80 p-2 shadow-lg shadow-emerald-100/50">
+                    <div className="flex-1 px-4">
+                        <input
+                            type="text"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                            placeholder={t('productSearch.searchPlaceholder', 'Ej: Leche de almendras, Tofu, Manzanas...')}
+                            className="w-full bg-transparent text-lg text-slate-900 placeholder:text-slate-400 focus:outline-none"
+                        />
+                    </div>
                     <button
                         onClick={handleSearch}
                         disabled={loading}
-                        className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-white shadow-md transition hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {loading ? t('common.loading') : t('common.search')}
+                        {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
                     </button>
                 </div>
             )}
 
             {/* Error Message */}
             {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                    <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+                <div className="flex items-center gap-3 rounded-2xl border border-rose-100 bg-rose-50/50 p-4 text-rose-700">
+                    <AlertCircle className="h-5 w-5 shrink-0" />
+                    <p className="text-sm font-medium">{error}</p>
                 </div>
             )}
 
             {/* Loading State */}
             {loading && (
-                <div className="text-center py-8">
-                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-blue-600"></div>
-                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        {t('productSearch.searching')}
+                <div className="py-12 text-center">
+                    <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-emerald-500" />
+                    <p className="mt-4 text-sm font-medium text-slate-500 animate-pulse">
+                        {t('productSearch.searching', 'Buscando las mejores opciones para ti...')}
                     </p>
                 </div>
             )}
 
             {/* Results */}
             {results && !loading && (
-                <div>
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {t('productSearch.resultsFound', { count: results.products.length })}
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between px-2">
+                        <h3 className="text-lg font-semibold text-slate-900">
+                            {t('productSearch.resultsFound', { count: results.products.length, defaultValue: `${results.products.length} resultados encontrados` })}
                         </h3>
-                        <div className="text-xs text-gray-500">
+                        <div className="flex items-center gap-3 text-xs font-medium text-slate-500">
                             {results.cache_hit && (
-                                <span className="mr-2">📦 {t('productSearch.cached')}</span>
+                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-amber-700">
+                                    <Tag className="h-3 w-3" />
+                                    {t('productSearch.cached', 'Cache')}
+                                </span>
                             )}
-                            <span>{results.stores_searched} {t('productSearch.storesSearched')}</span>
+                            <span className="rounded-full bg-slate-100 px-2 py-1">
+                                {results.stores_searched} {t('productSearch.storesSearched', 'tiendas')}
+                            </span>
+                            {results.filtered_out_count ? (
+                                <span className="rounded-full bg-rose-50 px-2 py-1 text-rose-600">
+                                    {t('productSearch.filteredOut', {
+                                        count: results.filtered_out_count,
+                                        defaultValue: `${results.filtered_out_count} filtrados por tus preferencias`
+                                    })}
+                                </span>
+                            ) : null}
                         </div>
                     </div>
 
                     {results.products.length === 0 ? (
-                        <div className="text-center py-8 text-gray-500">
-                            {t('productSearch.noResults')}
+                        <div className="rounded-3xl border border-dashed border-slate-300 p-12 text-center">
+                            <ShoppingBag className="mx-auto h-12 w-12 text-slate-300" />
+                            <p className="mt-4 text-slate-500">
+                                {t('productSearch.noResults', 'No encontramos productos que coincidan con tu búsqueda en esta zona.')}
+                            </p>
+                            {results.filtered_out_count ? (
+                                <p className="mt-2 text-sm text-rose-500">
+                                    {t('productSearch.filteredOutHint', {
+                                        count: results.filtered_out_count,
+                                        defaultValue: `Omitimos ${results.filtered_out_count} opciones que no son aptas para tus preferencias.`
+                                    })}
+                                </p>
+                            ) : null}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                             {results.products.map((product, index) => (
                                 <ProductCard key={index} product={product} />
                             ))}
@@ -222,7 +241,7 @@ export default function NearbyProductFinder() {
     );
 }
 
-// Product Card Component (extracted for clarity)
+// Product Card Component
 function ProductCard({ product }: { product: ProductResult }) {
     const { t } = useTranslation();
 
@@ -231,53 +250,48 @@ function ProductCard({ product }: { product: ProductResult }) {
         : 0;
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
+        <article className="group relative flex flex-col overflow-hidden rounded-3xl border border-white/60 bg-white/80 shadow-sm transition hover:shadow-xl hover:shadow-emerald-100/50">
             {/* Product Image */}
-            {product.image_url && (
-                <div className="relative h-32 mb-3 bg-gray-100 dark:bg-gray-700 rounded-md">
+            <div className="relative aspect-square bg-slate-50 p-6">
+                {product.image_url ? (
                     <Image
                         src={product.image_url}
                         alt={product.product_name}
                         fill
-                        className="object-contain p-2"
+                        className="object-contain transition group-hover:scale-105"
                     />
-                </div>
-            )}
+                ) : (
+                    <div className="flex h-full w-full items-center justify-center text-slate-300">
+                        <ShoppingBag className="h-12 w-12" />
+                    </div>
+                )}
+                {discount > 0 && (
+                    <span className="absolute left-4 top-4 rounded-full bg-rose-500 px-2 py-1 text-xs font-bold text-white shadow-sm">
+                        -{discount}%
+                    </span>
+                )}
+            </div>
 
             {/* Product Info */}
-            <div className="space-y-2">
-                <h4 className="font-medium text-gray-900 dark:text-white line-clamp-2">
-                    {product.product_name}
-                </h4>
-
-                {product.brand && (
-                    <p className="text-xs text-gray-600 dark:text-gray-400">{product.brand}</p>
-                )}
-
-                {/* Price */}
-                <div className="flex items-baseline gap-2">
-                    <span className="text-xl font-bold text-green-600">
-                        ${product.price_current.toFixed(2)}
-                    </span>
-                    {product.price_regular && (
-                        <>
-                            <span className="text-sm line-through text-gray-500">
-                                ${product.price_regular.toFixed(2)}
-                            </span>
-                            <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
-                                -{discount}%
-                            </span>
-                        </>
+            <div className="flex flex-1 flex-col p-5">
+                <div className="mb-2">
+                    {product.brand && (
+                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                            {product.brand}
+                        </p>
                     )}
+                    <h4 className="mt-1 font-medium text-slate-900 line-clamp-2">
+                        {product.product_name}
+                    </h4>
                 </div>
 
                 {/* Nutritional Claims */}
                 {product.nutritional_claims && product.nutritional_claims.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
+                    <div className="mb-4 flex flex-wrap gap-1.5">
                         {product.nutritional_claims.slice(0, 3).map((claim, i) => (
                             <span
                                 key={i}
-                                className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded"
+                                className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-[10px] font-medium text-emerald-700"
                             >
                                 {claim}
                             </span>
@@ -285,14 +299,38 @@ function ProductCard({ product }: { product: ProductResult }) {
                     </div>
                 )}
 
-                {/* Store Info */}
-                <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
-                        <span className="font-medium">{product.store_brand || product.store_name}</span>
-                        <span>{Math.round(product.distance_meters)}m</span>
+                <div className="mt-auto pt-4 border-t border-slate-100">
+                    <div className="flex items-end justify-between">
+                        <div>
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-xl font-bold text-slate-900">
+                                    ${product.price_current.toFixed(2)}
+                                </span>
+                                {product.price_regular && (
+                                    <span className="text-xs text-slate-400 line-through">
+                                        ${product.price_regular.toFixed(2)}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="mt-1 flex items-center gap-1 text-xs text-slate-500">
+                                <MapPin className="h-3 w-3" />
+                                <span className="font-medium">{product.store_brand || product.store_name}</span>
+                                <span>·</span>
+                                <span>{Math.round(product.distance_meters)}m</span>
+                            </div>
+                        </div>
+                        <a
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${product.store_lat},${product.store_lon}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-emerald-100 hover:text-emerald-700"
+                            title={t('productSearch.directions', 'Cómo llegar')}
+                        >
+                            <Navigation className="h-4 w-4" />
+                        </a>
                     </div>
                 </div>
             </div>
-        </div>
+        </article>
     );
 }

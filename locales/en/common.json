@@ -526,6 +526,18 @@
       "recipes": {
         "title": "Contextual recipes",
         "detail": "Suggestions aware of your ingredients, weather, and budget."
+      },
+      "mood": {
+        "title": "Mood and hunger",
+        "stat": "Energy on track",
+        "detail": "A sweet craving shows up around 5 p.m., so we prepare a spiced snack.",
+        "badge": "Fresh tip"
+      },
+      "places": {
+        "title": "Allied spots",
+        "stat": "4 open right now",
+        "detail": "Green Mood, Huerta Viva, and two organic shops within 400 m.",
+        "badge": "Walkable mode"
       }
     }
   },
@@ -600,5 +612,26 @@
       "description": "I know your goals and preferences. Ask me what to eat, how to replace an ingredient, or tell me how you feel."
     },
     "inputPlaceholder": "Type your message..."
+  },
+  "productSearch": {
+    "title": "Search nearby products",
+    "subtitle": "Find the best prices in supermarkets in your area",
+    "locationRequired": "We need your location",
+    "locationDescription": "To show you nearby products, we need access to your location.",
+    "enableLocation": "Enable location",
+    "locationDeniedHelp": "Please enable location access in your browser settings.",
+    "searchPlaceholder": "What are you looking for? (e.g., skim milk)",
+    "searching": "Searching for products in nearby stores...",
+    "resultsFound": "{{count}} products found",
+    "cached": "Cached",
+    "storesSearched": "stores searched",
+    "noResults": "No products found. Try another search."
+  },
+  "errors": {
+    "geolocationNotSupported": "Your browser doesn't support geolocation",
+    "locationDenied": "Location permission denied",
+    "locationRequired": "We need your location to search",
+    "queryTooShort": "Search must be at least 2 characters",
+    "searchFailed": "Error searching for products. Try again."
   }
 }
