@@ -69,12 +69,26 @@
       "calories": "Calorias",
       "goal": "de",
       "ready": "completo",
-      "avatarAlt": "Ilustração da Alma a sorrir"
+      "avatarAlt": "Ilustração da Alma sorrindo",
+      "dynamic": {
+        "title": "Energia {{energy}}, desejo {{craving}}",
+        "description": "A fome está {{hunger}}. Ajustamos o ritual em tempo real.",
+        "energyFallback": "estável",
+        "cravingFallback": "neutro"
+      }
     },
     "mindful": {
       "energy": "Energia",
       "hunger": "Desejo",
-      "mood": "Humor"
+      "mood": "Ânimo",
+      "emptyValue": "Pendente",
+      "defaultMood": "curiosa",
+      "moodStates": {
+        "bright": "expansiva",
+        "soft": "serena",
+        "focused": "focada",
+        "curious": "curiosa"
+      }
     },
     "plan": {
       "morning": {
@@ -443,7 +457,41 @@
       "time": "Menos de um minuto para registrar o dia",
       "result": "Termine com um prato ou plano B pronto"
     },
-    "cta": "Ver mapa de decisões"
+    "cta": "Acalmar desejo",
+    "form": {
+      "badge": "Laboratório de swaps",
+      "title": "Conte qual junk food está te chamando",
+      "description": "Usamos seu perfil e metas para sugerir alternativas gostosas que saciam o desejo sem sair do plano.",
+      "errorRequired": "Descreva pelo menos um desejo para que possamos ajudar.",
+      "treats": "Qual junk food você está desejando?",
+      "placeholder": "Ex.: batata frita, sorvete de doce de leite, croissant",
+      "type": {
+        "label": "Tipo de desejo",
+        "sweet": "Doce",
+        "savory": "Salgado",
+        "crunchy": "Crocante",
+        "fried": "Frito"
+      },
+      "intensity": {
+        "label": "Intensidade",
+        "light": "Leve",
+        "medium": "Moderada",
+        "heavy": "Muito forte"
+      },
+      "time": {
+        "label": "Momento do dia",
+        "morning": "Manhã",
+        "afternoon": "Tarde",
+        "evening": "Noite"
+      },
+      "submit": "Gerar swaps",
+      "swapLabel": "Alternativa",
+      "reason": "Por que funciona",
+      "prep": "Mini plano",
+      "stepByStepCta": "Seguir passo a passo",
+      "videoCta": "Ver tutorial no YouTube",
+      "stepByStepPrompt": "Preciso que você me guie passo a passo para preparar {{recipe}}. Use este mini plano como base: {{plan}}. Espere minha confirmação antes de avançar para o próximo passo."
+    }
   },
   "livePanelSection": {
     "badge": "Painel ao vivo",

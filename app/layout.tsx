@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/components/i18n-provider";
@@ -18,16 +18,10 @@ export const metadata: Metadata = {
   description:
     "SPA educativa que registra tus rutinas, gestiona tu despensa y te acompaña a comer cada día más saludable.",
   manifest: "/manifest.webmanifest",
-  themeColor: "#0f172a",
   appleWebApp: {
     capable: true,
     title: "Agente Alma",
     statusBarStyle: "black-translucent",
-  },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    viewportFit: "cover",
   },
   icons: {
     icon: [
@@ -38,6 +32,13 @@ export const metadata: Metadata = {
       { url: "/images/girl-avatar.png" },
     ],
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0f172a",
 };
 
 export default function RootLayout({

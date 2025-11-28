@@ -18,7 +18,7 @@
       "seedTitle": "Créer utilisateur test",
       "seedDescription": "Générez un accès rapide pour tester la bêta.",
       "seedCta": "Créer utilisateur",
-      "seedEmailPlaceholder": "demo@email.com",
+      "seedEmailPlaceholder": "test@email.com",
       "seedPasswordPlaceholder": "min. 6 caractères",
       "errors": {
         "missingFields": "Veuillez remplir tous les champs.",
@@ -69,12 +69,26 @@
       "calories": "Calories",
       "goal": "sur",
       "ready": "terminé",
-      "avatarAlt": "Illustration d'Alma souriante"
+      "avatarAlt": "Illustration d'Alma souriante",
+      "dynamic": {
+        "title": "Énergie {{energy}}, envie {{craving}}",
+        "description": "Ta faim est {{hunger}}. On ajuste le rituel en temps réel.",
+        "energyFallback": "stable",
+        "cravingFallback": "neutre"
+      }
     },
     "mindful": {
       "energy": "Énergie",
       "hunger": "Envie",
-      "mood": "Humeur"
+      "mood": "Humeur",
+      "emptyValue": "En attente",
+      "defaultMood": "curieuse",
+      "moodStates": {
+        "bright": "rayonnante",
+        "soft": "douce",
+        "focused": "concentrée",
+        "curious": "curieuse"
+      }
     },
     "plan": {
       "morning": {
@@ -443,7 +457,41 @@
       "time": "Moins d'une minute pour résumer la journée",
       "result": "Vous repartez avec un plat ou un plan B prêt"
     },
-    "cta": "Voir la carte des décisions"
+    "cta": "Apaiser une envie",
+    "form": {
+      "badge": "Laboratoire de swaps",
+      "title": "Dis-moi quelle junk food t'appelle",
+      "description": "On utilise ton profil et tes objectifs pour te proposer des alternatives gourmandes qui calment l'envie sans culpabilité.",
+      "errorRequired": "Décris au moins une envie pour que je puisse agir.",
+      "treats": "Quelle junk food te fait de l'œil ?",
+      "placeholder": "Ex : frites, glace dulce de leche, croissants",
+      "type": {
+        "label": "Type d'envie",
+        "sweet": "Sucré",
+        "savory": "Salé",
+        "crunchy": "Croquant",
+        "fried": "Frit"
+      },
+      "intensity": {
+        "label": "Intensité",
+        "light": "Légère",
+        "medium": "Moyenne",
+        "heavy": "Très forte"
+      },
+      "time": {
+        "label": "Moment de la journée",
+        "morning": "Matin",
+        "afternoon": "Après-midi",
+        "evening": "Soir"
+      },
+      "submit": "Générer des swaps",
+      "swapLabel": "Alternative",
+      "reason": "Pourquoi ça aide",
+      "prep": "Mini plan",
+      "stepByStepCta": "Suivre étape par étape",
+      "videoCta": "Voir le tutoriel YouTube",
+      "stepByStepPrompt": "Guide-moi étape par étape pour préparer {{recipe}}. Utilise ce mini plan comme base : {{plan}}. Attends ma confirmation avant de passer à l'étape suivante."
+    }
   },
   "livePanelSection": {
     "badge": "Panneau en direct",

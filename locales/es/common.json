@@ -69,12 +69,26 @@
       "calories": "Calorías",
       "goal": "de",
       "ready": "completado",
-      "avatarAlt": "Ilustración de Alma sonriendo"
+      "avatarAlt": "Ilustración de Alma sonriendo",
+      "dynamic": {
+        "title": "Energía {{energy}}, antojo {{craving}}",
+        "description": "Tu hambre se siente {{hunger}}. Ajustamos el ritual en tiempo real.",
+        "energyFallback": "estable",
+        "cravingFallback": "neutral"
+      }
     },
     "mindful": {
       "energy": "Energía",
       "hunger": "Antojo",
-      "mood": "Ánimo"
+      "mood": "Ánimo",
+      "emptyValue": "Pendiente",
+      "defaultMood": "curiosa",
+      "moodStates": {
+        "bright": "expansiva",
+        "soft": "serena",
+        "focused": "determinada",
+        "curious": "curiosa"
+      }
     },
     "plan": {
       "morning": {
@@ -443,7 +457,41 @@
       "time": "Registrás tu día en menos de un minuto.",
       "result": "Terminás con un plato o plan B cercano listo para ejecutar."
     },
-    "cta": "Chatear con Alma"
+    "cta": "Desactivar antojo",
+    "form": {
+      "badge": "Laboratorio de swaps",
+      "title": "Contame qué comida chatarra te tienta",
+      "description": "Usamos tu perfil y tus objetivos para sugerir reemplazos ricos que calman el antojo sin sabotearte.",
+      "errorRequired": "Necesito que nombres al menos un antojo.",
+      "treats": "¿Qué comida chatarra te llama?",
+      "placeholder": "Ej: papas fritas, helado de dulce de leche, medialunas",
+      "type": {
+        "label": "Tipo de antojo",
+        "sweet": "Dulce",
+        "savory": "Salado",
+        "crunchy": "Crocante",
+        "fried": "Frito"
+      },
+      "intensity": {
+        "label": "Intensidad",
+        "light": "Tranqui",
+        "medium": "Moderada",
+        "heavy": "Muy fuerte"
+      },
+      "time": {
+        "label": "Momento del día",
+        "morning": "Mañana",
+        "afternoon": "Tarde",
+        "evening": "Noche"
+      },
+      "submit": "Calcular swaps",
+      "swapLabel": "Alternativa",
+      "reason": "¿Por qué funciona?",
+      "prep": "Mini plan",
+      "stepByStepCta": "Seguir paso a paso",
+      "videoCta": "Ver tutorial en YouTube",
+      "stepByStepPrompt": "Necesito que me guíes paso a paso para preparar {{recipe}}. Usa este mini plan como base: {{plan}}. Pedime confirmación antes de avanzar a cada paso."
+    }
   },
   "livePanelSection": {
     "badge": "Panel en vivo",

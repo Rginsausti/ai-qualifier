@@ -35,12 +35,26 @@
       "calories": "カロリー",
       "goal": "の",
       "ready": "完了",
-      "avatarAlt": "笑顔のAlmaのイラスト"
+      "avatarAlt": "笑顔のAlmaのイラスト",
+      "dynamic": {
+        "title": "エネルギー{{energy}}・欲{{craving}}",
+        "description": "空腹感は{{hunger}}。リアルタイムでリチュアルを調整します。",
+        "energyFallback": "安定",
+        "cravingFallback": "ニュートラル"
+      }
     },
     "mindful": {
       "energy": "エネルギー",
       "hunger": "欲求",
-      "mood": "気分"
+      "mood": "気分",
+      "emptyValue": "未入力",
+      "defaultMood": "好奇心",
+      "moodStates": {
+        "bright": "晴れやか",
+        "soft": "やわらかい",
+        "focused": "集中",
+        "curious": "好奇心"
+      }
     },
     "plan": {
       "morning": {
@@ -409,7 +423,41 @@
       "time": "1分以内で記録完了",
       "result": "すぐ作れる料理か近くのプランBを提示"
     },
-    "cta": "意思決定マップを見る"
+    "cta": "欲求を落ち着かせる",
+    "form": {
+      "badge": "欲求スワップラボ",
+      "title": "心をざわつかせるジャンクフードを教えて",
+      "description": "あなたのプロフィールと目標をもとに、罪悪感なく満たせる代替案を提案します。",
+      "errorRequired": "サポートできるよう、少なくとも1つ欲しているものを書いてください。",
+      "treats": "今欲しいジャンクフードは？",
+      "placeholder": "例: フライドポテト、キャラメルアイス、クロワッサン",
+      "type": {
+        "label": "欲求のタイプ",
+        "sweet": "甘いもの",
+        "savory": "しょっぱい",
+        "crunchy": "カリカリ",
+        "fried": "揚げ物"
+      },
+      "intensity": {
+        "label": "強さ",
+        "light": "控えめ",
+        "medium": "ふつう",
+        "heavy": "とても強い"
+      },
+      "time": {
+        "label": "時間帯",
+        "morning": "朝",
+        "afternoon": "午後",
+        "evening": "夜"
+      },
+      "submit": "スワップを提案",
+      "swapLabel": "代替案",
+      "reason": "合う理由",
+      "prep": "ミニプラン",
+      "stepByStepCta": "ステップで進める",
+      "videoCta": "YouTubeチュートリアルを見る",
+      "stepByStepPrompt": "{{recipe}} を作るためにステップごとにガイドしてください。このミニプランをベースにして: {{plan}}。各ステップの前に私の確認を待ってください。"
+    }
   },
   "livePanelSection": {
     "badge": "ライブパネル",

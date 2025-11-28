@@ -23,8 +23,35 @@ type MealLog = {
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
+type IncomingMessage = {
+  role?: "user" | "assistant";
+  content?: string;
+};
+
+const jsonResponse = (body: Record<string, unknown>, status = 400) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+
 export async function POST(req: Request) {
-  const { messages, locale, userId } = await req.json();
+  const payload = await req.json();
+  const locale = typeof payload?.locale === "string" ? payload.locale : undefined;
+  const userId = typeof payload?.userId === "string" ? payload.userId : undefined;
+  const rawMessages: IncomingMessage[] = Array.isArray(payload?.messages) ? payload.messages : [];
+
+  const sanitizedMessages = rawMessages
+    .filter((message): message is Required<IncomingMessage> =>
+      Boolean(message?.content && message.content.trim() && message?.role)
+    )
+    .map((message) => ({
+      role: message.role,
+      content: message.content.trim(),
+    }));
+
+  if (sanitizedMessages.length === 0) {
+    return jsonResponse({ error: "Missing chat messages" });
+  }
 
   // 1. Memory System: Fetch User Profile & Recent Logs
   // Instead of generic RAG, we inject the specific user context ("Memory")
@@ -99,12 +126,12 @@ export async function POST(req: Request) {
     const result = await streamText({
       model: groq("llama-3.3-70b-versatile"),
       system: systemPrompt,
-      messages,
+      messages: sanitizedMessages,
     });
 
     return result.toTextStreamResponse();
   } catch (error) {
     console.error("Error calling Groq:", error);
-    return new Response("Error processing request", { status: 500 });
+    return jsonResponse({ error: "Error processing request" }, 500);
   }
 }

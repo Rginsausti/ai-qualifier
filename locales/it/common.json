@@ -35,12 +35,26 @@
       "calories": "Calorie",
       "goal": "di",
       "ready": "completato",
-      "avatarAlt": "Illustrazione di Alma che sorride"
+      "avatarAlt": "Illustrazione di Alma che sorride",
+      "dynamic": {
+        "title": "Energia {{energy}}, desiderio {{craving}}",
+        "description": "La fame è {{hunger}}. Regoliamo il rituale in tempo reale.",
+        "energyFallback": "stabile",
+        "cravingFallback": "neutro"
+      }
     },
     "mindful": {
       "energy": "Energia",
       "hunger": "Desiderio",
-      "mood": "Umore"
+      "mood": "Umore",
+      "emptyValue": "In attesa",
+      "defaultMood": "curiosa",
+      "moodStates": {
+        "bright": "radiosa",
+        "soft": "serena",
+        "focused": "focalizzata",
+        "curious": "curiosa"
+      }
     },
     "plan": {
       "morning": {
@@ -409,7 +423,41 @@
       "time": "Meno di un minuto per registrare la giornata",
       "result": "Fini con un piatto o un piano B pronto all'uso"
     },
-    "cta": "Vedi la mappa delle decisioni"
+    "cta": "Calma una voglia",
+    "form": {
+      "badge": "Laboratorio di swap",
+      "title": "Dimmi quale junk food ti tenta",
+      "description": "Usiamo il tuo profilo e i tuoi obiettivi per proporre alternative gustose che placano la voglia senza sabotarti.",
+      "errorRequired": "Inserisci almeno una voglia da lavorare.",
+      "treats": "Quale junk food desideri?",
+      "placeholder": "Es: patatine fritte, gelato al dulce de leche, cornetti",
+      "type": {
+        "label": "Tipo di voglia",
+        "sweet": "Dolce",
+        "savory": "Salata",
+        "crunchy": "Croccante",
+        "fried": "Fritta"
+      },
+      "intensity": {
+        "label": "Intensità",
+        "light": "Leggera",
+        "medium": "Media",
+        "heavy": "Molto forte"
+      },
+      "time": {
+        "label": "Momento della giornata",
+        "morning": "Mattina",
+        "afternoon": "Pomeriggio",
+        "evening": "Sera"
+      },
+      "submit": "Genera swap",
+      "swapLabel": "Alternativa",
+      "reason": "Perché funziona",
+      "prep": "Mini piano",
+      "stepByStepCta": "Segui passo dopo passo",
+      "videoCta": "Apri tutorial su YouTube",
+      "stepByStepPrompt": "Guidami passo dopo passo per preparare {{recipe}}. Usa questo mini piano come base: {{plan}}. Aspetta la mia conferma prima di passare allo step successivo."
+    }
   },
   "livePanelSection": {
     "badge": "Pannello live",

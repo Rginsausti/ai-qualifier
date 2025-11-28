@@ -47,18 +47,24 @@ export function QuickLogPanel({
   notes,
   onNotesChange,
   onVoiceClick,
+  energy,
+  onEnergyChange,
+  hunger,
+  onHungerChange,
+  craving,
+  onCravingChange,
 }: {
   notes: string;
   onNotesChange: (notes: string) => void;
   onVoiceClick: () => void;
+  energy: "high" | "medium" | "low" | null;
+  onEnergyChange: (value: "high" | "medium" | "low" | null) => void;
+  hunger: number;
+  onHungerChange: (value: number) => void;
+  craving: "sweet" | "savory" | "fresh" | null;
+  onCravingChange: (value: "sweet" | "savory" | "fresh" | null) => void;
 }) {
   const { t } = useTranslation();
-  const [energy, setEnergy] = useState<"high" | "medium" | "low" | null>(null);
-  const [hunger, setHunger] = useState(3);
-  const [craving, setCraving] = useState<"sweet" | "savory" | "fresh" | null>(
-    null
-  );
-  // const [notes, setNotes] = useState(""); // Lifted up
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
 
@@ -136,7 +142,7 @@ export function QuickLogPanel({
             {energyOptions.map((option) => (
               <button
                 key={option.value}
-                onClick={() => setEnergy(option.value)}
+                onClick={() => onEnergyChange(option.value)}
                 className={`group relative flex flex-col rounded-2xl border p-4 text-left transition ${
                   energy === option.value
                     ? "border-slate-900 bg-slate-900 text-white"
@@ -175,7 +181,7 @@ export function QuickLogPanel({
               max={5}
               step={1}
               value={hunger}
-              onChange={(event) => setHunger(Number(event.target.value))}
+              onChange={(event) => onHungerChange(Number(event.target.value))}
               className="h-2 flex-1 appearance-none rounded-full bg-slate-200 outline-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-slate-900"
             />
             <span className="text-2xl font-semibold text-slate-900">{hunger}</span>
@@ -190,7 +196,7 @@ export function QuickLogPanel({
             {cravingOptions.map((option) => (
               <button
                 key={option.value}
-                onClick={() => setCraving(option.value)}
+                onClick={() => onCravingChange(option.value)}
                 className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
                   craving === option.value
                     ? "border-emerald-600 bg-emerald-600 text-white"
@@ -252,9 +258,9 @@ export function QuickLogPanel({
         <button
           type="button"
           onClick={() => {
-            setEnergy(null);
-            setHunger(3);
-            setCraving(null);
+            onEnergyChange(null);
+            onHungerChange(3);
+            onCravingChange(null);
             onNotesChange("");
           }}
           className="inline-flex items-center justify-center rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-900"

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import webpush from "web-push";
+import webpush, { type PushSubscription } from "web-push";
 import { getSupabaseServiceClient } from "@/lib/supabase/server-client";
 
 export const runtime = "nodejs";
@@ -41,7 +41,7 @@ type NotificationPayload = {
 type SubscriptionRow = {
   id: string;
   user_id: string;
-  subscription_json: webpush.PushSubscription;
+  subscription_json: PushSubscription;
   channels: Record<string, unknown>;
   locale?: string | null;
 };

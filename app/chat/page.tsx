@@ -3,8 +3,9 @@
 import { ArrowLeft, Send, Sparkles } from "lucide-react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
 type Message = {
@@ -15,12 +16,14 @@ type Message = {
 
 export default function ChatPage() {
     const { t, i18n } = useTranslation();
+    const searchParams = useSearchParams();
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [userId, setUserId] = useState<string | null>(null);
     const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
+    const [prefillToSend, setPrefillToSend] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -45,18 +48,18 @@ export default function ChatPage() {
         }
     }, []);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!input.trim() || isLoading) return;
+    const sendMessage = useCallback(async (content: string) => {
+        if (!content.trim() || isLoading) return;
 
+        const trimmed = content.trim();
         const userMessage: Message = {
             id: Date.now().toString(),
             role: "user",
-            content: input,
+            content: trimmed,
         };
 
-        setMessages((prev) => [...prev, userMessage]);
-        setInput("");
+        const conversation = [...messages, userMessage];
+        setMessages(conversation);
         setIsLoading(true);
         setError(null);
 
@@ -65,7 +68,7 @@ export default function ChatPage() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    messages: [...messages, userMessage].map(({ role, content }) => ({ role, content })),
+                    messages: conversation.map(({ role, content: msgContent }) => ({ role, content: msgContent })),
                     locale: i18n.language,
                     userId,
                     location,
@@ -111,7 +114,30 @@ export default function ChatPage() {
         } finally {
             setIsLoading(false);
         }
+    }, [i18n.language, isLoading, location, messages, userId]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!input.trim()) return;
+        const message = input;
+        setInput("");
+        await sendMessage(message);
     };
+
+    const prefillParam = searchParams.get("prefill");
+
+    useEffect(() => {
+        if (prefillParam && messages.length === 0) {
+            setPrefillToSend(prefillParam);
+        }
+    }, [prefillParam, messages.length]);
+
+    useEffect(() => {
+        if (prefillToSend && messages.length === 0 && !isLoading) {
+            sendMessage(prefillToSend);
+            setPrefillToSend(null);
+        }
+    }, [prefillToSend, messages.length, isLoading, sendMessage]);
 
     // Auto-scroll to bottom
     useEffect(() => {

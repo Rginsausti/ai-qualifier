@@ -35,12 +35,26 @@
       "calories": "Kalorien",
       "goal": "von",
       "ready": "fertig",
-      "avatarAlt": "Illustration von Alma mit einem Lächeln"
+      "avatarAlt": "Illustration von Alma mit einem Lächeln",
+      "dynamic": {
+        "title": "Energie {{energy}}, Lust {{craving}}",
+        "description": "Dein Hunger fühlt sich {{hunger}} an. Wir passen das Ritual in Echtzeit an.",
+        "energyFallback": "stabil",
+        "cravingFallback": "neutral"
+      }
     },
     "mindful": {
       "energy": "Energie",
       "hunger": "Verlangen",
-      "mood": "Stimmung"
+      "mood": "Stimmung",
+      "emptyValue": "Ausstehend",
+      "defaultMood": "neugierig",
+      "moodStates": {
+        "bright": "strahlend",
+        "soft": "sanft",
+        "focused": "fokussiert",
+        "curious": "neugierig"
+      }
     },
     "plan": {
       "morning": {
@@ -409,7 +423,41 @@
       "time": "Weniger als eine Minute für dein Tageslog",
       "result": "Du erhältst ein Gericht oder einen Plan B zum Sofortstart"
     },
-    "cta": "Entscheidungskarte ansehen"
+    "cta": "Gelüste beruhigen",
+    "form": {
+      "badge": "Craving-Swap-Labor",
+      "title": "Welche Junk-Food-Lust meldet sich?",
+      "description": "Wir nutzen dein Profil und deine Ziele, um befriedigende, gesündere Alternativen vorzuschlagen.",
+      "errorRequired": "Bitte beschreibe mindestens ein Verlangen.",
+      "treats": "Nach welchem Junk Food sehnst du dich?",
+      "placeholder": "z. B. Pommes, Dulce-de-Leche-Eis, Croissants",
+      "type": {
+        "label": "Art des Verlangens",
+        "sweet": "Süß",
+        "savory": "Herzhaft",
+        "crunchy": "Knusprig",
+        "fried": "Frittiert"
+      },
+      "intensity": {
+        "label": "Intensität",
+        "light": "Sanft",
+        "medium": "Mittel",
+        "heavy": "Sehr stark"
+      },
+      "time": {
+        "label": "Tageszeit",
+        "morning": "Morgen",
+        "afternoon": "Nachmittag",
+        "evening": "Abend"
+      },
+      "submit": "Swaps erstellen",
+      "swapLabel": "Alternative",
+      "reason": "Warum es wirkt",
+      "prep": "Mini-Plan",
+      "stepByStepCta": "Schritt für Schritt folgen",
+      "videoCta": "YouTube-Tutorial öffnen",
+      "stepByStepPrompt": "Führe mich Schritt für Schritt durch die Zubereitung von {{recipe}}. Nutze diesen Mini-Plan als Grundlage: {{plan}}. Warte auf meine Bestätigung, bevor du zum nächsten Schritt gehst."
+    }
   },
   "livePanelSection": {
     "badge": "Live-Panel",

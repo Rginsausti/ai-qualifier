@@ -96,13 +96,19 @@ const INTOLERANCE_CONFIGS: IntoleranceConfig[] = [
     }
 ];
 
-const normalizeText = (value?: string) =>
-    (value || '')
-        .toLowerCase()
+const normalizeText = (value?: string | null) => {
+    if (!value) return '';
+
+    const base = value
+        .toLocaleLowerCase()
         .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[\W_]+/g, ' ')
+        .replace(/[\u0300-\u036f]/g, '');
+
+    return base
+        .replace(/[^\p{L}\p{N}]+/gu, ' ')
+        .replace(/\s+/g, ' ')
         .trim();
+};
 
 const buildProductHaystack = (product: Product) => {
     const claims = product.nutritional_claims?.join(' ') || '';
@@ -164,6 +170,510 @@ const filterProductsByIntolerances = (
             });
         });
     });
+};
+
+type KeywordGroups = Record<string, string[]>;
+
+const mergeKeywordGroups = (groups: KeywordGroups) =>
+    Array.from(
+        new Set(
+            Object.values(groups)
+                .flat()
+                .map((term) => term.trim())
+                .filter(Boolean)
+        )
+    );
+
+const NON_FOOD_KEYWORDS = mergeKeywordGroups({
+    es: [
+        'shampoo',
+        'shampu',
+        'acondicionador',
+        'mascarilla',
+        'hair food',
+        'capilar',
+        'tratamiento capilar',
+        'vela',
+        'velon',
+        'difusor',
+        'ambientador',
+        'aromatizador',
+        'aromatica',
+        'aromatico',
+        'perfume',
+        'colonia',
+        'desodorante',
+        'jabon',
+        'detergente',
+        'limpiador',
+        'lavandina',
+        'suavizante',
+        'limpieza',
+        'panal',
+        'panales',
+        'toallitas',
+        'toallitas humedas',
+        'hisopos',
+        'algodon',
+        'panitos',
+        'maquillaje',
+        'labial',
+        'rimel',
+        'esmalte',
+        'protector solar',
+        'crema corporal',
+        'crema facial',
+        'crema hidratante',
+        'after sun'
+    ],
+    en: [
+        'shampoo',
+        'conditioner',
+        'hair mask',
+        'hair treatment',
+        'candle',
+        'diffuser',
+        'air freshener',
+        'aromatherapy',
+        'fragrance',
+        'perfume',
+        'cologne',
+        'deodorant',
+        'soap',
+        'detergent',
+        'cleaner',
+        'bleach',
+        'fabric softener',
+        'household cleaning',
+        'diaper',
+        'diapers',
+        'baby wipe',
+        'wipes',
+        'cotton swab',
+        'cotton pads',
+        'makeup',
+        'lipstick',
+        'mascara',
+        'nail polish',
+        'sunscreen',
+        'body lotion',
+        'face cream',
+        'moisturizer',
+        'hand cream'
+    ],
+    pt: [
+        'shampoo',
+        'xampu',
+        'condicionador',
+        'mascara capilar',
+        'hidratacao capilar',
+        'vela',
+        'difusor',
+        'aromatizador',
+        'cheiro para ambiente',
+        'perfume',
+        'colonia',
+        'desodorante',
+        'sabonete',
+        'detergente',
+        'limpador',
+        'alvejante',
+        'amaciante',
+        'limpeza domestica',
+        'fralda',
+        'fraldas',
+        'lenco umedecido',
+        'lenços umedecidos',
+        'algodao',
+        'cotonete',
+        'maquiagem',
+        'batom',
+        'rimel',
+        'esmalte',
+        'protetor solar',
+        'hidratante',
+        'creme corporal',
+        'creme facial'
+    ],
+    it: [
+        'shampoo',
+        'balsamo',
+        'maschera capelli',
+        'trattamento capelli',
+        'candela',
+        'diffusore',
+        'profumatore',
+        'profumo',
+        'colonia',
+        'deodorante',
+        'sapone',
+        'detersivo',
+        'detergente',
+        'candeggina',
+        'ammorbidente',
+        'pulizia casa',
+        'pannolino',
+        'pannolini',
+        'salviettine',
+        'cotone',
+        'trucco',
+        'rossetto',
+        'mascara',
+        'smalto',
+        'crema solare',
+        'lozione corpo',
+        'crema viso',
+        'idratante'
+    ],
+    fr: [
+        'shampoing',
+        'apres shampoing',
+        'masque capillaire',
+        'soin capillaire',
+        'bougie',
+        'diffuseur',
+        'desodorisant',
+        'parfum',
+        'eau de cologne',
+        'deodorant',
+        'savon',
+        'detergent',
+        'nettoyant',
+        'eau de javel',
+        'assouplissant',
+        'menage',
+        'couche',
+        'couches',
+        'lingettes',
+        'coton',
+        'maquillage',
+        'rouge a levres',
+        'mascara',
+        'vernis',
+        'creme solaire',
+        'lotion pour le corps',
+        'creme visage',
+        'hydratant'
+    ],
+    de: [
+        'shampoo',
+        'spulung',
+        'haarmaske',
+        'haarpflege',
+        'duftkerze',
+        'diffusor',
+        'raumduft',
+        'parfum',
+        'kolnisch wasser',
+        'deo',
+        'seife',
+        'waschmittel',
+        'reiniger',
+        'bleichmittel',
+        'weichspuler',
+        'haushaltsreinigung',
+        'windel',
+        'windeln',
+        'feuchttucher',
+        'watte',
+        'make up',
+        'lippenstift',
+        'wimperntusche',
+        'nagellack',
+        'sonnencreme',
+        'korperlotion',
+        'gesichtscreme',
+        'feuchtigkeitscreme'
+    ],
+    ja: [
+        'シャンプー',
+        'コンディショナー',
+        'ヘアマスク',
+        'ヘアトリートメント',
+        'キャンドル',
+        'ディフューザー',
+        '芳香剤',
+        '香水',
+        'コロン',
+        'デオドラント',
+        '石鹸',
+        '洗剤',
+        'クリーナー',
+        '漂白剤',
+        '柔軟剤',
+        '掃除用品',
+        'おむつ',
+        'オムツ',
+        'ウェットティッシュ',
+        '綿棒',
+        'コットン',
+        'メイク',
+        '口紅',
+        'マスカラ',
+        'ネイル',
+        '日焼け止め',
+        'ボディローション',
+        'フェイスクリーム',
+        '保湿クリーム'
+    ]
+});
+
+const NON_FOOD_BRANDS = [
+    'garnier',
+    'fructis',
+    'organic spa',
+    'natura',
+    'l oreal',
+    'loreal',
+    'nivea',
+    'dove',
+    'rexona',
+    'axe',
+    'pantene',
+    'head & shoulders',
+    'head and shoulders',
+    'colgate',
+    'oral b',
+    'kerastase',
+    'avon'
+];
+
+const FOOD_EXCEPTION_KEYWORDS = [
+    'crema de leche',
+    'crema americana',
+    'crema pastelera',
+    'crema chantilly',
+    'queso crema'
+];
+
+const JUNK_FOOD_KEYWORDS = mergeKeywordGroups({
+    es: [
+        'gomita',
+        'gomitas',
+        'caramelo',
+        'caramelos',
+        'oblea',
+        'obleas',
+        'chicle',
+        'chicles',
+        'pastilla',
+        'pastillas',
+        'alfajor',
+        'alfajores',
+        'galleta',
+        'galletita',
+        'galletitas',
+        'dulce',
+        'dulces',
+        'golosina',
+        'golosinas',
+        'barra de cereal',
+        'barra dulce',
+        'paleta',
+        'paletas',
+        'piruleta',
+        'piruletas',
+        'turron',
+        'turrones'
+    ],
+    en: [
+        'candy',
+        'candies',
+        'sweet',
+        'sweets',
+        'dessert',
+        'desserts',
+        'cookie',
+        'cookies',
+        'biscuit',
+        'biscuits',
+        'wafer',
+        'wafers',
+        'snack cake',
+        'brownie',
+        'cupcake',
+        'donut',
+        'gummy',
+        'gummies',
+        'marshmallow',
+        'marshmallows',
+        'lollipop',
+        'lollipops',
+        'candy bar',
+        'chocolate bar',
+        'chewing gum',
+        'gum',
+        'toffee',
+        'jelly'
+    ],
+    pt: [
+        'bala',
+        'balas',
+        'doce',
+        'doces',
+        'goma',
+        'gominha',
+        'chiclete',
+        'chicletes',
+        'biscoito',
+        'biscoitos',
+        'bolacha',
+        'bolachas',
+        'barra de cereal',
+        'barra doce'
+    ],
+    it: [
+        'caramella',
+        'caramelle',
+        'biscotto',
+        'biscotti',
+        'wafer',
+        'wafer al cioccolato',
+        'merendina',
+        'merendine',
+        'dolce',
+        'dolci',
+        'cioccolato',
+        'cioccolatini',
+        'torroncino',
+        'barra di cereali'
+    ],
+    fr: [
+        'bonbon',
+        'bonbons',
+        'sucrerie',
+        'friandise',
+        'gaufrette',
+        'gaufrettes',
+        'biscuit',
+        'biscuits',
+        'gateau',
+        'gateaux',
+        'chocolat',
+        'barre chocolat',
+        'pate de fruit'
+    ],
+    de: [
+        'sussigkeit',
+        'sussigkeiten',
+        'susswaren',
+        'suss',
+        'keks',
+        'kekse',
+        'waffel',
+        'waffeln',
+        'schokolade',
+        'gummibarchen',
+        'lutscher',
+        'bonbonniere'
+    ],
+    ja: [
+        'お菓子',
+        'キャンディ',
+        'キャンディー',
+        'グミ',
+        'マシュマロ',
+        'ロリポップ',
+        'チョコ',
+        'チョコレート',
+        'クッキー',
+        'ビスケット',
+        'ウエハース',
+        'キャラメル',
+        'ラムネ',
+        'スナック',
+        '甘菓子'
+    ]
+});
+
+const JUNK_FOOD_BRANDS = [
+    'halls',
+    'beldent',
+    'menthoplus',
+    'tic tac',
+    'arcor',
+    'classic',
+    'felfort',
+    'bon o bon',
+    'cadbury',
+    'milka',
+    'm&m',
+    'm & m',
+    'skittles',
+    'trident',
+    'sugus'
+];
+
+const filterOutNonFoodProducts = (products: AggregatedProduct[]) => {
+    let removed = 0;
+
+    const filtered = products.filter((product) => {
+        const haystack = buildProductHaystack(product);
+        if (!haystack) return true;
+
+        const hasException = FOOD_EXCEPTION_KEYWORDS.some((term) =>
+            haystack.includes(normalizeText(term))
+        );
+        if (hasException) {
+            return true;
+        }
+
+        const brandMatch = product.brand
+            ? NON_FOOD_BRANDS.some((brand) =>
+                normalizeText(product.brand).includes(normalizeText(brand))
+            )
+            : false;
+
+        const keywordMatch = NON_FOOD_KEYWORDS.some((keyword) =>
+            haystack.includes(normalizeText(keyword))
+        );
+
+        if (brandMatch || keywordMatch) {
+            removed += 1;
+            return false;
+        }
+
+        return true;
+    });
+
+    return { products: filtered, removed };
+};
+
+const filterOutJunkFoodProducts = (products: AggregatedProduct[]) => {
+    let removed = 0;
+
+    const filtered = products.filter((product) => {
+        const haystack = buildProductHaystack(product);
+        if (!haystack) return true;
+
+        const brandMatch = product.brand
+            ? JUNK_FOOD_BRANDS.some((brand) =>
+                normalizeText(product.brand).includes(normalizeText(brand))
+            )
+            : false;
+
+        const keywordMatch = JUNK_FOOD_KEYWORDS.some((keyword) =>
+            haystack.includes(normalizeText(keyword))
+        );
+
+        if (brandMatch || keywordMatch) {
+            removed += 1;
+            return false;
+        }
+
+        return true;
+    });
+
+    return { products: filtered, removed };
+};
+
+const applyContentFilters = (products: AggregatedProduct[]) => {
+    const nonFood = filterOutNonFoodProducts(products);
+    const junk = filterOutJunkFoodProducts(nonFood.products);
+    return {
+        products: junk.products,
+        removed: nonFood.removed + junk.removed,
+    };
 };
 
 const filterProductsByRelevance = (
@@ -330,9 +840,14 @@ export async function searchNearbyProducts(
         });
     }
 
-    const relevantProducts = filterProductsByRelevance(allProducts, productQuery);
-    if (allProducts.length !== relevantProducts.length) {
-        console.log('[Orquestador] Productos filtrados por relevancia:', allProducts.length - relevantProducts.length);
+    const { products: contentSafeProducts, removed: contentRemoved } = applyContentFilters(allProducts);
+    if (contentRemoved > 0) {
+        console.log('[Orquestador] Productos filtrados por contenido no apto:', contentRemoved);
+    }
+
+    const relevantProducts = filterProductsByRelevance(contentSafeProducts, productQuery);
+    if (contentSafeProducts.length !== relevantProducts.length) {
+        console.log('[Orquestador] Productos filtrados por relevancia:', contentSafeProducts.length - relevantProducts.length);
     }
     const personalizedProducts = intolerances.length
         ? filterProductsByIntolerances(relevantProducts, intolerances)
@@ -341,7 +856,8 @@ export async function searchNearbyProducts(
         console.log('[Orquestador] Productos filtrados por intolerancias:', relevantProducts.length - personalizedProducts.length);
     }
 
-    const filteredOutCount = Math.max(allProducts.length - relevantProducts.length, 0) +
+    const filteredOutCount = contentRemoved +
+        Math.max(contentSafeProducts.length - relevantProducts.length, 0) +
         Math.max(relevantProducts.length - personalizedProducts.length, 0);
 
     await cacheResults(userLat, userLon, productQuery, personalizedProducts, scrapableStores.length);
@@ -374,10 +890,12 @@ async function checkCache(
 
         if (error || !data) return null;
 
+        const { products: filteredProducts, removed } = applyContentFilters(data.results as AggregatedProduct[]);
+
         return {
-            products: data.results as AggregatedProduct[],
+            products: filteredProducts,
             stores_searched: data.result_count || 0,
-            filtered_out_count: 0,
+            filtered_out_count: removed,
         };
     } catch (error) {
         console.error('[Cache] Check error:', error);

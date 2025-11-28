@@ -18,7 +18,7 @@
       "seedTitle": "Create test user",
       "seedDescription": "Generate quick access to test the beta.",
       "seedCta": "Create user",
-      "seedEmailPlaceholder": "demo@email.com",
+      "seedEmailPlaceholder": "test@email.com",
       "seedPasswordPlaceholder": "min. 6 characters",
       "errors": {
         "missingFields": "Please complete all fields.",
@@ -69,12 +69,26 @@
       "calories": "Calories",
       "goal": "of",
       "ready": "complete",
-      "avatarAlt": "Illustration of Alma smiling"
+      "avatarAlt": "Illustration of Alma smiling",
+      "dynamic": {
+        "title": "Energy {{energy}}, craving {{craving}}",
+        "description": "Hunger feels {{hunger}}. We adapt the ritual in real time.",
+        "energyFallback": "steady",
+        "cravingFallback": "neutral"
+      }
     },
     "mindful": {
       "energy": "Energy",
       "hunger": "Craving",
-      "mood": "Mood"
+      "mood": "Mood",
+      "emptyValue": "Pending",
+      "defaultMood": "curious",
+      "moodStates": {
+        "bright": "expansive",
+        "soft": "gentle",
+        "focused": "focused",
+        "curious": "curious"
+      }
     },
     "plan": {
       "morning": {
@@ -443,7 +457,41 @@
       "time": "Log your day in under a minute.",
       "result": "Finish with a ready-to-go dish or nearby plan B."
     },
-    "cta": "View decision map"
+    "cta": "Calm a craving",
+    "form": {
+      "badge": "Craving swap lab",
+      "title": "Tell me the junk food calling your name",
+      "description": "We'll use your profile and goals to suggest satisfying swaps that tame that craving without guilt.",
+      "errorRequired": "Describe at least one craving so we can help.",
+      "treats": "Which junk food are you craving?",
+      "placeholder": "Eg: fries, dulce de leche ice cream, croissants",
+      "type": {
+        "label": "Craving type",
+        "sweet": "Sweet",
+        "savory": "Savory",
+        "crunchy": "Crunchy",
+        "fried": "Fried"
+      },
+      "intensity": {
+        "label": "Intensity",
+        "light": "Low",
+        "medium": "Medium",
+        "heavy": "Very strong"
+      },
+      "time": {
+        "label": "Time of day",
+        "morning": "Morning",
+        "afternoon": "Afternoon",
+        "evening": "Night"
+      },
+      "submit": "Generate swaps",
+      "swapLabel": "Alternative",
+      "reason": "Why it works",
+      "prep": "Mini plan",
+      "stepByStepCta": "Follow step-by-step",
+      "videoCta": "Watch YouTube tutorial",
+      "stepByStepPrompt": "Guide me step by step to prepare {{recipe}}. Use this mini plan as the base: {{plan}}. Wait for my confirmation before moving on to the next step."
+    }
   },
   "livePanelSection": {
     "badge": "Live panel",

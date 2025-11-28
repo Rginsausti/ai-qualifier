@@ -8,7 +8,7 @@ import { MultimodalInput } from "@/components/logging/MultimodalInput";
 import NearbyProductFinder from "@/components/product-search/NearbyProductFinder";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import Image from "next/image";
 import { logWater, logNutrition, analyzeFoodFromText } from "@/lib/actions";
 import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
@@ -99,24 +99,6 @@ const neighborSpots = [
   },
 ];
 
-const mindfulMoments = [
-  {
-    labelKey: "dashboard.mindful.energy",
-    value: "media",
-    icon: Zap,
-  },
-  {
-    labelKey: "dashboard.mindful.hunger",
-    value: "dulce",
-    icon: Droplets,
-  },
-  {
-    labelKey: "dashboard.mindful.mood",
-    value: "curiosa",
-    icon: Sparkles,
-  },
-];
-
 const quickWins = [
   {
     labelKey: "dashboard.quickwins.voice",
@@ -146,21 +128,40 @@ type SectionSeparatorProps = {
   src: string;
   height?: number;
   className?: string;
+  maxHeight?: number;
+  fit?: "cover" | "contain";
 };
 
-const SectionSeparator = ({ src, height = 120, className = "" }: SectionSeparatorProps) => (
-  <div className={`relative left-1/2 right-1/2 w-screen -translate-x-1/2 ${className}`}>
-    <Image
-      src={src}
-      alt=""
-      width={1920}
-      height={height}
-      sizes="100vw"
-      className="pointer-events-none h-auto w-full select-none object-cover"
-      aria-hidden="true"
-    />
-  </div>
-);
+const SectionSeparator = ({
+  src,
+  height = 120,
+  className = "",
+  maxHeight,
+  fit = "cover",
+}: SectionSeparatorProps) => {
+  const appliedStyle = maxHeight
+    ? { maxHeight, height: maxHeight }
+    : undefined;
+  const heightClass = maxHeight ? "h-full" : "h-auto";
+
+  return (
+    <div
+      className={`relative left-1/2 right-1/2 w-screen -translate-x-1/2 ${className}`}
+      style={appliedStyle}
+    >
+      <Image
+        src={src}
+        alt=""
+        width={1920}
+        height={height}
+        sizes="100vw"
+        className={`pointer-events-none ${heightClass} w-full select-none ${fit === "contain" ? "object-contain" : "object-cover"}`}
+        style={appliedStyle}
+        aria-hidden="true"
+      />
+    </div>
+  );
+};
 
 type InstallGuideModalProps = {
   open: boolean;
@@ -221,9 +222,19 @@ export default function DashboardClient({
   const [notes, setNotes] = useState("");
   const [isMultimodalOpen, setIsMultimodalOpen] = useState(false);
   const [multimodalMode, setMultimodalMode] = useState<"voice" | "multi">("multi");
+  const [energyLevel, setEnergyLevel] = useState<"high" | "medium" | "low" | null>(null);
+  const [hungerLevel, setHungerLevel] = useState(3);
+  const [cravingType, setCravingType] = useState<"sweet" | "savory" | "fresh" | null>(null);
   const [stats, setStats] = useState<DailyStats | null>(dailyStats || null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showInstallGuide, setShowInstallGuide] = useState(false);
+  const planSectionRef = useRef<HTMLElement | null>(null);
+  const quickLogSectionRef = useRef<HTMLElement | null>(null);
+  const scrollToQuickLog = useCallback(() => {
+    if (!quickLogSectionRef.current) return;
+    quickLogSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    quickLogSectionRef.current.focus?.({ preventScroll: true });
+  }, []);
   const {
     isSupported: pushSupported,
     isEnabled: pushEnabled,
@@ -257,6 +268,11 @@ export default function DashboardClient({
     if (dailyStats) setStats(dailyStats);
   }, [dailyStats]);
 
+  const getCopy = useCallback(
+    (key: string, fallback: string) => t(key, { defaultValue: fallback }),
+    [t]
+  );
+
   const heroTarget = stats?.goals.calories || 2000;
   const heroCurrent = stats?.nutrition.calories || 0;
   const heroProgress = Math.min(heroCurrent / heroTarget, 1);
@@ -266,6 +282,68 @@ export default function DashboardClient({
   const hydrationGlasses = 8;
   const hydrationDone = Math.min(Math.floor((hydrationCurrent / hydrationGoal) * hydrationGlasses), hydrationGlasses);
   const streakDays = streak;
+
+  const hungerBand: "low" | "medium" | "high" = useMemo(() => {
+    if (hungerLevel <= 2) return "low";
+    if (hungerLevel >= 4) return "high";
+    return "medium";
+  }, [hungerLevel]);
+
+  const energyLabel = energyLevel
+    ? t(`dashboard.quicklog.energy.options.${energyLevel}`)
+    : getCopy("dashboard.hero.dynamic.energyFallback", "estable");
+  const cravingLabel = cravingType
+    ? t(`dashboard.quicklog.craving.options.${cravingType}`)
+    : getCopy("dashboard.hero.dynamic.cravingFallback", "neutro");
+  const hungerLabel = t(`dashboard.quicklog.hunger.scale.${hungerBand}`);
+  const moodVariant = energyLevel === "high"
+    ? "bright"
+    : energyLevel === "low"
+      ? "soft"
+      : hungerBand === "high"
+        ? "focused"
+        : "curious";
+  const moodLabel = t(`dashboard.mindful.moodStates.${moodVariant}`, {
+    defaultValue: getCopy("dashboard.mindful.defaultMood", "curiosa"),
+  });
+
+  const heroCopy = !energyLevel && !cravingType
+    ? {
+        title: getCopy("dashboard.hero.title", "Tu día está en equilibrio"),
+        description: getCopy(
+          "dashboard.hero.description",
+          "Tu ingesta acompaña tu ritmo hormonal. Seguimos de cerca tus antojos y recordatorios para mantener la energía estable."
+        ),
+      }
+    : {
+        title: t("dashboard.hero.dynamic.title", {
+          energy: energyLabel.toLowerCase(),
+          craving: cravingLabel.toLowerCase(),
+        }),
+        description: t("dashboard.hero.dynamic.description", {
+          hunger: hungerLabel.toLowerCase(),
+          craving: cravingLabel.toLowerCase(),
+        }),
+      };
+
+  const emptyMindfulValue = getCopy("dashboard.mindful.emptyValue", "Pendiente");
+  const mindfulMoments = [
+    {
+      label: getCopy("dashboard.mindful.energy", "Energía"),
+      value: energyLevel ? energyLabel : emptyMindfulValue,
+      icon: Zap,
+    },
+    {
+      label: getCopy("dashboard.mindful.hunger", "Antojo"),
+      value: cravingType ? cravingLabel : emptyMindfulValue,
+      icon: Droplets,
+    },
+    {
+      label: getCopy("dashboard.mindful.mood", "Ánimo"),
+      value: energyLevel || cravingType ? moodLabel : emptyMindfulValue,
+      icon: Sparkles,
+    },
+  ];
 
   const macroCards: MacroCard[] = [
     {
@@ -374,9 +452,6 @@ export default function DashboardClient({
       router.refresh();
     }
   };
-
-  const getCopy = (key: string, fallback: string) =>
-    t(key, { defaultValue: fallback });
 
 
   const currentPlan = dailyPlan ? [
@@ -500,7 +575,11 @@ export default function DashboardClient({
           )}
         </header>
 
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,_3fr)_minmax(0,_2fr)]">
+        <section
+          ref={planSectionRef}
+          tabIndex={-1}
+          className="grid gap-6 lg:grid-cols-[minmax(0,_3fr)_minmax(0,_2fr)]"
+        >
           <article className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-8 shadow-xl shadow-emerald-100">
             <div className="flex flex-col gap-8 lg:flex-row lg:items-center">
               <div className="space-y-5">
@@ -509,30 +588,34 @@ export default function DashboardClient({
                   {getCopy("dashboard.hero.badge", "Energía calibrada")}
                 </span>
                 <h2 className="text-3xl font-semibold text-slate-900">
-                  {getCopy(
-                    "dashboard.hero.title",
-                    "Tu día está en equilibrio"
-                  )}
+                  {heroCopy.title}
                 </h2>
                 <p className="text-base text-slate-600">
-                  {getCopy(
-                    "dashboard.hero.description",
-                    "Tu ingesta acompaña tu ritmo hormonal. Seguimos de cerca tus antojos y recordatorios para mantener la energía estable."
-                  )}
+                  {heroCopy.description}
                 </p>
                 <div className="flex flex-wrap gap-4 text-sm text-slate-500">
                   {mindfulMoments.map((moment) => (
-                    <span
-                      key={moment.labelKey}
-                      className="inline-flex items-center gap-2 rounded-full bg-emerald-50/80 px-3 py-1"
+                    <button
+                      type="button"
+                      key={moment.label}
+                      onClick={scrollToQuickLog}
+                      className="inline-flex items-center gap-2 rounded-full bg-emerald-50/80 px-3 py-1 text-slate-700 transition hover:bg-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 cursor-pointer"
                     >
                       <moment.icon className="h-4 w-4 text-emerald-600" />
-                      {getCopy(moment.labelKey, "Registro")} · {moment.value}
-                    </span>
+                      {moment.label} · {moment.value}
+                    </button>
                   ))}
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <button className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/30 transition hover:-translate-y-0.5">
+                  <button
+                    onClick={() => {
+                      if (planSectionRef.current) {
+                        planSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+                        planSectionRef.current.focus?.({ preventScroll: true });
+                      }
+                    }}
+                    className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/30 transition hover:-translate-y-0.5"
+                  >
                     {getCopy("dashboard.hero.primaryCta", "Ver ritual de hoy")}
                     <ArrowRight className="h-4 w-4" />
                   </button>
@@ -684,15 +767,9 @@ export default function DashboardClient({
           </div>
         </section>
 
-        <SectionSeparator
-          src="/images/separador_transparent_3.png"
-          height={180}
-          className="mt-12 hidden md:block"
-        />
-
         <SectionSeparator src="/images/separador_trimmed_1.png" height={200} className="mt-12" />
 
-        <section className="mt-10">
+        <section ref={quickLogSectionRef} className="mt-10 focus:outline-none" tabIndex={-1}>
           <QuickLogPanel 
             notes={notes}
             onNotesChange={setNotes}
@@ -700,6 +777,12 @@ export default function DashboardClient({
               setMultimodalMode("voice");
               setIsMultimodalOpen(true);
             }}
+            energy={energyLevel}
+            onEnergyChange={setEnergyLevel}
+            hunger={hungerLevel}
+            onHungerChange={setHungerLevel}
+            craving={cravingType}
+            onCravingChange={setCravingType}
           />
         </section>
 
@@ -741,7 +824,7 @@ export default function DashboardClient({
         <SectionSeparator src="/images/separador_trimmed_3.png" height={200} className="mt-12" />
 
         <section className="mt-10">
-          <CoachSection onCtaClick={() => router.push("/chat")} />
+          <CoachSection />
         </section>
 
         <SectionSeparator src="/images/separador_trimmed_4.png" height={200} className="mt-12" />
@@ -795,6 +878,14 @@ export default function DashboardClient({
             </button>
           </article>
         </section>
+
+        <SectionSeparator
+          src="/images/separador_transparent_3.png"
+          height={220}
+          className="mt-12"
+          fit="cover"
+          maxHeight={220}
+        />
 
         <section className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,_3fr)_minmax(0,_2fr)]">
           <article className="rounded-3xl border border-white/60 bg-white/80 p-6 shadow-lg shadow-emerald-100">
