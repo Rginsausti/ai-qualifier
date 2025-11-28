@@ -9,7 +9,22 @@
     "header": {
       "badge": "毎日のパネル",
       "title": "こんにちは Alma",
-      "alerts": "やさしい通知"
+      "alerts": {
+        "label": "やさしい通知",
+        "loading": "同期中…",
+        "enabled": "リマインダーはオンです",
+        "unsupported": "ご利用のブラウザはプッシュ通知に対応していません。",
+        "installHint": "iOSではホーム画面にAlmaを追加すると通知を有効にできます。",
+        "installCta": "ホーム画面に追加",
+        "installGuide": {
+          "title": "Almaをホーム画面に追加",
+          "subtitle": "iOSでプッシュ通知を使う手順です。",
+          "stepShare": "Safariで共有アイコンをタップします。",
+          "stepAdd": "「ホーム画面に追加」を選びます。",
+          "stepConfirm": "「追加」で確定し、新しいアイコンからAlmaを開きます。",
+          "close": "閉じる"
+        }
+      }
     },
     "hero": {
       "badge": "調整されたエネルギー",
@@ -19,7 +34,8 @@
       "secondaryCta": "音声を記録",
       "calories": "カロリー",
       "goal": "の",
-      "ready": "完了"
+      "ready": "完了",
+      "avatarAlt": "笑顔のAlmaのイラスト"
     },
     "mindful": {
       "energy": "エネルギー",
@@ -600,5 +616,24 @@
       "logout": "ログアウト",
       "seedSuccess": "ユーザーID: {{userId}} で作成されました"
     }
+  },
+  "productSearch": {
+    "title": "近くの商品の検索",
+    "subtitle": "近所のスーパーマーケットでベストプライスを見つけましょう",
+    "locationRequired": "位置情報が必要です",
+    "locationDescription": "近くの商品を表示するために、位置情報へのアクセスが必要です。",
+    "enableLocation": "位置情報を有効にする",
+    "locationDeniedHelp": "ブラウザーの設定で位置情報アクセスを有効にしてください。",
+    "searchPlaceholder": "何を探していますか？（例：スキムミルク）",
+    "searching": "近くの店舗で商品を検索しています...",
+    "loader": {
+      "step1": "ご自宅の近くの店舗を探しています",
+      "step2": "少し時間がかかる場合がありますのでお待ちください",
+      "step3": "ご自宅周辺のエリアを分析しています"
+    },
+    "resultsFound": "{{count}} 件の商品が見つかりました",
+    "cached": "キャッシュ",
+    "storesSearched": "店舗を検索しました",
+    "noResults": "該当する商品が見つかりませんでした。別の検索をお試しください。"
   }
 }

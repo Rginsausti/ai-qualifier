@@ -29,3 +29,10 @@ Toda la app está tokenizada con i18next. Podés cambiar entre español, inglés
 - Explorá la vista previa.
 - Probá el ritual demo y dejá tu feedback.
 - Reservá un lugar en la beta privada para recibir la demo guiada cuando abramos más cupos.
+
+## Notificaciones push (setup rápido)
+1. Ejecutá `npx web-push generate-vapid-keys` y copiá el par generado en `.env.local` usando las variables `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` y `NEXT_PUBLIC_VAPID_PUBLIC_KEY`.
+2. Ajustá `PUSH_NOTIFICATIONS_CONTACT` con un mail válido (formato `mailto:tunombre@dominio.com`).
+3. Desplegá las migraciones (`pnpm ts-node scripts/run-migration.js 010`) para crear `user_settings`, `push_subscriptions` y `notification_events`.
+4. Programá las llamadas a `POST /api/notifications/cron` con `type=water`, `type=meal`, `type=day_end` o `type=nearby_search` desde Vercel Cron o Upstash QStash, pasando `Authorization: Bearer ${CRON_SECRET}`.
+5. Para recibir avisos en iOS, instalá Alma como PWA (Agregar a pantalla de inicio) y luego activá las notificaciones desde el botón de campana.

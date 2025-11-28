@@ -34,7 +34,7 @@ export default async function Home() {
     streak = await calculateStreak(user.id);
 
     // Fetch daily stats
-    dailyStats = await getDailyStats(user.id);
+    dailyStats = await getDailyStats(user.id, profile.locale);
   }
 
   return <DashboardClient dailyPlan={dailyPlan} streak={streak} dailyStats={dailyStats} />;

@@ -9,7 +9,22 @@
     "header": {
       "badge": "Tägliches Panel",
       "title": "Hallo Alma",
-      "alerts": "Sanfte Benachrichtigungen"
+      "alerts": {
+        "label": "Sanfte Benachrichtigungen",
+        "loading": "Synchronisieren…",
+        "enabled": "Erinnerungen aktiv",
+        "unsupported": "Dein aktueller Browser unterstützt keine Push-Benachrichtigungen.",
+        "installHint": "Unter iOS füge Alma zum Homescreen hinzu, um Hinweise zu aktivieren.",
+        "installCta": "Zum Homescreen hinzufügen",
+        "installGuide": {
+          "title": "Alma zum Homescreen hinzufügen",
+          "subtitle": "So aktivierst du Push-Hinweise auf iOS.",
+          "stepShare": "Tippe in Safari auf das Teilen-Symbol.",
+          "stepAdd": "Wähle \"Zum Home-Bildschirm\".",
+          "stepConfirm": "Bestätige mit \"Hinzufügen\" und öffne Alma über das neue Icon.",
+          "close": "Fertig"
+        }
+      }
     },
     "hero": {
       "badge": "Kalibrierte Energie",
@@ -19,7 +34,8 @@
       "secondaryCta": "Audio aufnehmen",
       "calories": "Kalorien",
       "goal": "von",
-      "ready": "fertig"
+      "ready": "fertig",
+      "avatarAlt": "Illustration von Alma mit einem Lächeln"
     },
     "mindful": {
       "energy": "Energie",
@@ -600,5 +616,24 @@
       "logout": "Abmelden",
       "seedSuccess": "Benutzer erstellt mit ID: {{userId}}"
     }
+  },
+  "productSearch": {
+    "title": "Produkte in der Nähe finden",
+    "subtitle": "Finde die besten Preise in Supermärkten in deiner Umgebung",
+    "locationRequired": "Wir benötigen deinen Standort",
+    "locationDescription": "Um dir nahegelegene Produkte anzuzeigen, benötigen wir Zugriff auf deinen Standort.",
+    "enableLocation": "Standort aktivieren",
+    "locationDeniedHelp": "Bitte aktiviere den Standortzugriff in den Browser-Einstellungen.",
+    "searchPlaceholder": "Wonach suchst du? (z. B. Magermilch)",
+    "searching": "Suche nach Produkten in nahegelegenen Geschäften...",
+    "loader": {
+      "step1": "Wir durchsuchen die Geschäfte in deiner Nähe",
+      "step2": "Das kann einen Moment dauern, bitte hab Geduld",
+      "step3": "Wir analysieren die Läden in deiner Umgebung"
+    },
+    "resultsFound": "{{count}} Produkte gefunden",
+    "cached": "Zwischengespeichert",
+    "storesSearched": "Geschäfte durchsucht",
+    "noResults": "Keine Produkte gefunden. Versuche eine andere Suche."
   }
 }

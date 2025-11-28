@@ -43,7 +43,22 @@
     "header": {
       "badge": "Painel diário",
       "title": "Olá, sou a Alma",
-      "alerts": "Notificações suaves"
+      "alerts": {
+        "label": "Notificações suaves",
+        "loading": "Sincronizando…",
+        "enabled": "Lembretes ativos",
+        "unsupported": "Seu navegador atual não suporta notificações push.",
+        "installHint": "No iOS adicione Alma à tela inicial para ativar os avisos.",
+        "installCta": "Adicionar à tela inicial",
+        "installGuide": {
+          "title": "Adicione Alma à tela inicial",
+          "subtitle": "Assim você libera os alertas no iOS.",
+          "stepShare": "Toque no ícone Compartilhar no Safari.",
+          "stepAdd": "Escolha \"Adicionar à tela de início\".",
+          "stepConfirm": "Confirme em \"Adicionar\" e reabra Alma pelo novo ícone.",
+          "close": "Pronto"
+        }
+      }
     },
     "hero": {
       "badge": "Energia calibrada",
@@ -53,7 +68,8 @@
       "secondaryCta": "Registrar áudio",
       "calories": "Calorias",
       "goal": "de",
-      "ready": "completo"
+      "ready": "completo",
+      "avatarAlt": "Ilustração da Alma a sorrir"
     },
     "mindful": {
       "energy": "Energia",
@@ -600,5 +616,24 @@
       "description": "Conheço os teus objetivos e preferências. Pergunta-me o que comer, como substituir um ingrediente ou diz-me como te sentes."
     },
     "inputPlaceholder": "Escreve a tua mensagem..."
+  },
+  "productSearch": {
+    "title": "Procurar produtos perto de ti",
+    "subtitle": "Encontra os melhores preços nos supermercados da tua zona",
+    "locationRequired": "Precisamos da tua localização",
+    "locationDescription": "Para te mostrar produtos perto de ti, precisamos de acesso à tua localização.",
+    "enableLocation": "Ativar localização",
+    "locationDeniedHelp": "Ativa o acesso à localização nas definições do navegador.",
+    "searchPlaceholder": "O que procuras? (ex.: leite magro)",
+    "searching": "A procurar produtos em lojas próximas...",
+    "loader": {
+      "step1": "Estamos a procurar nos comércios perto da tua casa",
+      "step2": "Isto pode demorar alguns instantes, tem um pouco de paciência",
+      "step3": "Estamos a analisar a zona da tua casa"
+    },
+    "resultsFound": "{{count}} produtos encontrados",
+    "cached": "Em cache",
+    "storesSearched": "lojas pesquisadas",
+    "noResults": "Não encontrámos produtos. Experimenta outra pesquisa."
   }
 }

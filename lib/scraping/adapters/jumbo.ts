@@ -1,10 +1,11 @@
-import { StoreAdapter } from '../types';
+import { ScrapeContext, StoreAdapter } from '../types';
 import { scrapeWithHeadlessX } from '../headless-scraper';
 import { parseHtmlWithGroq } from '../groq-parser';
 
 const createCencosudAdapter = (brand: string, domain: string): StoreAdapter => ({
     brand,
-    scrape: async (query: string) => {
+    scrape: async (query: string, _context?: ScrapeContext) => {
+        void _context;
         const url = `https://www.${domain}/buscar?q=${encodeURIComponent(query)}`;
         const html = await scrapeWithHeadlessX({
             url,

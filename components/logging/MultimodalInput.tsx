@@ -1,26 +1,27 @@
 "use client";
 
 import { Camera, CheckCircle2, Loader2, Mic, ScanBarcode, Type, X, StopCircle } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 interface MultimodalInputProps {
     isOpen: boolean;
+    mode?: "voice" | "multi";
     onClose: () => void;
     onConfirm?: (data: { name: string; calories?: number; text?: string }) => void;
 }
 
-export function MultimodalInput({ isOpen, onClose, onConfirm }: MultimodalInputProps) {
+export function MultimodalInput({ isOpen, mode = "multi", onClose, onConfirm }: MultimodalInputProps) {
     const { t } = useTranslation();
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
     const [result, setResult] = useState<{ name: string; calories?: number; text?: string } | null>(null);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const chunksRef = useRef<Blob[]>([]);
+    const hasAutoStartedRef = useRef(false);
 
-    if (!isOpen) return null;
-
-    const startRecording = async () => {
+    const startRecording = useCallback(async () => {
+        if (isRecording) return;
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             const mediaRecorder = new MediaRecorder(stream);
@@ -43,7 +44,7 @@ export function MultimodalInput({ isOpen, onClose, onConfirm }: MultimodalInputP
             console.error("Error accessing microphone:", err);
             alert("No se pudo acceder al micrófono");
         }
-    };
+    }, [isRecording]);
 
     const stopRecording = () => {
         if (mediaRecorderRef.current && isRecording) {
@@ -100,8 +101,12 @@ export function MultimodalInput({ isOpen, onClose, onConfirm }: MultimodalInputP
     };
 
     const handleClose = () => {
+        if (isRecording) {
+            stopRecording();
+        }
         setResult(null);
         setIsAnalyzing(false);
+        hasAutoStartedRef.current = false;
         onClose();
     };
 
@@ -142,6 +147,20 @@ export function MultimodalInput({ isOpen, onClose, onConfirm }: MultimodalInputP
             onClick: () => handleAnalyze("text"),
         },
     ];
+
+    useEffect(() => {
+        if (!isOpen) {
+            hasAutoStartedRef.current = false;
+            return;
+        }
+
+        if (mode === "voice" && !hasAutoStartedRef.current) {
+            hasAutoStartedRef.current = true;
+            startRecording();
+        }
+    }, [isOpen, mode, startRecording]);
+
+    if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4">
@@ -205,12 +224,27 @@ export function MultimodalInput({ isOpen, onClose, onConfirm }: MultimodalInputP
                                 {t("logging.confirm", "Confirmar")}
                             </button>
                             <button
-                                onClick={() => setResult(null)}
+                                onClick={() => {
+                                    setResult(null);
+                                    if (mode === "voice") {
+                                        startRecording();
+                                    }
+                                }}
                                 className="flex-1 rounded-full border border-slate-200 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-900"
                             >
                                 {t("logging.retry", "Intentar de nuevo")}
                             </button>
                         </div>
+                    </div>
+                ) : mode === "voice" ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <Mic className="h-12 w-12 text-emerald-600" />
+                        <p className="mt-4 text-sm font-medium text-slate-600">
+                            {t("logging.voice.preparing", "Activando micrófono...")}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                            {t("logging.voice.helper", "Aceptá el permiso para empezar a grabar.")}
+                        </p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-2 gap-4">

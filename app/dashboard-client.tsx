@@ -9,7 +9,9 @@ import NearbyProductFinder from "@/components/product-search/NearbyProductFinder
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { logWater, logNutrition, analyzeFoodFromText } from "@/lib/actions";
+import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
 import {
   ArrowRight,
   BellRing,
@@ -140,6 +142,71 @@ type DailyPlanContent = {
   tip: string;
 };
 
+type SectionSeparatorProps = {
+  src: string;
+  height?: number;
+  className?: string;
+};
+
+const SectionSeparator = ({ src, height = 120, className = "" }: SectionSeparatorProps) => (
+  <div className={`relative left-1/2 right-1/2 w-screen -translate-x-1/2 ${className}`}>
+    <Image
+      src={src}
+      alt=""
+      width={1920}
+      height={height}
+      sizes="100vw"
+      className="pointer-events-none h-auto w-full select-none object-cover"
+      aria-hidden="true"
+    />
+  </div>
+);
+
+type InstallGuideModalProps = {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  subtitle: string;
+  steps: string[];
+  closeLabel: string;
+};
+
+const InstallGuideModal = ({ open, onClose, title, subtitle, steps, closeLabel }: InstallGuideModalProps) => {
+  if (!open) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 px-4 py-10"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="w-full max-w-md rounded-3xl border border-white/70 bg-white/95 p-6 text-slate-900 shadow-2xl">
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-600">iOS</p>
+          <h3 className="text-2xl font-semibold">{title}</h3>
+          <p className="text-sm text-slate-500">{subtitle}</p>
+        </div>
+        <ol className="mt-6 space-y-3 text-sm text-slate-700">
+          {steps.map((step, index) => (
+            <li key={index} className="flex items-start gap-3 rounded-2xl bg-slate-50/80 px-4 py-3">
+              <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs font-semibold text-emerald-700">
+                {index + 1}
+              </span>
+              <p>{step}</p>
+            </li>
+          ))}
+        </ol>
+        <button
+          onClick={onClose}
+          className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-slate-900/20"
+        >
+          {closeLabel}
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export default function DashboardClient({ 
   dailyPlan, 
   streak = 0,
@@ -153,8 +220,29 @@ export default function DashboardClient({
   const router = useRouter();
   const [notes, setNotes] = useState("");
   const [isMultimodalOpen, setIsMultimodalOpen] = useState(false);
+  const [multimodalMode, setMultimodalMode] = useState<"voice" | "multi">("multi");
   const [stats, setStats] = useState<DailyStats | null>(dailyStats || null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
+  const {
+    isSupported: pushSupported,
+    isEnabled: pushEnabled,
+    isLoading: pushLoading,
+    error: pushError,
+    supportKnown: pushSupportKnown,
+    requiresPwaInstall,
+    enablePush,
+    disablePush,
+  } = usePushNotifications();
+
+  const handleNotificationsToggle = async () => {
+    if (pushEnabled) {
+      await disablePush();
+      return;
+    }
+
+    await enablePush();
+  };
 
   const locale = t("dashboard.locale", { defaultValue: "es-AR" });
   const today = new Date();
@@ -330,14 +418,24 @@ export default function DashboardClient({
 
       <main className="relative z-10 mx-auto max-w-6xl px-6 py-12 sm:px-10">
         <header className="mb-10 flex flex-wrap items-center justify-between gap-6">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
-              {getCopy("dashboard.header.badge", "Panel diario")}
-            </p>
-            <h1 className="text-4xl font-semibold tracking-tight text-slate-900">
-              {getCopy("dashboard.header.title", "Hola Alma")}
-            </h1>
-            <p className="capitalize text-sm text-slate-500">{formattedDate}</p>
+          <div className="flex items-start gap-4">
+            <Image
+              src="/images/girl-avatar.png"
+              alt={getCopy("dashboard.hero.avatarAlt", "Ilustración de Alma sonriendo")}
+              width={170}
+              height={200}
+              className="pointer-events-none w-28 -rotate-3 drop-shadow-2xl sm:w-32 md:w-36 lg:w-40"
+              priority
+            />
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+                {getCopy("dashboard.header.badge", "Panel diario")}
+              </p>
+              <h1 className="text-4xl font-semibold tracking-tight text-slate-900">
+                {getCopy("dashboard.header.title", "Hola Alma")}
+              </h1>
+              <p className="capitalize text-sm text-slate-500">{formattedDate}</p>
+            </div>
           </div>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
             <button 
@@ -347,9 +445,21 @@ export default function DashboardClient({
               <MessageCircle className="h-4 w-4" />
               Chat
             </button>
-            <button className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm shadow-white/40 transition hover:border-slate-400">
+            <button
+              onClick={handleNotificationsToggle}
+              disabled={pushLoading}
+              className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium shadow-sm shadow-white/40 transition ${
+                pushEnabled
+                  ? "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-500"
+                  : "border-slate-200 bg-white/80 text-slate-700 hover:border-slate-400"
+              } disabled:cursor-not-allowed disabled:opacity-70`}
+            >
               <BellRing className="h-4 w-4" />
-              {getCopy("dashboard.header.alerts", "Notificaciones suaves")}
+              {pushLoading
+                ? getCopy("dashboard.header.alerts.loading", "Sincronizando…")
+                : pushEnabled
+                  ? getCopy("dashboard.header.alerts.enabled", "Recordatorios activos")
+                  : getCopy("dashboard.header.alerts.label", "Notificaciones suaves")}
             </button>
             <div className="flex w-full justify-center sm:w-auto sm:justify-end">
               <LanguageSwitcher
@@ -358,12 +468,42 @@ export default function DashboardClient({
               />
             </div>
           </div>
+          {pushError && (
+            <p className="text-xs font-medium text-rose-500">
+              {pushError}
+            </p>
+          )}
+          {pushSupportKnown && !pushSupported && (
+            <p className="text-xs text-slate-500">
+              {getCopy("dashboard.header.alerts.unsupported", "Tu navegador actual no soporta notificaciones push.")}
+            </p>
+          )}
+          {requiresPwaInstall && pushSupportKnown && pushSupported && !pushEnabled && (
+            <div className="flex w-full flex-col gap-3 text-xs text-slate-500 sm:flex-row sm:items-center">
+              <p className="sm:flex-1">
+                {getCopy(
+                  "dashboard.header.alerts.installHint",
+                  "En iOS agregá Alma a tu pantalla de inicio para habilitar los avisos."
+                )}
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowInstallGuide(true)}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-300/70 bg-white/80 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-700 shadow-sm transition hover:border-slate-900"
+              >
+                {getCopy(
+                  "dashboard.header.alerts.installCta",
+                  "Agregar a pantalla de inicio"
+                )}
+              </button>
+            </div>
+          )}
         </header>
 
         <section className="grid gap-6 lg:grid-cols-[minmax(0,_3fr)_minmax(0,_2fr)]">
           <article className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-8 shadow-xl shadow-emerald-100">
             <div className="flex flex-col gap-8 lg:flex-row lg:items-center">
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <span className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-white">
                   <Sparkles className="h-3.5 w-3.5" />
                   {getCopy("dashboard.hero.badge", "Energía calibrada")}
@@ -397,7 +537,10 @@ export default function DashboardClient({
                     <ArrowRight className="h-4 w-4" />
                   </button>
                   <button 
-                    onClick={() => setIsMultimodalOpen(true)}
+                    onClick={() => {
+                      setMultimodalMode("voice");
+                      setIsMultimodalOpen(true);
+                    }}
                     className="inline-flex items-center gap-2 rounded-full border border-slate-300/80 bg-white/60 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-900"
                   >
                     {getCopy("dashboard.hero.secondaryCta", "Registrar audio")}
@@ -541,17 +684,34 @@ export default function DashboardClient({
           </div>
         </section>
 
+        <SectionSeparator
+          src="/images/separador_transparent_3.png"
+          height={180}
+          className="mt-12 hidden md:block"
+        />
+
+        <SectionSeparator src="/images/separador_trimmed_1.png" height={200} className="mt-12" />
+
         <section className="mt-10">
           <QuickLogPanel 
             notes={notes}
             onNotesChange={setNotes}
-            onVoiceClick={() => setIsMultimodalOpen(true)}
+            onVoiceClick={() => {
+              setMultimodalMode("voice");
+              setIsMultimodalOpen(true);
+            }}
           />
         </section>
 
+        <SectionSeparator src="/images/separador_trimmed_2.png" height={200} className="mt-12" />
+
         <MultimodalInput
           isOpen={isMultimodalOpen}
-          onClose={() => setIsMultimodalOpen(false)}
+          mode={multimodalMode}
+          onClose={() => {
+            setIsMultimodalOpen(false);
+            setMultimodalMode("multi");
+          }}
           onConfirm={async (result) => {
             if (result.calories) {
               // Direct log if we have calories (e.g. from mock or future photo analysis)
@@ -578,9 +738,13 @@ export default function DashboardClient({
           <MissionHighlights />
         </section>
 
+        <SectionSeparator src="/images/separador_trimmed_3.png" height={200} className="mt-12" />
+
         <section className="mt-10">
           <CoachSection onCtaClick={() => router.push("/chat")} />
         </section>
+
+        <SectionSeparator src="/images/separador_trimmed_4.png" height={200} className="mt-12" />
 
         <section className="mt-10">
           <div className="rounded-3xl border border-white/60 bg-white/80 p-8 shadow-lg shadow-emerald-100">
@@ -703,6 +867,30 @@ export default function DashboardClient({
           </article>
         </section>
       </main>
+      <InstallGuideModal
+        open={showInstallGuide}
+        onClose={() => setShowInstallGuide(false)}
+        title={getCopy("dashboard.header.alerts.installGuide.title", "Agregar Alma a tu pantalla de inicio")}
+        subtitle={getCopy(
+          "dashboard.header.alerts.installGuide.subtitle",
+          "Así habilitás las notificaciones en iOS."
+        )}
+        steps={[
+          getCopy(
+            "dashboard.header.alerts.installGuide.stepShare",
+            "Tocá el ícono Compartir en Safari."
+          ),
+          getCopy(
+            "dashboard.header.alerts.installGuide.stepAdd",
+            "Elegí 'Agregar a pantalla de inicio'."
+          ),
+          getCopy(
+            "dashboard.header.alerts.installGuide.stepConfirm",
+            "Confirmá con 'Agregar'. Volvé a abrir la app desde el ícono nuevo."
+          ),
+        ]}
+        closeLabel={getCopy("dashboard.header.alerts.installGuide.close", "Listo")}
+      />
     </div>
   );
 }

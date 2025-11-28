@@ -3,10 +3,14 @@ import { GeoHash } from 'geohash';
 import { createClient } from "@/lib/supabase/server";
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { findNearbyStores, type NearbyStore } from './osm-discovery';
-import { type Product, type StoreAdapter } from './types';
+import { type Product, type StoreAdapter, type StoreSource, type ScrapeContext } from './types';
 import { cotoAdapter } from './adapters/coto';
 import { carrefourAdapter } from './adapters/carrefour';
 import { jumboAdapter, veaAdapter, discoAdapter } from './adapters/jumbo';
+import { getSourcesGroupedByStore } from './sources';
+import { ensureDefaultSourcesForStores } from './auto-sources';
+import { instagramSourceAdapter } from './adapters/instagram';
+import { websiteSourceAdapter } from './adapters/website';
 
 const ADAPTER_MAP: Record<string, StoreAdapter> = {
     'COTO': cotoAdapter,
@@ -14,6 +18,12 @@ const ADAPTER_MAP: Record<string, StoreAdapter> = {
     'JUMBO': jumboAdapter,
     'VEA': veaAdapter,
     'DISCO': discoAdapter,
+};
+
+// Mapa de adapters por tipo de fuente adicional
+const SOURCE_ADAPTER_MAP: Record<string, { scrape: (source: StoreSource, query: string, context?: ScrapeContext) => Promise<Product[]> }> = {
+    instagram: instagramSourceAdapter,
+    website: websiteSourceAdapter,
 };
 
 const encodeGeohash = (lat: number, lon: number, precision = 6) => {
@@ -185,25 +195,62 @@ const filterProductsByRelevance = (
 async function scrapeSingleStore(
     store: NearbyStore,
     query: string,
+    sourcesForStore: StoreSource[] = [],
 ): Promise<AggregatedProduct[]> {
-    const adapter = store.brand ? ADAPTER_MAP[store.brand] : undefined;
-    if (!adapter) {
-        console.warn(`[Orquestador] No adapter found for brand: ${store.brand}. Skipping.`);
-        return [];
-    }
-
     try {
-        console.log(`[Orquestador] Scraping ${store.brand} with adapter...`);
-        const products = await adapter.scrape(query);
-        console.log(`[Orquestador] ${store.brand} devolvió ${products.length} productos brutos.`);
-        if (products.length > 0) {
-            console.log('[Orquestador] Ejemplos:', products.slice(0, 3).map((p) => p.product_name));
+        const allProducts: Product[] = [];
+
+        const context: ScrapeContext = {
+            storeId: store.id!,
+            storeName: store.name,
+            storeBrand: store.brand ?? undefined,
+            storeWebsite: store.website_url ?? null,
+        };
+
+        // 1) Adapter por marca (Carrefour/Coto/etc.) si existe
+        const brandAdapter = store.brand ? ADAPTER_MAP[store.brand] : undefined;
+        if (brandAdapter) {
+            console.log(`[Orquestador] Scraping brand adapter for ${store.brand}...`);
+            const products = await brandAdapter.scrape(query, context);
+            console.log(`[Orquestador] ${store.brand} devolvió ${products.length} productos brutos.`);
+            if (products.length > 0) {
+                console.log('[Orquestador] Ejemplos marca:', products.slice(0, 3).map((p) => p.product_name));
+            }
+            allProducts.push(...products);
+        } else {
+            console.log(`[Orquestador] No brand adapter for store ${store.name} (${store.brand ?? 'sin marca'})`);
+        }
+
+        // 2) Fuentes adicionales (instagram, website, etc.)
+        if (sourcesForStore.length > 0) {
+            console.log(`[Orquestador] Scraping ${sourcesForStore.length} fuentes adicionales para ${store.name}...`);
+            for (const source of sourcesForStore) {
+                const adapter = SOURCE_ADAPTER_MAP[source.source_type];
+                if (!adapter) {
+                    console.log(`[Orquestador] No adapter for source type ${source.source_type}, skip.`);
+                    continue;
+                }
+
+                try {
+                    const productsFromSource = await adapter.scrape(source, query, context);
+                    if (productsFromSource.length > 0) {
+                        console.log(`[Orquestador] Fuente ${source.source_type} (${source.id}) devolvió ${productsFromSource.length} productos.`);
+                    }
+                    allProducts.push(...productsFromSource);
+                } catch (sourceError) {
+                    console.error(`[Orquestador] Error en fuente ${source.source_type} (${source.id}) para tienda ${store.name}:`, sourceError);
+                }
+            }
+        }
+
+        if (allProducts.length === 0) {
+            return [];
         }
 
         const supabase = await createClient();
-        await persistProducts(products, store.id!, supabase);
+        await persistProducts(allProducts, store.id!, supabase);
 
-        return products.map(p => ({
+        return allProducts.map(p => ({
             ...p,
             store_id: store.id!,
             store_name: store.name,
@@ -252,18 +299,28 @@ export async function searchNearbyProducts(
         });
     });
 
+    // Antes de scrapear, aseguramos fuentes por defecto (website) para los comercios con website_url
+    await ensureDefaultSourcesForStores(nearbyStores);
+
     const scrapableStores = nearbyStores
-        .filter(store => store.brand && ADAPTER_MAP[store.brand])
+        .filter(store => store.scraping_enabled !== false)
         .slice(0, maxStores);
 
-    console.log(`[Orchestrator] Found ${scrapableStores.length} scrapable stores.`);
+    console.log(`[Orchestrator] Found ${scrapableStores.length} stores candidatos para scraping.`);
+
+    // Cargamos fuentes configuradas automáticamente para todos los stores candidatos
+    const storeIds = scrapableStores.map((s) => s.id!).filter(Boolean);
+    const sourcesByStore = await getSourcesGroupedByStore(storeIds);
 
     const CONCURRENCY = 3;
     const allProducts: AggregatedProduct[] = [];
 
     for (let i = 0; i < scrapableStores.length; i += CONCURRENCY) {
         const batch = scrapableStores.slice(i, i + CONCURRENCY);
-        const promises = batch.map(store => scrapeSingleStore(store, productQuery));
+        const promises = batch.map(store => {
+            const sourcesForStore = sourcesByStore.get(store.id!) ?? [];
+            return scrapeSingleStore(store, productQuery, sourcesForStore);
+        });
         const results = await Promise.allSettled(promises);
 
         results.forEach(result => {

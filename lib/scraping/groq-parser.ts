@@ -37,7 +37,7 @@ export async function parseHtmlWithGroq(htmlContent: string): Promise<Product[]>
         const json = JSON.parse(content);
         const products = json.products || json.data || (Array.isArray(json) ? json : []);
 
-        return products.map((p: any) => ({
+        return products.map((p: Product) => ({
             product_name: String(p.product_name || ''),
             brand: p.brand ? String(p.brand) : null,
             price_current: parseFloat(String(p.price_current).replace(/[^0-9.]/g, '')),

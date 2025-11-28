@@ -3,6 +3,47 @@
 import { getSupabaseServiceClient } from "@/lib/supabase/server-client";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { startOfDay } from "date-fns";
+import { toZonedTime, fromZonedTime } from "date-fns-tz";
+
+const localeTimezoneMap: Record<string, string> = {
+    "es-ar": "America/Argentina/Buenos_Aires",
+    "es": "Europe/Madrid",
+    "pt-br": "America/Sao_Paulo",
+    "pt": "America/Sao_Paulo",
+    "en-us": "America/New_York",
+    "en": "America/Los_Angeles",
+    "fr-fr": "Europe/Paris",
+    "fr": "Europe/Paris",
+    "it-it": "Europe/Rome",
+    "it": "Europe/Rome",
+    "de-de": "Europe/Berlin",
+    "de": "Europe/Berlin",
+    "ja-jp": "Asia/Tokyo",
+    "ja": "Asia/Tokyo"
+};
+
+function resolveTimezone(locale?: string) {
+    if (!locale) return "UTC";
+    const normalized = locale.toLowerCase();
+    const base = normalized.split("-")[0];
+    return localeTimezoneMap[normalized] || localeTimezoneMap[base] || "UTC";
+}
+
+function getStartOfTodayIso(timezone: string) {
+    try {
+        const now = new Date();
+        const zonedNow = toZonedTime(now, timezone);
+        const zonedStart = startOfDay(zonedNow);
+        const utcStart = fromZonedTime(zonedStart, timezone);
+        return utcStart.toISOString();
+    } catch (error) {
+        console.error("getStartOfTodayIso: fallback to UTC", error);
+        const fallback = new Date();
+        fallback.setUTCHours(0, 0, 0, 0);
+        return fallback.toISOString();
+    }
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function saveOnboardingData(data: any, userId?: string) {
@@ -220,18 +261,12 @@ export async function logWater(amount: number) {
     return { success: true };
 }
 
-export async function getDailyStats(userId: string) {
+export async function getDailyStats(userId: string, locale?: string) {
     const supabase = getSupabaseServiceClient();
+    const timezone = resolveTimezone(locale);
+    const startTime = getStartOfTodayIso(timezone);
     
-    // Debug: Log the time we are querying for
-    const now = new Date();
-    // Rolling 24h window to ensure we see data if timezone logic is tricky
-    // This is a temporary fix to verify data persistence.
-    // Ideally we want "Start of Local Day", but we don't know user's offset easily here.
-    // We'll query for the last 24 hours.
-    const startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
-    
-    console.log(`getDailyStats: Querying for user ${userId} since ${startTime}`);
+    console.log(`getDailyStats: Querying for user ${userId} since ${startTime} (tz: ${timezone})`);
 
     // Get Nutrition
     const { data: nutritionData, error: nutritionError } = await supabase
@@ -280,6 +315,26 @@ export async function getDailyStats(userId: string) {
             water: profile?.water_goal_ml || 2000,
         }
     };
+}
+
+export async function getTodayNutritionLogs(userId: string, locale?: string) {
+    const supabase = getSupabaseServiceClient();
+    const timezone = resolveTimezone(locale);
+    const since = getStartOfTodayIso(timezone);
+
+    const { data, error } = await supabase
+        .from("nutrition_logs")
+        .select("id,name,calories,protein,carbs,fats,meal_type,created_at")
+        .eq("user_id", userId)
+        .gte("created_at", since)
+        .order("created_at", { ascending: true });
+
+    if (error) {
+        console.error("getTodayNutritionLogs: error", error);
+        return [];
+    }
+
+    return data || [];
 }
 
 export async function analyzeFoodFromText(text: string) {

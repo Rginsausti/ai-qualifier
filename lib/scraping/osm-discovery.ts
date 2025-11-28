@@ -119,13 +119,53 @@ export async function findNearbyStores(
         const query = `
             [out:json][timeout:25];
             (
+                // Supermercados y autoservicios
                 node["shop"="supermarket"](around:${radiusMeters}, ${lat}, ${lon});
                 way["shop"="supermarket"](around:${radiusMeters}, ${lat}, ${lon});
                 relation["shop"="supermarket"](around:${radiusMeters}, ${lat}, ${lon});
+
+                // Minimercados y kioscos grandes
                 node["shop"="convenience"](around:${radiusMeters}, ${lat}, ${lon});
                 way["shop"="convenience"](around:${radiusMeters}, ${lat}, ${lon});
+                relation["shop"="convenience"](around:${radiusMeters}, ${lat}, ${lon});
+
+                // Dietéticas / comida saludable
                 node["shop"="health_food"](around:${radiusMeters}, ${lat}, ${lon});
                 way["shop"="health_food"](around:${radiusMeters}, ${lat}, ${lon});
+                relation["shop"="health_food"](around:${radiusMeters}, ${lat}, ${lon});
+
+                // Panaderías
+                node["shop"="bakery"](around:${radiusMeters}, ${lat}, ${lon});
+                way["shop"="bakery"](around:${radiusMeters}, ${lat}, ${lon});
+                relation["shop"="bakery"](around:${radiusMeters}, ${lat}, ${lon});
+
+                // Verdulerías / fruterías
+                node["shop"="greengrocer"](around:${radiusMeters}, ${lat}, ${lon});
+                way["shop"="greengrocer"](around:${radiusMeters}, ${lat}, ${lon});
+                relation["shop"="greengrocer"](around:${radiusMeters}, ${lat}, ${lon});
+
+                // Carnicerías y pescaderías
+                node["shop"="butcher"](around:${radiusMeters}, ${lat}, ${lon});
+                way["shop"="butcher"](around:${radiusMeters}, ${lat}, ${lon});
+                relation["shop"="butcher"](around:${radiusMeters}, ${lat}, ${lon});
+
+                node["shop"="seafood"](around:${radiusMeters}, ${lat}, ${lon});
+                way["shop"="seafood"](around:${radiusMeters}, ${lat}, ${lon});
+                relation["shop"="seafood"](around:${radiusMeters}, ${lat}, ${lon});
+
+                // Rotiserías / delicatessen
+                node["shop"="deli"](around:${radiusMeters}, ${lat}, ${lon});
+                way["shop"="deli"](around:${radiusMeters}, ${lat}, ${lon});
+                relation["shop"="deli"](around:${radiusMeters}, ${lat}, ${lon});
+
+                // Restaurantes y cafés
+                node["amenity"="restaurant"](around:${radiusMeters}, ${lat}, ${lon});
+                way["amenity"="restaurant"](around:${radiusMeters}, ${lat}, ${lon});
+                relation["amenity"="restaurant"](around:${radiusMeters}, ${lat}, ${lon});
+
+                node["amenity"="cafe"](around:${radiusMeters}, ${lat}, ${lon});
+                way["amenity"="cafe"](around:${radiusMeters}, ${lat}, ${lon});
+                relation["amenity"="cafe"](around:${radiusMeters}, ${lat}, ${lon});
             );
             out center;
         `;

@@ -1,10 +1,11 @@
-import { StoreAdapter } from '../types';
+import { StoreAdapter, ScrapeContext } from '../types';
 import { scrapeWithHeadlessX } from '../headless-scraper';
 import { parseHtmlWithGroq } from '../groq-parser';
 
 export const cotoAdapter: StoreAdapter = {
     brand: 'COTO',
-    scrape: async (query: string) => {
+    scrape: async (query: string, _context?: ScrapeContext) => {
+        void _context;
         const url = `https://www.cotodigital3.com.ar/sitios/cdigi/buscar?q=${encodeURIComponent(query)}`;
         const html = await scrapeWithHeadlessX({
             url,

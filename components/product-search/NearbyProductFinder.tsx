@@ -1,9 +1,15 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Image from 'next/image';
 import { MapPin, Search, AlertCircle, Loader2, ShoppingBag, Tag, Navigation } from 'lucide-react';
+
+const LOADER_MESSAGES = [
+    { key: 'productSearch.loader.step1', fallback: 'Estamos buscando en los comercios cercanos a tu casa' },
+    { key: 'productSearch.loader.step2', fallback: 'Esto puede tardar unos instantes, sé paciente' },
+    { key: 'productSearch.loader.step3', fallback: 'Estamos analizando la zona de tu hogar' },
+];
 
 export type ProductResult = {
     product_name: string;
@@ -36,6 +42,7 @@ export default function NearbyProductFinder() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [locationDenied, setLocationDenied] = useState(false);
+    const [searchMessageIndex, setSearchMessageIndex] = useState(0);
 
     // Request geolocation permission
     const requestLocation = () => {
@@ -75,6 +82,7 @@ export default function NearbyProductFinder() {
         }
 
         setLoading(true);
+        setSearchMessageIndex(0);
         setError(null);
 
         try {
@@ -102,8 +110,23 @@ export default function NearbyProductFinder() {
         }
     };
 
+    const loadingMessages = LOADER_MESSAGES.map(message => t(message.key, message.fallback));
+
+    useEffect(() => {
+        if (!loading) {
+            setSearchMessageIndex(0);
+            return;
+        }
+
+        const interval = window.setInterval(() => {
+            setSearchMessageIndex(prev => (prev + 1) % LOADER_MESSAGES.length);
+        }, 3500);
+
+        return () => window.clearInterval(interval);
+    }, [loading]);
+
     return (
-        <div className="space-y-8">
+        <div className="relative space-y-8 overflow-hidden">
             {/* Header */}
             <div className="space-y-2">
                 <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
@@ -180,7 +203,7 @@ export default function NearbyProductFinder() {
                 <div className="py-12 text-center">
                     <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-emerald-500" />
                     <p className="mt-4 text-sm font-medium text-slate-500 animate-pulse">
-                        {t('productSearch.searching', 'Buscando las mejores opciones para ti...')}
+                        {loadingMessages[searchMessageIndex]}
                     </p>
                 </div>
             )}

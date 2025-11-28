@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { ArrowRight, HeartHandshake, Loader2 } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import Image from "next/image";
 
 export function ClosingSection() {
   const { t } = useTranslation();
@@ -44,7 +45,23 @@ export function ClosingSection() {
   }
 
   return (
-    <section className="rounded-3xl border border-white/60 bg-slate-900 p-8 text-white shadow-2xl shadow-slate-900/30">
+    <section className="relative overflow-hidden rounded-3xl border border-white/60 bg-slate-900 p-8 text-white shadow-2xl shadow-slate-900/30">
+      <Image
+        src="/images/separador_transparent_4.png"
+        alt=""
+        width={360}
+        height={360}
+        className="pointer-events-none absolute -top-28 -right-12 hidden xl:block opacity-40"
+        aria-hidden="true"
+      />
+      <Image
+        src="/images/separador_new_3.png"
+        alt=""
+        width={280}
+        height={280}
+        className="pointer-events-none absolute -bottom-32 -left-24 hidden lg:block opacity-40"
+        aria-hidden="true"
+      />
       <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em]">
         {t("closingSection.badge")}
       </div>

@@ -14,7 +14,7 @@ export function RitualSection() {
   const steps = ["one", "two", "three"] as const;
 
   return (
-    <section className="rounded-3xl border border-white/60 bg-gradient-to-br from-white via-white to-emerald-50 p-8 shadow-xl shadow-emerald-100">
+    <section className="relative overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-white via-white to-emerald-50 p-8 shadow-xl shadow-emerald-100">
       <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-emerald-700">
         {t("ritualSection.badge")}
       </div>

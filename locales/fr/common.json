@@ -43,7 +43,22 @@
     "header": {
       "badge": "Tableau quotidien",
       "title": "Bonjour Alma",
-      "alerts": "Notifications douces"
+      "alerts": {
+        "label": "Notifications douces",
+        "loading": "Synchronisation…",
+        "enabled": "Rappels actifs",
+        "unsupported": "Votre navigateur actuel ne prend pas en charge les notifications push.",
+        "installHint": "Sur iOS, ajoutez Alma à votre écran d'accueil pour activer les alertes.",
+        "installCta": "Ajouter à l'écran d'accueil",
+        "installGuide": {
+          "title": "Ajoutez Alma à l'écran d'accueil",
+          "subtitle": "Ainsi vous débloquez les notifications sur iOS.",
+          "stepShare": "Touchez l'icône Partager dans Safari.",
+          "stepAdd": "Choisissez \"Ajouter à l'écran d'accueil\".",
+          "stepConfirm": "Validez avec \"Ajouter\" et rouvrez Alma depuis le nouvel icône.",
+          "close": "Compris"
+        }
+      }
     },
     "hero": {
       "badge": "Énergie calibrée",
@@ -53,7 +68,8 @@
       "secondaryCta": "Enregistrer audio",
       "calories": "Calories",
       "goal": "sur",
-      "ready": "terminé"
+      "ready": "terminé",
+      "avatarAlt": "Illustration d'Alma souriante"
     },
     "mindful": {
       "energy": "Énergie",
@@ -600,5 +616,24 @@
       "description": "Je connais tes objectifs et préférences. Demande-moi quoi manger, comment remplacer un ingrédient ou dis-moi comment tu te sens."
     },
     "inputPlaceholder": "Écris ton message..."
+  },
+  "productSearch": {
+    "title": "Rechercher des produits proches",
+    "subtitle": "Trouve les meilleurs prix dans les commerces de ton quartier",
+    "locationRequired": "Nous avons besoin de ta position",
+    "locationDescription": "Pour t'afficher des produits proches, nous devons accéder à ta localisation.",
+    "enableLocation": "Activer la localisation",
+    "locationDeniedHelp": "Active l'accès à la localisation dans les paramètres de ton navigateur.",
+    "searchPlaceholder": "Que cherches-tu ? (ex : lait écrémé)",
+    "searching": "Nous cherchons des produits dans les commerces à proximité...",
+    "loader": {
+      "step1": "Nous recherchons dans les commerces proches de chez toi",
+      "step2": "Cela peut prendre quelques instants, merci de patienter",
+      "step3": "Nous analysons les commerces autour de ton foyer"
+    },
+    "resultsFound": "{{count}} produits trouvés",
+    "cached": "En cache",
+    "storesSearched": "commerces consultés",
+    "noResults": "Aucun produit trouvé. Essaie une autre recherche."
   }
 }

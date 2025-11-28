@@ -43,7 +43,22 @@
     "header": {
       "badge": "Daily panel",
       "title": "Hello, I'm Alma",
-      "alerts": "Gentle notifications"
+      "alerts": {
+        "label": "Gentle notifications",
+        "loading": "Syncing…",
+        "enabled": "Reminders on",
+        "unsupported": "Your current browser does not support push notifications.",
+        "installHint": "On iOS add Alma to your Home Screen to enable alerts.",
+        "installCta": "Add to Home Screen",
+        "installGuide": {
+          "title": "Add Alma to your Home Screen",
+          "subtitle": "That’s how you unlock push alerts on iOS.",
+          "stepShare": "Tap the Share icon in Safari.",
+          "stepAdd": "Choose \"Add to Home Screen\".",
+          "stepConfirm": "Confirm with \"Add\" and reopen Alma from the new icon.",
+          "close": "Got it"
+        }
+      }
     },
     "hero": {
       "badge": "Calibrated energy",
@@ -53,7 +68,8 @@
       "secondaryCta": "Log audio",
       "calories": "Calories",
       "goal": "of",
-      "ready": "complete"
+      "ready": "complete",
+      "avatarAlt": "Illustration of Alma smiling"
     },
     "mindful": {
       "energy": "Energy",
@@ -622,6 +638,11 @@
     "locationDeniedHelp": "Please enable location access in your browser settings.",
     "searchPlaceholder": "What are you looking for? (e.g., skim milk)",
     "searching": "Searching for products in nearby stores...",
+    "loader": {
+      "step1": "We're checking the stores around your home",
+      "step2": "This might take a few moments, thanks for your patience",
+      "step3": "We're analyzing the shops in your area"
+    },
     "resultsFound": "{{count}} products found",
     "cached": "Cached",
     "storesSearched": "stores searched",

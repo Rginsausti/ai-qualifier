@@ -15,7 +15,7 @@ export function CoachSection({ onCtaClick }: { onCtaClick?: () => void }) {
   const bullets = ["care", "time", "result"] as const;
 
   return (
-    <section className="rounded-3xl border border-white/60 bg-gradient-to-br from-white via-white to-slate-50 p-8 shadow-xl shadow-emerald-100">
+    <section className="relative overflow-hidden rounded-3xl border border-white/60 bg-gradient-to-br from-white via-white to-slate-50 p-8 shadow-xl shadow-emerald-100">
       <div className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-white">
         {t("coachSection.badge")}
       </div>

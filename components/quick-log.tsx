@@ -107,7 +107,7 @@ export function QuickLogPanel({
   };
 
   return (
-    <section className="rounded-3xl border border-white/60 bg-white/80 p-6 shadow-lg shadow-emerald-100">
+    <section className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-6 shadow-lg shadow-emerald-100">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs uppercase tracking-[0.4em] text-slate-400">

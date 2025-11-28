@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { StoreAdapter, Product } from '../types';
+import { StoreAdapter, Product, ScrapeContext } from '../types';
 
 const CARREFOUR_BASE_URL = 'https://www.carrefour.com.ar';
 
@@ -76,7 +76,8 @@ function normalizeProduct(product: CarrefourApiProduct): Product[] {
 
 export const carrefourAdapter: StoreAdapter = {
     brand: 'CARREFOUR',
-    scrape: async (query: string) => {
+    scrape: async (query: string, _context?: ScrapeContext) => {
+        void _context;
         const apiProducts = await fetchProducts(query);
 
         return apiProducts.flatMap(normalizeProduct)

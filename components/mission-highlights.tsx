@@ -48,7 +48,7 @@ export function MissionHighlights() {
   const { t } = useTranslation();
 
   return (
-    <section className="rounded-3xl border border-white/60 bg-white/80 p-6 shadow-xl shadow-emerald-100">
+    <section className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-6 shadow-xl shadow-emerald-100">
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">

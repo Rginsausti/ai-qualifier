@@ -43,7 +43,22 @@
     "header": {
       "badge": "Panel diario",
       "title": "Hola, soy Alma",
-      "alerts": "Notificaciones suaves"
+      "alerts": {
+        "label": "Notificaciones suaves",
+        "loading": "Sincronizando…",
+        "enabled": "Recordatorios activos",
+        "unsupported": "Tu navegador actual no soporta notificaciones push.",
+        "installHint": "En iOS agregá Alma a tu pantalla de inicio para habilitar los avisos.",
+        "installCta": "Agregar a pantalla de inicio",
+        "installGuide": {
+          "title": "Agregá Alma a tu pantalla de inicio",
+          "subtitle": "Así habilitás las notificaciones en iOS.",
+          "stepShare": "Tocá el ícono Compartir en Safari.",
+          "stepAdd": "Elegí \"Agregar a pantalla de inicio\".",
+          "stepConfirm": "Confirmá con \"Agregar\" y abrí Alma desde el nuevo ícono.",
+          "close": "Listo"
+        }
+      }
     },
     "hero": {
       "badge": "Energía calibrada",
@@ -53,7 +68,8 @@
       "secondaryCta": "Registrar audio",
       "calories": "Calorías",
       "goal": "de",
-      "ready": "completado"
+      "ready": "completado",
+      "avatarAlt": "Ilustración de Alma sonriendo"
     },
     "mindful": {
       "energy": "Energía",
@@ -622,6 +638,11 @@
     "locationDeniedHelp": "Por favor, habilitá el acceso a la ubicación en la configuración de tu navegador.",
     "searchPlaceholder": "¿Qué estás buscando? (ej: leche descremada)",
     "searching": "Buscando productos en tiendas cercanas...",
+    "loader": {
+      "step1": "Estamos buscando en los comercios cercanos a tu casa",
+      "step2": "Esto puede tardar unos instantes, sé paciente",
+      "step3": "Estamos analizando la zona de tu hogar"
+    },
     "resultsFound": "{{count}} productos encontrados",
     "cached": "Caché",
     "storesSearched": "tiendas consultadas",

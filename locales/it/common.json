@@ -9,7 +9,22 @@
     "header": {
       "badge": "Pannello giornaliero",
       "title": "Ciao, sono Alma",
-      "alerts": "Notifiche gentili"
+      "alerts": {
+        "label": "Notifiche gentili",
+        "loading": "Sincronizzazione…",
+        "enabled": "Promemoria attivi",
+        "unsupported": "Il browser attuale non supporta le notifiche push.",
+        "installHint": "Su iOS aggiungi Alma alla schermata Home per attivare gli avvisi.",
+        "installCta": "Aggiungi alla schermata Home",
+        "installGuide": {
+          "title": "Aggiungi Alma alla schermata Home",
+          "subtitle": "Così sblocchi gli avvisi push su iOS.",
+          "stepShare": "Tocca l'icona Condividi in Safari.",
+          "stepAdd": "Scegli \"Aggiungi a Home\".",
+          "stepConfirm": "Conferma con \"Aggiungi\" e riapri Alma dalla nuova icona.",
+          "close": "Fatto"
+        }
+      }
     },
     "hero": {
       "badge": "Energia calibrata",
@@ -19,7 +34,8 @@
       "secondaryCta": "Registra audio",
       "calories": "Calorie",
       "goal": "di",
-      "ready": "completo"
+      "ready": "completato",
+      "avatarAlt": "Illustrazione di Alma che sorride"
     },
     "mindful": {
       "energy": "Energia",
@@ -600,5 +616,24 @@
       "logout": "Esci",
       "seedSuccess": "Utente creato con ID: {{userId}}"
     }
+  },
+  "productSearch": {
+    "title": "Cerca prodotti vicino a te",
+    "subtitle": "Trova i prezzi migliori nei supermercati della tua zona",
+    "locationRequired": "Abbiamo bisogno della tua posizione",
+    "locationDescription": "Per mostrarti prodotti vicini, dobbiamo accedere alla tua posizione.",
+    "enableLocation": "Attiva posizione",
+    "locationDeniedHelp": "Abilita l'accesso alla posizione nelle impostazioni del browser.",
+    "searchPlaceholder": "Cosa stai cercando? (es: latte scremato)",
+    "searching": "Stiamo cercando prodotti nei negozi vicini...",
+    "loader": {
+      "step1": "Stiamo cercando nei negozi vicino a casa tua",
+      "step2": "Potrebbe richiedere qualche istante, abbi pazienza",
+      "step3": "Stiamo analizzando la zona della tua casa"
+    },
+    "resultsFound": "{{count}} prodotti trovati",
+    "cached": "In cache",
+    "storesSearched": "negozi consultati",
+    "noResults": "Nessun prodotto trovato. Prova con un'altra ricerca."
   }
 }
