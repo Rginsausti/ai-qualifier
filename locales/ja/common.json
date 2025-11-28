@@ -41,6 +41,15 @@
         "description": "空腹感は{{hunger}}。リアルタイムでリチュアルを調整します。",
         "energyFallback": "安定",
         "cravingFallback": "ニュートラル"
+      },
+      "note": {
+        "label": "テキストで食事を記録",
+        "placeholder": "例：アボカドトーストとポーチドエッグ",
+        "helper": "食べた内容を書くと自動で記録されます。ショートカット：Ctrl/⌘+Enter。",
+        "cta": "ノートを登録",
+        "success": "保存しました",
+        "error": "記録できませんでした。もう一度お試しください。",
+        "empty": "先に内容を入力してください。"
       }
     },
     "mindful": {

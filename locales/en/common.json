@@ -75,6 +75,15 @@
         "description": "Hunger feels {{hunger}}. We adapt the ritual in real time.",
         "energyFallback": "steady",
         "cravingFallback": "neutral"
+      },
+      "note": {
+        "label": "Log meal from text",
+        "placeholder": "e.g., avocado toast with poached egg",
+        "helper": "Describe what you ate and Alma will log it automatically. Shortcut: Ctrl/⌘+Enter.",
+        "cta": "Save note",
+        "success": "Saved",
+        "error": "Couldn’t log that note. Try again.",
+        "empty": "Please write a note first."
       }
     },
     "mindful": {

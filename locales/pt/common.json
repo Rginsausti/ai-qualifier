@@ -75,6 +75,15 @@
         "description": "A fome está {{hunger}}. Ajustamos o ritual em tempo real.",
         "energyFallback": "estável",
         "cravingFallback": "neutro"
+      },
+      "note": {
+        "label": "Registar refeição por texto",
+        "placeholder": "Ex.: torradas com abacate e ovo escalfado",
+        "helper": "Descreve o que comeste e a Alma regista automaticamente. Atalho: Ctrl/⌘+Enter.",
+        "cta": "Guardar nota",
+        "success": "Registado",
+        "error": "Não consegui registar essa nota. Tenta novamente.",
+        "empty": "Preciso de uma nota para registar."
       }
     },
     "mindful": {

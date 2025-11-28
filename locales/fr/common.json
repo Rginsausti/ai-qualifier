@@ -75,6 +75,15 @@
         "description": "Ta faim est {{hunger}}. On ajuste le rituel en temps réel.",
         "energyFallback": "stable",
         "cravingFallback": "neutre"
+      },
+      "note": {
+        "label": "Enregistrer un repas en texte",
+        "placeholder": "Ex : tartines à l’avocat et œuf poché",
+        "helper": "Décris ce que tu as mangé et Alma l’ajoute automatiquement. Raccourci : Ctrl/⌘+Entrée.",
+        "cta": "Enregistrer la note",
+        "success": "Enregistré",
+        "error": "Impossible d’enregistrer la note. Réessaie.",
+        "empty": "Merci d’écrire une note avant."
       }
     },
     "mindful": {

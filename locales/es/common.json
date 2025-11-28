@@ -75,6 +75,15 @@
         "description": "Tu hambre se siente {{hunger}}. Ajustamos el ritual en tiempo real.",
         "energyFallback": "estable",
         "cravingFallback": "neutral"
+      },
+      "note": {
+        "label": "Registrar ingesta por nota",
+        "placeholder": "Ej: dos tostadas con palta y huevo poché",
+        "helper": "Describí lo que comiste y Alma lo suma automáticamente. Atajo: Ctrl/⌘+Enter.",
+        "cta": "Registrar nota",
+        "success": "Guardado",
+        "error": "No pude registrar la nota. Probá otra vez.",
+        "empty": "Necesito una nota para registrar."
       }
     },
     "mindful": {

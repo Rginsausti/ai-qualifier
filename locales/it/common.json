@@ -41,6 +41,15 @@
         "description": "La fame è {{hunger}}. Regoliamo il rituale in tempo reale.",
         "energyFallback": "stabile",
         "cravingFallback": "neutro"
+      },
+      "note": {
+        "label": "Registra pasto dal testo",
+        "placeholder": "Es.: toast con avocado e uovo in camicia",
+        "helper": "Descrivi cosa hai mangiato e Alma lo registra automaticamente. Scorciatoia: Ctrl/⌘+Invio.",
+        "cta": "Registra nota",
+        "success": "Salvato",
+        "error": "Non sono riuscita a registrare la nota. Riprova.",
+        "empty": "Scrivi prima una nota."
       }
     },
     "mindful": {

@@ -41,6 +41,15 @@
         "description": "Dein Hunger fühlt sich {{hunger}} an. Wir passen das Ritual in Echtzeit an.",
         "energyFallback": "stabil",
         "cravingFallback": "neutral"
+      },
+      "note": {
+        "label": "Mahlzeit per Text erfassen",
+        "placeholder": "z. B. Avocado-Toast mit pochiertem Ei",
+        "helper": "Beschreibe, was du gegessen hast, und Alma bucht es automatisch. Shortcut: Strg/⌘+Enter.",
+        "cta": "Notiz speichern",
+        "success": "Gespeichert",
+        "error": "Die Notiz konnte nicht gespeichert werden. Versuch’s noch einmal.",
+        "empty": "Bitte schreib zuerst eine Notiz."
       }
     },
     "mindful": {

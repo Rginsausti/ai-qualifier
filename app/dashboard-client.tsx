@@ -9,6 +9,7 @@ import NearbyProductFinder from "@/components/product-search/NearbyProductFinder
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import type { KeyboardEvent } from "react";
 import Image from "next/image";
 import { logWater, logNutrition, analyzeFoodFromText } from "@/lib/actions";
 import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
@@ -28,6 +29,7 @@ import {
   TrendingUp,
   Utensils,
   Zap,
+  X,
   type LucideIcon,
 } from "lucide-react";
 
@@ -57,6 +59,27 @@ type MacroCard = {
   icon: LucideIcon;
   accent: string;
   barColor: string;
+};
+
+type QuickLogSnapshot = {
+  energy: "high" | "medium" | "low" | null;
+  hunger: number | null;
+  craving: "sweet" | "savory" | "fresh" | null;
+};
+
+const normalizeEnergy = (value: string | null | undefined): QuickLogSnapshot["energy"] => {
+  return value === "high" || value === "medium" || value === "low" ? value : null;
+};
+
+const normalizeCraving = (value: string | null | undefined): QuickLogSnapshot["craving"] => {
+  return value === "sweet" || value === "savory" || value === "fresh" ? value : null;
+};
+
+const normalizeHunger = (value: number | null | undefined): number => {
+  if (typeof value !== "number" || Number.isNaN(value)) {
+    return 3;
+  }
+  return Math.min(5, Math.max(1, Math.round(value)));
 };
 
 const actionPlan = [
@@ -211,25 +234,36 @@ const InstallGuideModal = ({ open, onClose, title, subtitle, steps, closeLabel }
 export default function DashboardClient({ 
   dailyPlan, 
   streak = 0,
-  dailyStats 
+  dailyStats,
+  initialQuickLog,
 }: { 
   dailyPlan?: DailyPlanContent; 
   streak?: number;
   dailyStats?: DailyStats | null;
+  initialQuickLog?: { energy: string | null; hunger: number | null; craving: string | null } | null;
 }) {
+  const hydratedEnergy = normalizeEnergy(initialQuickLog?.energy ?? null);
+  const hydratedCraving = normalizeCraving(initialQuickLog?.craving ?? null);
+  const hydratedHunger = normalizeHunger(initialQuickLog?.hunger ?? null);
   const { t } = useTranslation();
   const router = useRouter();
   const [notes, setNotes] = useState("");
   const [isMultimodalOpen, setIsMultimodalOpen] = useState(false);
   const [multimodalMode, setMultimodalMode] = useState<"voice" | "multi">("multi");
-  const [energyLevel, setEnergyLevel] = useState<"high" | "medium" | "low" | null>(null);
-  const [hungerLevel, setHungerLevel] = useState(3);
-  const [cravingType, setCravingType] = useState<"sweet" | "savory" | "fresh" | null>(null);
+  const [energyLevel, setEnergyLevel] = useState<"high" | "medium" | "low" | null>(hydratedEnergy);
+  const [hungerLevel, setHungerLevel] = useState(hydratedHunger);
+  const [cravingType, setCravingType] = useState<"sweet" | "savory" | "fresh" | null>(hydratedCraving);
   const [stats, setStats] = useState<DailyStats | null>(dailyStats || null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [foodNote, setFoodNote] = useState("");
+  const [foodNoteStatus, setFoodNoteStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [foodNoteError, setFoodNoteError] = useState<string | null>(null);
+  const [isFoodNoteDialogOpen, setIsFoodNoteDialogOpen] = useState(false);
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const planSectionRef = useRef<HTMLElement | null>(null);
   const quickLogSectionRef = useRef<HTMLElement | null>(null);
+  const foodNoteResetTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const foodNoteTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const scrollToQuickLog = useCallback(() => {
     if (!quickLogSectionRef.current) return;
     quickLogSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -267,6 +301,23 @@ export default function DashboardClient({
   useEffect(() => {
     if (dailyStats) setStats(dailyStats);
   }, [dailyStats]);
+
+  useEffect(() => {
+    return () => {
+      if (foodNoteResetTimeout.current) {
+        clearTimeout(foodNoteResetTimeout.current);
+        foodNoteResetTimeout.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isFoodNoteDialogOpen) return;
+    const focusTimeout = setTimeout(() => {
+      foodNoteTextareaRef.current?.focus();
+    }, 50);
+    return () => clearTimeout(focusTimeout);
+  }, [isFoodNoteDialogOpen]);
 
   const getCopy = useCallback(
     (key: string, fallback: string) => t(key, { defaultValue: fallback }),
@@ -390,13 +441,13 @@ export default function DashboardClient({
     router.refresh();
   };
 
-  const handleFoodAnalysis = async (text: string) => {
+  const handleFoodAnalysis = async (text: string): Promise<boolean> => {
     setIsProcessing(true);
     try {
       const analysis = await analyzeFoodFromText(text);
       if (!analysis) {
         setNotes(prev => prev ? prev + "\n" + text : text);
-        return;
+        return false;
       }
 
       const rawType = typeof analysis.type === "string" ? analysis.type.toLowerCase() : undefined;
@@ -407,28 +458,39 @@ export default function DashboardClient({
 
       if (isWater) {
         if (waterAmount > 0) {
-          setStats(prev => prev ? ({
-            ...prev,
-            water: prev.water + waterAmount
-          }) : prev);
+          const result = await logWater(waterAmount);
+          if (result?.success) {
+            setStats(prev => prev ? ({
+              ...prev,
+              water: prev.water + waterAmount
+            }) : prev);
 
-          await logWater(waterAmount);
+            setNotes(prev => prev ? `${prev}\n[Agua registrada: ${waterAmount}ml]` : `[Agua registrada: ${waterAmount}ml]`);
+            return true;
+          }
 
-          setNotes(prev => prev ? `${prev}\n[Agua registrada: ${waterAmount}ml]` : `[Agua registrada: ${waterAmount}ml]`);
-          return;
+          console.error("handleFoodAnalysis: failed to log water", result?.error);
+          setNotes(prev => prev ? prev + "\n" + text : text);
+          return false;
         }
 
         setNotes(prev => prev ? prev + "\n" + text : text);
-        return;
+        return false;
       }
 
-      await logNutrition({
+      const result = await logNutrition({
         name: analysis.name,
         calories: analysis.calories ?? 0,
         protein: analysis.protein ?? 0,
         carbs: analysis.carbs ?? 0,
         fats: analysis.fats ?? 0,
       });
+
+      if (!result?.success) {
+        console.error("handleFoodAnalysis: failed to log nutrition", result?.error);
+        setNotes(prev => prev ? prev + "\n" + text : text);
+        return false;
+      }
 
       // Optimistic update
       setStats(prev => prev ? ({
@@ -444,12 +506,51 @@ export default function DashboardClient({
       const caloriesLogged = analysis.calories ?? 0;
       const entryLabel = analysis.name ?? "Registro";
       setNotes(prev => prev ? prev + `\n[Registrado: ${entryLabel} - ${caloriesLogged}kcal]` : `[Registrado: ${entryLabel} - ${caloriesLogged}kcal]`);
+      return true;
     } catch (error) {
       console.error("Error analyzing food:", error);
       setNotes(prev => prev ? prev + "\n" + text : text);
+      return false;
     } finally {
       setIsProcessing(false);
       router.refresh();
+    }
+  };
+
+  const handleFoodNoteSubmit = async () => {
+    const trimmed = foodNote.trim();
+    if (!trimmed) {
+      setFoodNoteError(getCopy("dashboard.hero.note.empty", "Necesito una nota para registrar."));
+      setFoodNoteStatus("error");
+      return;
+    }
+
+    setFoodNoteError(null);
+    setFoodNoteStatus("loading");
+    const logged = await handleFoodAnalysis(trimmed);
+
+    if (logged) {
+      setFoodNote("");
+      setFoodNoteStatus("success");
+      if (foodNoteResetTimeout.current) {
+        clearTimeout(foodNoteResetTimeout.current);
+      }
+      foodNoteResetTimeout.current = setTimeout(() => {
+        setFoodNoteStatus("idle");
+        foodNoteResetTimeout.current = null;
+      }, 2500);
+      setIsFoodNoteDialogOpen(false);
+      return;
+    }
+
+    setFoodNoteStatus("error");
+    setFoodNoteError(getCopy("dashboard.hero.note.error", "No pude registrar la nota. Probá otra vez."));
+  };
+
+  const handleFoodNoteKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+      event.preventDefault();
+      handleFoodNoteSubmit();
     }
   };
 
@@ -607,24 +708,31 @@ export default function DashboardClient({
                   ))}
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <button
-                    onClick={() => {
-                      if (planSectionRef.current) {
-                        planSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-                        planSectionRef.current.focus?.({ preventScroll: true });
-                      }
-                    }}
-                    className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/30 transition hover:-translate-y-0.5"
-                  >
-                    {getCopy("dashboard.hero.primaryCta", "Ver ritual de hoy")}
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsFoodNoteDialogOpen(true);
+                        setFoodNoteError(null);
+                      }}
+                      className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/30 transition hover:-translate-y-0.5"
+                    >
+                      {getCopy("dashboard.hero.note.label", "Registrar ingesta por nota")}
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                    {foodNoteStatus === "success" && (
+                      <span className="text-xs font-semibold text-emerald-600" aria-live="polite">
+                        {getCopy("dashboard.hero.note.success", "Guardado")}
+                      </span>
+                    )}
+                  </div>
                   <button 
+                    type="button"
                     onClick={() => {
                       setMultimodalMode("voice");
                       setIsMultimodalOpen(true);
                     }}
-                    className="inline-flex items-center gap-2 rounded-full border border-slate-300/80 bg-white/60 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-900"
+                    className="inline-flex min-h-[48px] items-center gap-2 self-start rounded-full border border-slate-300/80 bg-white/60 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-900"
                   >
                     {getCopy("dashboard.hero.secondaryCta", "Registrar audio")}
                   </button>
@@ -787,6 +895,94 @@ export default function DashboardClient({
         </section>
 
         <SectionSeparator src="/images/separador_trimmed_2.png" height={200} className="mt-12" />
+
+        {isFoodNoteDialogOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 px-4 py-10"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="w-full max-w-lg rounded-3xl border border-white/80 bg-white/95 p-6 shadow-2xl" role="document">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                    {getCopy("dashboard.hero.note.label", "Registrar ingesta por nota")}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {getCopy("dashboard.hero.note.helper", "Describe lo que comiste y Alma lo suma automáticamente. Atajo: Ctrl/⌘+Enter.")}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsFoodNoteDialogOpen(false);
+                    setFoodNoteError(null);
+                    if (foodNoteStatus === "error") {
+                      setFoodNoteStatus("idle");
+                    }
+                  }}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-slate-900"
+                  aria-label={getCopy("dashboard.hero.note.close", "Cerrar")}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <textarea
+                ref={foodNoteTextareaRef}
+                rows={4}
+                value={foodNote}
+                onChange={(event) => {
+                  setFoodNote(event.target.value);
+                  if (foodNoteError) setFoodNoteError(null);
+                  if (foodNoteStatus === "error") {
+                    setFoodNoteStatus("idle");
+                  }
+                }}
+                onKeyDown={handleFoodNoteKeyDown}
+                placeholder={getCopy("dashboard.hero.note.placeholder", "Ej: dos tostadas con palta y huevo poché")}
+                aria-label={getCopy("dashboard.hero.note.label", "Registrar ingesta por nota")}
+                aria-invalid={foodNoteError ? "true" : "false"}
+                className="mt-6 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:ring-1 focus:ring-slate-900"
+                disabled={foodNoteStatus === "loading"}
+              />
+              {foodNoteError && (
+                <p className="mt-2 text-xs font-medium text-rose-500" aria-live="assertive">
+                  {foodNoteError}
+                </p>
+              )}
+              <div className="mt-4 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={handleFoodNoteSubmit}
+                  disabled={foodNoteStatus === "loading" || !foodNote.trim()}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-slate-900/30 transition hover:-translate-y-0.5 disabled:translate-y-0 disabled:opacity-50"
+                >
+                  {foodNoteStatus === "loading" ? (
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden="true" />
+                  ) : (
+                    <>
+                      {getCopy("dashboard.hero.note.cta", "Registrar nota")}
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsFoodNoteDialogOpen(false);
+                    setFoodNoteError(null);
+                    if (foodNoteStatus === "error") {
+                      setFoodNoteStatus("idle");
+                    }
+                  }}
+                  className="inline-flex min-w-[120px] items-center justify-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-900"
+                >
+                  {getCopy("dashboard.hero.note.close", "Cancelar")}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <MultimodalInput
           isOpen={isMultimodalOpen}

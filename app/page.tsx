@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { getUserProfile, calculateStreak, getDailyStats } from "@/lib/actions";
+import { getUserProfile, calculateStreak, getDailyStats, getTodayQuickLog } from "@/lib/actions";
 import { redirect } from "next/navigation";
 import DashboardClient from "./dashboard-client";
 
@@ -10,6 +10,7 @@ export default async function Home() {
   let dailyPlan = null;
   let streak = 0;
   let dailyStats = null;
+  let todayQuickLog = null;
 
   if (user) {
     const profile = await getUserProfile(user.id);
@@ -35,7 +36,16 @@ export default async function Home() {
 
     // Fetch daily stats
     dailyStats = await getDailyStats(user.id, profile.locale);
+
+    todayQuickLog = await getTodayQuickLog(user.id, profile.locale);
   }
 
-  return <DashboardClient dailyPlan={dailyPlan} streak={streak} dailyStats={dailyStats} />;
+  return (
+    <DashboardClient
+      dailyPlan={dailyPlan}
+      streak={streak}
+      dailyStats={dailyStats}
+      initialQuickLog={todayQuickLog}
+    />
+  );
 }

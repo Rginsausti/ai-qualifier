@@ -317,6 +317,27 @@ export async function getDailyStats(userId: string, locale?: string) {
     };
 }
 
+export async function getTodayQuickLog(userId: string, locale?: string) {
+    const supabase = getSupabaseServiceClient();
+    const timezone = resolveTimezone(locale);
+    const since = getStartOfTodayIso(timezone);
+
+    const { data, error } = await supabase
+        .from("quick_logs")
+        .select("energy,hunger,craving,created_at")
+        .eq("user_id", userId)
+        .gte("created_at", since)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+    if (error) {
+        console.error("getTodayQuickLog: error", error);
+        return null;
+    }
+
+    return data && data.length > 0 ? data[0] : null;
+}
+
 export async function getTodayNutritionLogs(userId: string, locale?: string) {
     const supabase = getSupabaseServiceClient();
     const timezone = resolveTimezone(locale);
