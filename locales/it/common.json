@@ -24,6 +24,11 @@
           "stepConfirm": "Conferma con \"Aggiungi\" e riapri Alma dalla nuova icona.",
           "close": "Fatto"
         }
+      },
+          "badge": "Esploratore locale",
+      "footer": {
+        "logout": "Esci",
+        "loggingOut": "Chiusura sessione…"
       }
     },
     "hero": {
@@ -204,7 +209,17 @@
     "neighborhood": {
       "badge": "Vicino a te",
       "title": "Quartiere mindful",
+      "subtitle": "Condividi la posizione per far sì che l'IA ordini i locali più in linea con il tuo piano.",
       "cta": "Vedi mappa completa",
+      "requestTitle": "Condividi la posizione",
+      "requestDescription": "Analizziamo i locali vicini con l'IA per mettere in alto quelli più sani.",
+      "locationCta": "Usa posizione attuale",
+      "locationDenied": "Servono i permessi di posizione per suggerire locali vicini.",
+      "loading": "Analizziamo i luoghi sani intorno a te…",
+      "error": "Non sono riuscita ad analizzare la zona",
+      "refresh": "Aggiorna",
+      "empty": "Non abbiamo ancora trovato luoghi salutari in questo raggio.",
+      "score": "{{score}}% mindful",
       "greenMood": {
         "name": "Green Mood",
         "detail": "Bowl e smoothie biologici"

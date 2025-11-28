@@ -58,6 +58,10 @@
           "stepConfirm": "Validez avec \"Ajouter\" et rouvrez Alma depuis le nouvel icône.",
           "close": "Compris"
         }
+      },
+      "footer": {
+        "logout": "Se déconnecter",
+        "loggingOut": "Déconnexion…"
       }
     },
     "hero": {
@@ -238,7 +242,17 @@
     "neighborhood": {
       "badge": "Près de vous",
       "title": "Quartier mindful",
+      "subtitle": "Partage ta localisation pour que l'IA classe les lieux les plus alignés avec ton plan.",
       "cta": "Voir carte complète",
+      "requestTitle": "Partager ma localisation",
+      "requestDescription": "Nous analysons les commerces proches avec l'IA pour classer les plus sains.",
+      "locationCta": "Utiliser ma position actuelle",
+      "locationDenied": "Nous avons besoin de l'accès localisation pour recommander des lieux voisins.",
+      "loading": "Analyse des lieux sains autour de toi…",
+      "error": "Impossible d'analyser cette zone",
+      "refresh": "Actualiser",
+      "empty": "Nous n'avons pas encore trouvé d'adresses saines dans ce rayon.",
+      "score": "{{score}}% mindful",
       "greenMood": {
         "name": "Green Mood",
         "detail": "Bowls et smoothies bio"
@@ -675,6 +689,7 @@
     "inputPlaceholder": "Écris ton message..."
   },
   "productSearch": {
+    "badge": "Explorateur local",
     "title": "Rechercher des produits proches",
     "subtitle": "Trouve les meilleurs prix dans les commerces de ton quartier",
     "locationRequired": "Nous avons besoin de ta position",

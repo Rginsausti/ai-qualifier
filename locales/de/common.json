@@ -24,6 +24,11 @@
           "stepConfirm": "Bestätige mit \"Hinzufügen\" und öffne Alma über das neue Icon.",
           "close": "Fertig"
         }
+      },
+          "badge": "Lokaler Explorer",
+      "footer": {
+        "logout": "Abmelden",
+        "loggingOut": "Wird abgemeldet…"
       }
     },
     "hero": {
@@ -204,7 +209,17 @@
     "neighborhood": {
       "badge": "In Ihrer Nähe",
       "title": "Mindful-Nachbarschaft",
+      "subtitle": "Teile deinen Standort, damit die KI die besten Orte für deinen Plan sortiert.",
       "cta": "Vollständige Karte ansehen",
+      "requestTitle": "Standort teilen",
+      "requestDescription": "Wir analysieren Spots in deiner Nähe mit KI und ordnen die gesündesten zuerst.",
+      "locationCta": "Aktuellen Standort verwenden",
+      "locationDenied": "Wir brauchen Standortfreigabe, um Empfehlungen in deiner Nähe zu zeigen.",
+      "loading": "Analysiere gesunde Orte in deiner Nähe…",
+      "error": "Ich konnte diese Zone nicht analysieren",
+      "refresh": "Aktualisieren",
+      "empty": "Wir haben in diesem Radius noch keine gesunden Orte gefunden.",
+      "score": "{{score}}% mindful",
       "greenMood": {
         "name": "Green Mood",
         "detail": "Bio-Bowls und Smoothies"

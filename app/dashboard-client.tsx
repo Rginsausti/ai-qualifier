@@ -8,11 +8,13 @@ import { MultimodalInput } from "@/components/logging/MultimodalInput";
 import NearbyProductFinder from "@/components/product-search/NearbyProductFinder";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback, useTransition } from "react";
 import type { KeyboardEvent } from "react";
 import Image from "next/image";
 import { logWater, logNutrition, analyzeFoodFromText } from "@/lib/actions";
 import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
+import HealthyNeighborhoodPanel from "@/components/neighborhood/HealthySpotList";
+import { signOut } from "@/lib/auth-actions";
 import {
   ArrowRight,
   BellRing,
@@ -29,6 +31,7 @@ import {
   TrendingUp,
   Utensils,
   Zap,
+  LogOut,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -106,19 +109,6 @@ const actionPlan = [
     time: "21:15",
     icon: Moon,
     accent: "bg-slate-900 text-white",
-  },
-];
-
-const neighborSpots = [
-  {
-    nameKey: "dashboard.neighborhood.greenMood.name",
-    detailKey: "dashboard.neighborhood.greenMood.detail",
-    distance: "200 m",
-  },
-  {
-    nameKey: "dashboard.neighborhood.huerta.name",
-    detailKey: "dashboard.neighborhood.huerta.detail",
-    distance: "450 m",
   },
 ];
 
@@ -279,6 +269,7 @@ export default function DashboardClient({
     enablePush,
     disablePush,
   } = usePushNotifications();
+  const [isLoggingOut, startLogoutTransition] = useTransition();
 
   const handleNotificationsToggle = async () => {
     if (pushEnabled) {
@@ -287,6 +278,12 @@ export default function DashboardClient({
     }
 
     await enablePush();
+  };
+
+  const handleLogout = () => {
+    startLogoutTransition(() => {
+      signOut();
+    });
   };
 
   const locale = t("dashboard.locale", { defaultValue: "es-AR" });
@@ -1128,31 +1125,28 @@ export default function DashboardClient({
               </div>
               <MapPin className="h-6 w-6 text-rose-500" />
             </div>
-            <div className="mt-6 space-y-4">
-              {neighborSpots.map((spot) => (
-                <div
-                  key={spot.nameKey}
-                  className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white/80 px-4 py-3"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">
-                      {getCopy(spot.nameKey, "Local saludable")}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {getCopy(spot.detailKey, "Detalle del local")}
-                    </p>
-                  </div>
-                  <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-                    {spot.distance}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <button className="mt-6 inline-flex items-center gap-2 rounded-full border border-slate-300/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-700 transition hover:border-slate-900">
-              {getCopy("dashboard.neighborhood.cta", "Ver mapa completo")}
-            </button>
+            <p className="mt-3 text-sm text-slate-600">
+              {getCopy(
+                "dashboard.neighborhood.subtitle",
+                "Compartí tu ubicación para ordenar con IA los locales más alineados a tu plan."
+              )}
+            </p>
+            <HealthyNeighborhoodPanel />
           </article>
         </section>
+        <div className="mt-16 flex justify-center">
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="inline-flex items-center gap-2 rounded-full border border-slate-300/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-900 disabled:opacity-60"
+          >
+            <LogOut className="h-4 w-4" />
+            {isLoggingOut
+              ? getCopy("dashboard.footer.loggingOut", "Cerrando sesión…")
+              : getCopy("dashboard.footer.logout", "Cerrar sesión")}
+          </button>
+        </div>
       </main>
       <InstallGuideModal
         open={showInstallGuide}

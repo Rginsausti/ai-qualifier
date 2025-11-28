@@ -38,6 +38,7 @@
       "seedSuccess": "Usuário criado com ID: {{userId}}"
     }
   },
+      "badge": "Explorador local",
   "dashboard": {
     "locale": "pt-BR",
     "header": {
@@ -58,6 +59,10 @@
           "stepConfirm": "Confirme em \"Adicionar\" e reabra Alma pelo novo ícone.",
           "close": "Pronto"
         }
+      },
+      "footer": {
+        "logout": "Sair",
+        "loggingOut": "Encerrando sessão…"
       }
     },
     "hero": {
@@ -238,7 +243,17 @@
     "neighborhood": {
       "badge": "Perto de você",
       "title": "Bairro mindful",
+      "subtitle": "Compartilhe sua localização para que a IA ordene os locais mais alinhados ao seu plano.",
       "cta": "Ver mapa completo",
+      "requestTitle": "Compartilhar localização",
+      "requestDescription": "Analisamos os locais próximos com IA para listar primeiro os mais saudáveis.",
+      "locationCta": "Usar localização atual",
+      "locationDenied": "Precisamos da permissão de localização para recomendar lugares por perto.",
+      "loading": "Analisando lugares saudáveis perto de você…",
+      "error": "Não consegui analisar essa área",
+      "refresh": "Atualizar",
+      "empty": "Ainda não encontramos lugares saudáveis nesse raio.",
+      "score": "{{score}}% mindful",
       "greenMood": {
         "name": "Green Mood",
         "detail": "Bowls e smoothies orgânicos"

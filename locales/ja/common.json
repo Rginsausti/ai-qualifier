@@ -24,6 +24,11 @@
           "stepConfirm": "「追加」で確定し、新しいアイコンからAlmaを開きます。",
           "close": "閉じる"
         }
+      },
+          "badge": "ローカルエクスプローラー",
+      "footer": {
+        "logout": "ログアウト",
+        "loggingOut": "ログアウト中…"
       }
     },
     "hero": {
@@ -204,7 +209,17 @@
     "neighborhood": {
       "badge": "あなたの近く",
       "title": "マインドフルな近所",
+      "subtitle": "位置情報を共有すると、プランに合うお店をAIが並べ替えます。",
       "cta": "完全な地図を見る",
+      "requestTitle": "位置情報を共有する",
+      "requestDescription": "近くのスポットをAIで解析し、ヘルシーな順に並べます。",
+      "locationCta": "現在地を使う",
+      "locationDenied": "近所のおすすめを出すには位置情報の許可が必要です。",
+      "loading": "近くのヘルシースポットを分析しています…",
+      "error": "このエリアを分析できませんでした",
+      "refresh": "更新",
+      "empty": "この範囲ではまだヘルシーなスポットが見つかりませんでした。",
+      "score": "マインドフル度 {{score}}%",
       "greenMood": {
         "name": "Green Mood",
         "detail": "オーガニックボウルとスムージー"

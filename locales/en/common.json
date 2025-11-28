@@ -58,6 +58,10 @@
           "stepConfirm": "Confirm with \"Add\" and reopen Alma from the new icon.",
           "close": "Got it"
         }
+      },
+      "footer": {
+        "logout": "Log out",
+        "loggingOut": "Logging out…"
       }
     },
     "hero": {
@@ -238,7 +242,17 @@
     "neighborhood": {
       "badge": "Near you",
       "title": "Mindful neighborhood",
+      "subtitle": "Share your location so AI can rank the places that fit your plan best.",
       "cta": "View full map",
+      "requestTitle": "Share your location",
+      "requestDescription": "We analyze nearby spots with AI to sort the healthiest ones.",
+      "locationCta": "Use current location",
+      "locationDenied": "We need location permissions to recommend nearby places.",
+      "loading": "Analyzing healthy spots near you…",
+      "error": "I couldn’t analyze this area",
+      "refresh": "Refresh",
+      "empty": "We didn’t find healthy spots within this radius yet.",
+      "score": "{{score}}% mindful",
       "greenMood": {
         "name": "Green Mood",
         "detail": "Organic bowls and smoothies"
@@ -687,6 +701,7 @@
     "inputPlaceholder": "Type your message..."
   },
   "productSearch": {
+    "badge": "Local explorer",
     "title": "Search nearby products",
     "subtitle": "Find the best prices in supermarkets in your area",
     "locationRequired": "We need your location",

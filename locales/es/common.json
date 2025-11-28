@@ -58,6 +58,10 @@
           "stepConfirm": "Confirmá con \"Agregar\" y abrí Alma desde el nuevo ícono.",
           "close": "Listo"
         }
+      },
+      "footer": {
+        "logout": "Cerrar sesión",
+        "loggingOut": "Cerrando sesión…"
       }
     },
     "hero": {
@@ -238,7 +242,17 @@
     "neighborhood": {
       "badge": "Cerca tuyo",
       "title": "Vecindario mindful",
+      "subtitle": "Compartí tu ubicación para ordenar con IA los locales más alineados a tu plan.",
       "cta": "Ver mapa completo",
+      "requestTitle": "Compartí tu ubicación",
+      "requestDescription": "Analizamos locales cercanos con IA para ordenar los más saludables.",
+      "locationCta": "Usar ubicación actual",
+      "locationDenied": "Necesitamos permisos de ubicación para recomendar locales vecinos.",
+      "loading": "Analizando lugares saludables cerca tuyo…",
+      "error": "No pude analizar la zona",
+      "refresh": "Actualizar",
+      "empty": "No encontramos lugares saludables en este radio todavía.",
+      "score": "{{score}}% mindful",
       "greenMood": {
         "name": "Green Mood",
         "detail": "Bowls y smoothies orgánicos"
@@ -687,6 +701,7 @@
     "inputPlaceholder": "Escribe tu mensaje..."
   },
   "productSearch": {
+    "badge": "Explorador local",
     "title": "Buscar productos cercanos",
     "subtitle": "Encontrá los mejores precios en supermercados de tu zona",
     "locationRequired": "Necesitamos tu ubicación",
