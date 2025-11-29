@@ -3,7 +3,7 @@
 import { ArrowLeft, Send, Sparkles } from "lucide-react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
@@ -17,7 +17,7 @@ type Message = {
     hidden?: boolean;
 };
 
-export default function ChatPage() {
+function ChatPageContent() {
     const { t, i18n } = useTranslation();
     const searchParams = useSearchParams();
     const [messages, setMessages] = useState<Message[]>([]);
@@ -266,6 +266,20 @@ export default function ChatPage() {
                 </form>
             </div>
         </div>
+    );
+}
+
+export default function ChatPage() {
+    return (
+        <Suspense
+            fallback={(
+                <div className="flex h-[100dvh] items-center justify-center bg-[#f6f3ec] text-slate-500">
+                    Loading chat…
+                </div>
+            )}
+        >
+            <ChatPageContent />
+        </Suspense>
     );
 }
 

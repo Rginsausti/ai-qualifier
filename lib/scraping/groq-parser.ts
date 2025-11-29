@@ -43,7 +43,7 @@ export async function parseHtmlWithGroq(htmlContent: string): Promise<Product[]>
             price_current: parseFloat(String(p.price_current).replace(/[^0-9.]/g, '')),
             price_regular: p.price_regular ? parseFloat(String(p.price_regular).replace(/[^0-9.]/g, '')) : null,
             unit: p.unit ? String(p.unit) : null,
-            quantity: p.quantity ? parseFloat(p.quantity) : null,
+            quantity: p.quantity ? parseFloat(String(p.quantity).replace(/[^0-9.]/g, '')) : null,
             image_url: p.image_url ? String(p.image_url) : null,
             product_url: p.product_url ? String(p.product_url) : null,
             nutritional_claims: Array.isArray(p.nutritional_claims) ? p.nutritional_claims : [],

@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { scrapeStoreProducts } from '@/lib/scraping/headless-scraper';
-import { parseProductsWithGroq } from '@/lib/scraping/groq-parser';
-import { getCotoConfig } from '@/lib/scraping/adapters/coto';
-import { getCarrefourConfig } from '@/lib/scraping/adapters/carrefour';
-import { getJumboConfig } from '@/lib/scraping/adapters/jumbo';
+import { cotoAdapter } from '@/lib/scraping/adapters/coto';
+import { carrefourAdapter } from '@/lib/scraping/adapters/carrefour';
+import { jumboAdapter, veaAdapter, discoAdapter } from '@/lib/scraping/adapters/jumbo';
+import type { StoreAdapter } from '@/lib/scraping/types';
+ 
+const brandAdapters: Record<string, StoreAdapter> = {
+    COTO: cotoAdapter,
+    CARREFOUR: carrefourAdapter,
+    JUMBO: jumboAdapter,
+    VEA: veaAdapter,
+    DISCO: discoAdapter,
+};
+
+function pickAdapter(brand?: string | null): StoreAdapter | null {
+    if (!brand) return null;
+    const normalized = brand.toUpperCase();
+    return brandAdapters[normalized] ?? null;
+}
 
 /**
  * POST /api/scraping/trigger
@@ -62,25 +75,12 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Get adapter config
-        let config;
-        switch (brand || store.brand) {
-            case 'COTO':
-                config = getCotoConfig();
-                break;
-            case 'CARREFOUR':
-                config = getCarrefourConfig();
-                break;
-            case 'JUMBO':
-            case 'VEA':
-            case 'DISCO':
-                config = getJumboConfig(brand as any);
-                break;
-            default:
-                return NextResponse.json(
-                    { error: 'Unsupported store brand' },
-                    { status: 400 }
-                );
+        const adapter = pickAdapter(brand || store.brand);
+        if (!adapter) {
+            return NextResponse.json(
+                { error: 'Unsupported store brand' },
+                { status: 400 }
+            );
         }
 
         // Create scraping job
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
             .single();
 
         // Execute scraping in background (non-blocking)
-        scrapeInBackground(store, products, config, job.id, supabase);
+        scrapeInBackground(store, products, adapter, job.id, supabase);
 
         return NextResponse.json({
             success: true,
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
 async function scrapeInBackground(
     store: any,
     products: string[],
-    config: any,
+    adapter: StoreAdapter,
     jobId: string,
     supabase: any
 ): Promise<void> {
@@ -126,16 +126,11 @@ async function scrapeInBackground(
 
     try {
         for (const productQuery of products) {
-            const html = await scrapeStoreProducts(
-                store.website_url,
-                productQuery,
-                config
-            );
-
-            const extractedProducts = await parseProductsWithGroq(html, {
+            const extractedProducts = await adapter.scrape(productQuery, {
                 storeBrand: store.brand,
-                searchQuery: productQuery,
-                baseUrl: store.website_url,
+                storeId: store.id,
+                storeName: store.name,
+                storeWebsite: store.website_url,
             });
 
             // Persist products

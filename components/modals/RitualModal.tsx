@@ -24,7 +24,7 @@ export function RitualModal({ isOpen, onClose, onComplete, dailyPlan }: RitualMo
     const [notes, setNotes] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const rit uals: Array<{ type: RitualType; icon: typeof Clock; time: string }> = [
+    const rituals: Array<{ type: RitualType; icon: typeof Clock; time: string }> = [
         { type: 'morning', icon: Clock, time: '08:30' },
         { type: 'lunch', icon: Clock, time: '13:00' },
         { type: 'snack', icon: Clock, time: '16:00' },

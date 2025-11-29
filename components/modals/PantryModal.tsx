@@ -20,11 +20,14 @@ export function PantryModal({ isOpen, onClose, onUpdate }: PantryModalProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingItem, setEditingItem] = useState<PantryItem | null>(null);
+    type PantryCategoryValue = PantryItem['category'] | '';
+    type PantryUnitValue = PantryItem['unit'] | '';
+
     const [formData, setFormData] = useState({
         item_name: '',
-        category: '' as PantryItem['category'],
+        category: '' as PantryCategoryValue,
         quantity: '',
-        unit: 'units' as PantryItem['unit'],
+        unit: 'units' as PantryUnitValue,
         expiry_date: '',
         notes: '',
     });
@@ -128,18 +131,18 @@ export function PantryModal({ isOpen, onClose, onUpdate }: PantryModalProps) {
             if (editingItem) {
                 await updatePantryItem(editingItem.id!, {
                     item_name: formData.item_name,
-                    category: formData.category,
+                    category: formData.category || undefined,
                     quantity: formData.quantity ? parseFloat(formData.quantity) : undefined,
-                    unit: formData.unit,
+                    unit: formData.unit || undefined,
                     expiry_date: formData.expiry_date || undefined,
                     notes: formData.notes || undefined,
                 });
             } else {
                 await addPantryItem({
                     item_name: formData.item_name,
-                    category: formData.category,
+                    category: formData.category || undefined,
                     quantity: formData.quantity ? parseFloat(formData.quantity) : undefined,
-                    unit: formData.unit,
+                    unit: formData.unit || undefined,
                     expiry_date: formData.expiry_date || undefined,
                     notes: formData.notes || undefined,
                 });
@@ -320,7 +323,7 @@ export function PantryModal({ isOpen, onClose, onUpdate }: PantryModalProps) {
                                 </label>
                                 <select
                                     value={formData.category}
-                                    onChange={(e) => setFormData({ ...formData, category: e.target.value as PantryItem['category'] })}
+                                    onChange={(e) => setFormData({ ...formData, category: e.target.value as PantryCategoryValue })}
                                     className="w-full rounded-xl border border-slate-200 p-3 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                                 >
                                     <option value="">{t('modals.pantry.selectCategory', 'Seleccionar...')}</option>
@@ -363,7 +366,7 @@ export function PantryModal({ isOpen, onClose, onUpdate }: PantryModalProps) {
                                 </label>
                                 <select
                                     value={formData.unit}
-                                    onChange={(e) => setFormData({ ...formData, unit: e.target.value as PantryItem['unit'] })}
+                                    onChange={(e) => setFormData({ ...formData, unit: e.target.value as PantryUnitValue })}
                                     className="w-full rounded-xl border border-slate-200 p-3 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                                 >
                                     {UNITS.map(unit => (
