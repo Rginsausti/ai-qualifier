@@ -309,6 +309,12 @@ async function handleIngestionFlow(params: {
     return { type: "continue" };
   }
 
+  // Check intent: if it's a consultation (recipe, question), do not log it.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((analysis as any).intent === "consult") {
+    return { type: "continue" };
+  }
+
   const type = typeof analysis.type === "string" ? analysis.type.toLowerCase() : undefined;
   const waterAmount = sanitizeWaterAmount(analysis);
   const isWater = type === "water" || (!type && waterAmount > 0);

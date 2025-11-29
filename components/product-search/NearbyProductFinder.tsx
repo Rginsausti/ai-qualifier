@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Image from 'next/image';
 import { MapPin, Search, AlertCircle, Loader2, ShoppingBag, Tag, Navigation } from 'lucide-react';
+import { loadStoredLocation, clearStoredLocation } from '@/lib/location-storage';
 
 const LOADER_MESSAGES = [
     { key: 'productSearch.loader.step1', fallback: 'Estamos buscando en los comercios cercanos a tu casa' },
@@ -48,23 +49,45 @@ export default function NearbyProductFinder() {
     const requestLocation = () => {
         setError(null);
         setLocationDenied(false);
+        // Clear any previously stored bad location to force fresh detection
+        clearStoredLocation();
 
         if (!navigator.geolocation) {
             setError(t('errors.geolocationNotSupported'));
             return;
         }
 
-        navigator.geolocation.getCurrentPosition(
+        const watchId = navigator.geolocation.watchPosition(
             (position) => {
+                // Update location with the latest fix
                 setLocation({
                     lat: position.coords.latitude,
                     lon: position.coords.longitude,
                 });
+
+                // Optional: If accuracy is good (e.g. < 100m), we could stop watching.
+                // For now, let's just keep updating to ensure we get the best possible fix.
+                // But we should probably stop after some time to save battery if this was a one-off request.
+                // Since this is a "finder" component, maybe we just let it run while the component is mounted?
+                // Actually, the user clicks "Activar ubicación" which implies a one-time action or enabling the feature.
+                // Let's store the watchId in a ref to clear it later if needed, but for simplicity in this functional component
+                // without a complex lifecycle, we might just let it update.
+                // However, to avoid infinite re-renders or loops if we were depending on location, we are safe as setLocation checks equality usually or React handles it.
+                // Better: stop watching if accuracy is good.
+                if (position.coords.accuracy < 100) {
+                    navigator.geolocation.clearWatch(watchId);
+                }
             },
             (error) => {
                 console.error('Geolocation error:', error);
-                setLocationDenied(true);
-                setError(t('errors.locationDenied'));
+                // Only show error if we haven't got a location yet
+                setLocation((prev) => {
+                    if (!prev) {
+                        setLocationDenied(true);
+                        setError(t('errors.locationDenied'));
+                    }
+                    return prev;
+                });
             }
         );
     };

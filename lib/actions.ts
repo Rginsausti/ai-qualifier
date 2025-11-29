@@ -374,6 +374,7 @@ export async function analyzeFoodFromText(text: string) {
                         Formato:
                         {
                             "type": "food" | "water",
+                            "intent": "log" | "consult",
                             "name": "nombre del alimento o bebida",
                             "calories": numero_de_calorias,
                             "protein": gramos_de_proteina,
@@ -382,6 +383,8 @@ export async function analyzeFoodFromText(text: string) {
                             "water_ml": mililitros_de_agua
                         }
                         Reglas:
+                        - "intent": "log" si el usuario dice que COMIÓ, BEBIÓ o está registrando algo (ej: "comí una manzana", "registra 2 vasos de agua").
+                        - "intent": "consult" si el usuario PREGUNTA qué cocinar, pide recetas, o menciona ingredientes sin indicar consumo (ej: "tengo manzanas, qué hago?", "receta de tarta", "que puedo cocinar con carne?").
                         - Si el texto se refiere a agua (vasos, botellas, litros, etc.), establece type="water", fija macros y calorías en 0 e infiere water_ml (1 vaso estándar = 250 ml, 1 botella pequeña = 500 ml, 1 litro = 1000 ml).
                         - Si describe comida o bebidas con calorías, establece type="food" y calcula macros/calorías (water_ml = 0).
                         - Si mezcla ambos, prioriza el elemento principal del mensaje.

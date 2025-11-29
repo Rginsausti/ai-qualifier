@@ -35,6 +35,8 @@ export default function HealthyNeighborhoodPanel() {
   const [isManualOpen, setIsManualOpen] = useState(false);
   const [manualLabel, setManualLabel] = useState("");
   const [manualAddress, setManualAddress] = useState("");
+  const [manualLat, setManualLat] = useState("");
+  const [manualLon, setManualLon] = useState("");
   const [manualSubmitting, setManualSubmitting] = useState(false);
   const [manualError, setManualError] = useState<string | null>(null);
   const [addressLabel, setAddressLabel] = useState<string | null>(null);
@@ -129,6 +131,8 @@ export default function HealthyNeighborhoodPanel() {
     const defaultLabel = t("dashboard.neighborhood.manualDialog.defaultLabel", "Casa");
     setManualLabel(location?.label ?? defaultLabel);
     setManualAddress(location?.formattedAddress ?? addressLabel ?? "");
+    setManualLat(typeof location?.lat === "number" ? location.lat.toString() : "");
+    setManualLon(typeof location?.lon === "number" ? location.lon.toString() : "");
     setManualError(null);
     setIsManualOpen(true);
   };
@@ -137,47 +141,72 @@ export default function HealthyNeighborhoodPanel() {
     event.preventDefault();
     setManualError(null);
     const trimmedAddress = manualAddress.trim();
+    const trimmedLat = manualLat.trim();
+    const trimmedLon = manualLon.trim();
+    const hasCoordinates = trimmedLat.length > 0 && trimmedLon.length > 0;
 
-    if (!trimmedAddress) {
-      setManualError(t("dashboard.neighborhood.manualDialog.errorAddress", "Ingresá una dirección."));
+    if (!hasCoordinates && !trimmedAddress) {
+      setManualError(t("dashboard.neighborhood.manualDialog.errorAddress", "Ingresá una dirección o coordenadas."));
       return;
     }
 
     setManualSubmitting(true);
 
     try {
-      const response = await fetch("/api/location/geocode", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: trimmedAddress, locale: dashboardLocale }),
-      });
+      if (hasCoordinates) {
+        const latValue = Number(trimmedLat);
+        const lonValue = Number(trimmedLon);
 
-      if (!response.ok) {
-        if (response.status === 404) {
-          setManualError(t("dashboard.neighborhood.manualDialog.errorGeocode", "No encontramos esa dirección."));
-        } else {
+        if (Number.isNaN(latValue) || Number.isNaN(lonValue)) {
+          setManualError(t("dashboard.neighborhood.manualDialog.errorCoordinates", "Coordenadas inválidas."));
+          return;
+        }
+
+        const fallbackLabel = t("dashboard.neighborhood.customLabel", "Mi punto de partida");
+        const resolvedLabel = (manualLabel || fallbackLabel).trim();
+
+        applyLocation(
+          { lat: latValue, lon: lonValue },
+          {
+            label: resolvedLabel,
+            source: "manual",
+            formattedAddress: trimmedAddress || addressLabel || fallbackLabel,
+          }
+        );
+      } else {
+        const response = await fetch("/api/location/geocode", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: trimmedAddress, locale: dashboardLocale }),
+        });
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            setManualError(t("dashboard.neighborhood.manualDialog.errorGeocode", "No encontramos esa dirección."));
+          } else {
+            setManualError(t("dashboard.neighborhood.manualDialog.errorGeneric", "No pudimos guardar la ubicación."));
+          }
+          return;
+        }
+
+        const data = await response.json();
+        if (typeof data.lat !== "number" || typeof data.lon !== "number") {
           setManualError(t("dashboard.neighborhood.manualDialog.errorGeneric", "No pudimos guardar la ubicación."));
+          return;
         }
-        return;
+
+        const fallbackLabel = t("dashboard.neighborhood.customLabel", "Mi punto de partida");
+        const resolvedLabel = (manualLabel || data.shortLabel || fallbackLabel).trim();
+
+        applyLocation(
+          { lat: data.lat, lon: data.lon },
+          {
+            label: resolvedLabel,
+            source: "manual",
+            formattedAddress: data.shortLabel ?? data.displayName ?? trimmedAddress,
+          }
+        );
       }
-
-      const data = await response.json();
-      if (typeof data.lat !== "number" || typeof data.lon !== "number") {
-        setManualError(t("dashboard.neighborhood.manualDialog.errorGeneric", "No pudimos guardar la ubicación."));
-        return;
-      }
-
-      const fallbackLabel = t("dashboard.neighborhood.customLabel", "Mi punto de partida");
-      const resolvedLabel = (manualLabel || data.shortLabel || fallbackLabel).trim();
-
-      applyLocation(
-        { lat: data.lat, lon: data.lon },
-        {
-          label: resolvedLabel,
-          source: "manual",
-          formattedAddress: data.shortLabel ?? data.displayName ?? trimmedAddress,
-        }
-      );
       setIsManualOpen(false);
     } catch (err) {
       console.error("handleManualSubmit", err);
@@ -362,8 +391,32 @@ export default function HealthyNeighborhoodPanel() {
               autoComplete="street-address"
             />
           </label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block text-sm font-semibold text-slate-700">
+              {t("dashboard.neighborhood.manualDialog.latLabel", "Latitud (opcional)")}
+              <input
+                type="text"
+                inputMode="decimal"
+                value={manualLat}
+                onChange={(event) => setManualLat(event.target.value)}
+                className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-slate-900 focus:outline-none"
+                placeholder="-32.954"
+              />
+            </label>
+            <label className="block text-sm font-semibold text-slate-700">
+              {t("dashboard.neighborhood.manualDialog.lonLabel", "Longitud (opcional)")}
+              <input
+                type="text"
+                inputMode="decimal"
+                value={manualLon}
+                onChange={(event) => setManualLon(event.target.value)}
+                className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-slate-900 focus:outline-none"
+                placeholder="-60.639"
+              />
+            </label>
+          </div>
           <p className="text-xs text-slate-400">
-            {t("dashboard.neighborhood.manualDialog.helper", "Solo guardamos esto en tu dispositivo para personalizar mapas.")}
+            {t("dashboard.neighborhood.manualDialog.helper", "Podés pegar coordenadas exactas o escribir una dirección. Lo guardamos localmente.")}
           </p>
           {manualError && <p className="text-sm text-rose-600">{manualError}</p>}
           <div className="flex flex-wrap justify-between gap-3 pt-2">

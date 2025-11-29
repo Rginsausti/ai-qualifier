@@ -7,6 +7,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { loadStoredLocation } from "@/lib/location-storage";
 
 const AUTO_MOVEMENT_TRIGGER = "__AUTO_MOVEMENT__";
 
@@ -41,18 +42,32 @@ function ChatPageContent() {
             setUserId(response.data.user?.id ?? null);
         });
 
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
+        // 1. Try to load stored location (ONLY if manual)
+        const stored = loadStoredLocation();
+        if (stored && stored.source === "manual") {
+            setLocation({ lat: stored.lat, lon: stored.lon });
+        }
+
+        // 2. Fallback to browser geolocation (if not manually set)
+        if (navigator.geolocation && (!stored || stored.source !== "manual")) {
+            const watchId = navigator.geolocation.watchPosition(
                 (position) => {
                     setLocation({
                         lat: position.coords.latitude,
                         lon: position.coords.longitude,
                     });
+                    // Stop watching if we get good accuracy
+                    if (position.coords.accuracy < 100) {
+                        navigator.geolocation.clearWatch(watchId);
+                    }
                 },
                 (error) => {
                     console.error("Error getting location:", error);
                 }
             );
+
+            // Cleanup watch on unmount
+            return () => navigator.geolocation.clearWatch(watchId);
         }
     }, []);
 
@@ -220,7 +235,7 @@ function ChatPageContent() {
                                     : "bg-white text-slate-800 border border-slate-100"
                                     }`}
                             >
-                                <ReactMarkdown>{m.content}</ReactMarkdown>
+                                <ReactMarkdown>{m.content.replace(/<!--[\s\S]*?-->/g, "")}</ReactMarkdown>
                             </div>
                         </div>
                     ))}
