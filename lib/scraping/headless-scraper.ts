@@ -10,12 +10,7 @@ export async function scrapeWithHeadlessX(config: HeadlessConfig): Promise<strin
     const headlessXEndpoint = process.env.HEADLESSX_API_URL || 'http://localhost:3000/api/render';
     const authToken = process.env.HEADLESSX_AUTH_TOKEN;
 
-    console.log(`[HeadlessX] Scraping ${config.url}`);
-
     try {
-        console.log(`[HeadlessX] Sending request to ${headlessXEndpoint}`);
-        // console.log(`[HeadlessX] Token: ${authToken?.substring(0, 5)}...`); // Debug only
-
         const response = await axios.post(headlessXEndpoint, {
             url: config.url,
             stealthMode: true,

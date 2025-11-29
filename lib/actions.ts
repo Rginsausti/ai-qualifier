@@ -245,8 +245,6 @@ export async function logWater(amount: number) {
         return { success: false, error: "Unauthorized" };
     }
 
-    console.log(`logWater: Logging ${amount}ml for user ${user.id}`);
-
     const { error } = await supabase.from("water_logs").insert({
         user_id: user.id,
         amount_ml: amount,
@@ -257,7 +255,6 @@ export async function logWater(amount: number) {
         return { success: false, error: error.message };
     }
 
-    console.log("logWater: Success");
     return { success: true };
 }
 
@@ -266,8 +263,6 @@ export async function getDailyStats(userId: string, locale?: string) {
     const timezone = resolveTimezone(locale);
     const startTime = getStartOfTodayIso(timezone);
     
-    console.log(`getDailyStats: Querying for user ${userId} since ${startTime} (tz: ${timezone})`);
-
     // Get Nutrition
     const { data: nutritionData, error: nutritionError } = await supabase
         .from("nutrition_logs")
@@ -286,8 +281,6 @@ export async function getDailyStats(userId: string, locale?: string) {
 
     if (waterError) console.error("getDailyStats: Water Error", waterError);
     
-    console.log(`getDailyStats: Found ${waterData?.length || 0} water logs`);
-
     // Get Goals
     const { data: profile } = await supabase
         .from("user_profiles")
@@ -364,8 +357,6 @@ export async function analyzeFoodFromText(text: string) {
         throw new Error("Missing API Key");
     }
 
-    console.log("analyzeFoodFromText: Sending to Groq:", text);
-
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
@@ -413,7 +404,6 @@ export async function analyzeFoodFromText(text: string) {
         }
 
         const data = await response.json();
-        console.log("analyzeFoodFromText: Full response:", JSON.stringify(data, null, 2));
 
         const content = data.choices[0].message.content;
         if (!content) {
@@ -431,7 +421,6 @@ export async function analyzeFoodFromText(text: string) {
 
         try {
             const parsed = JSON.parse(jsonContent);
-            console.log("analyzeFoodFromText: Parsed successfully:", parsed);
             return parsed;
         } catch (parseError) {
             console.error("analyzeFoodFromText: JSON parse error", parseError, jsonContent);

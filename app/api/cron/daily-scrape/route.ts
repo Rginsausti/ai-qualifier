@@ -42,8 +42,6 @@ export async function GET(request: Request) {
     const lat = -34.6037;
     const lon = -58.3816;
 
-    console.log(`[Cron] Starting daily scrape for keyword: ${randomKeyword}`);
-
     try {
         const result = await searchNearbyProducts(
             lat,

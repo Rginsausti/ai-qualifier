@@ -16,6 +16,20 @@ type SeedRequest = {
   password: string;
 };
 
+type RedirectError = Error & { digest?: string };
+
+function isNextRedirectError(error: unknown): error is RedirectError {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const digest = (error as RedirectError).digest;
+  return (
+    error.message === "NEXT_REDIRECT" ||
+    (typeof digest === "string" && digest.startsWith("NEXT_REDIRECT"))
+  );
+}
+
 export function LoginForm() {
   const { t } = useTranslation();
   const supabase = useMemo(() => getSupabaseClient() as unknown as SupabaseClient, []);
@@ -79,6 +93,10 @@ export function LoginForm() {
 
       // Success is handled by redirect in server action
     } catch (error) {
+      if (isNextRedirectError(error)) {
+        return;
+      }
+
       console.error("Supabase login error", error);
       setStatus("error");
       

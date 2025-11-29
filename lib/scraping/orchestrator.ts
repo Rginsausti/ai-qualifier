@@ -62,7 +62,6 @@ const INTOLERANCE_CONFIGS: IntoleranceConfig[] = [
         id: 'lactose',
         synonyms: ['lactosa', 'lactose', 'intolerancia lactosa', 'intolerancia a la lactosa', 'dairy', 'lacteos', 'lacteos'],
         blocked: [
-            'lactosa',
             'lacte',
             'leche',
             'queso',
@@ -1079,32 +1078,22 @@ async function scrapeSingleStore(
         // 1) Adapter por marca (Carrefour/Coto/etc.) si existe
         const brandAdapter = store.brand ? ADAPTER_MAP[store.brand] : undefined;
         if (brandAdapter) {
-            console.log(`[Orquestador] Scraping brand adapter for ${store.brand}...`);
             const products = await brandAdapter.scrape(query, context);
-            console.log(`[Orquestador] ${store.brand} devolvió ${products.length} productos brutos.`);
-            if (products.length > 0) {
-                console.log('[Orquestador] Ejemplos marca:', products.slice(0, 3).map((p) => p.product_name));
-            }
             allProducts.push(...products);
         } else {
-            console.log(`[Orquestador] No brand adapter for store ${store.name} (${store.brand ?? 'sin marca'})`);
+            // Sin adaptador registrado para la marca
         }
 
         // 2) Fuentes adicionales (instagram, website, etc.)
         if (sourcesForStore.length > 0) {
-            console.log(`[Orquestador] Scraping ${sourcesForStore.length} fuentes adicionales para ${store.name}...`);
             for (const source of sourcesForStore) {
                 const adapter = SOURCE_ADAPTER_MAP[source.source_type];
                 if (!adapter) {
-                    console.log(`[Orquestador] No adapter for source type ${source.source_type}, skip.`);
                     continue;
                 }
 
                 try {
                     const productsFromSource = await adapter.scrape(source, query, context);
-                    if (productsFromSource.length > 0) {
-                        console.log(`[Orquestador] Fuente ${source.source_type} (${source.id}) devolvió ${productsFromSource.length} productos.`);
-                    }
                     allProducts.push(...productsFromSource);
                 } catch (sourceError) {
                     console.error(`[Orquestador] Error en fuente ${source.source_type} (${source.id}) para tienda ${store.name}:`, sourceError);
@@ -1147,7 +1136,6 @@ export async function searchNearbyProducts(
     if (!forceRefresh) {
         const cachedResult = await checkCache(userLat, userLon, productQuery);
         if (cachedResult) {
-            console.log('[Orchestrator] Cache hit!');
             return {
                 ...cachedResult,
                 cache_hit: true,
@@ -1157,16 +1145,6 @@ export async function searchNearbyProducts(
     }
 
     const nearbyStores = await findNearbyStores(userLat, userLon, 2000);
-    console.log(`[Orchestrator] Nearby stores: ${nearbyStores.length}`);
-    nearbyStores.slice(0, 5).forEach((store) => {
-        console.log('[Orchestrator] Store candidate:', {
-            name: store.name,
-            brand: store.brand,
-            type: store.store_type,
-            scrapingEnabled: store.scraping_enabled,
-            distance: store.distance,
-        });
-    });
 
     // Antes de scrapear, aseguramos fuentes por defecto (website) para los comercios con website_url
     await ensureDefaultSourcesForStores(nearbyStores);
@@ -1174,8 +1152,6 @@ export async function searchNearbyProducts(
     const scrapableStores = nearbyStores
         .filter(store => store.scraping_enabled !== false)
         .slice(0, maxStores);
-
-    console.log(`[Orchestrator] Found ${scrapableStores.length} stores candidatos para scraping.`);
 
     // Cargamos fuentes configuradas automáticamente para todos los stores candidatos
     const storeIds = scrapableStores.map((s) => s.id!).filter(Boolean);
@@ -1200,25 +1176,12 @@ export async function searchNearbyProducts(
     }
 
     const { products: contentSafeProducts, removed: contentRemoved } = applyContentFilters(allProducts);
-    if (contentRemoved > 0) {
-        console.log('[Orquestador] Productos filtrados por contenido no apto:', contentRemoved);
-    }
-
     const relevantProducts = filterProductsByRelevance(contentSafeProducts, productQuery);
-    if (contentSafeProducts.length !== relevantProducts.length) {
-        console.log('[Orquestador] Productos filtrados por relevancia:', contentSafeProducts.length - relevantProducts.length);
-    }
     const personalizedProducts = intolerances.length
         ? filterProductsByIntolerances(relevantProducts, intolerances)
         : relevantProducts;
-    if (relevantProducts.length !== personalizedProducts.length) {
-        console.log('[Orquestador] Productos filtrados por intolerancias:', relevantProducts.length - personalizedProducts.length);
-    }
 
     const { products: llmGuardedProducts, removed: llmRemoved } = await guardProductsWithGroq(personalizedProducts, productQuery);
-    if (llmRemoved > 0) {
-        console.log('[Orquestador] Productos filtrados por LLM (no comida o no saludables):', llmRemoved);
-    }
 
     const filteredOutCount = contentRemoved +
         Math.max(contentSafeProducts.length - relevantProducts.length, 0) +

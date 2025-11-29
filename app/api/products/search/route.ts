@@ -83,10 +83,6 @@ export async function POST(request: NextRequest) {
         );
 
         // If we found 0 products but the query is common, we might want to trigger a background scrape for next time
-        if (results.products.length === 0) {
-            console.log(`[API] No results for ${query}, consider triggering background scrape.`);
-        }
-
         return NextResponse.json({
             success: true,
             ...results,

@@ -11,6 +11,7 @@ import {
 } from "@/lib/actions";
 import { getPantryItems } from "@/lib/user-activities";
 import { getMarketContext } from "@/lib/market-prices";
+import { formatKnowledgeContext, retrieveKnowledge } from "@/lib/kb/retrieval";
 import { randomUUID } from "crypto";
 
 type QuickLog = {
@@ -391,6 +392,7 @@ async function handleIngestionFlow(params: {
   };
 }
 
+export const runtime = "nodejs";
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
@@ -421,6 +423,8 @@ export async function POST(req: Request) {
       role: message.role,
       content: message.content.trim(),
     }));
+
+  const lastUserMessage = [...sanitizedMessages].reverse().find((message) => message.role === "user");
 
   if (sanitizedMessages.length === 0) {
     return jsonResponse({ error: "Missing chat messages" });
@@ -461,6 +465,22 @@ export async function POST(req: Request) {
 
   if (ingestionResult.newMeal) {
     todaysMeals.push(ingestionResult.newMeal);
+  }
+
+  let knowledgeContext = "Knowledge Base: sin consulta reciente.";
+
+  if (lastUserMessage?.content) {
+    try {
+      const snippets = await retrieveKnowledge({
+        query: lastUserMessage.content,
+        language: userLocale,
+        limit: 4,
+      });
+      knowledgeContext = formatKnowledgeContext(snippets);
+    } catch (error) {
+      console.error("KB retrieval failed", error);
+      knowledgeContext = "Knowledge Base: no disponible (error).";
+    }
   }
 
   const autoActionNote = ingestionResult.autoActionNote;
@@ -536,6 +556,7 @@ export async function POST(req: Request) {
     ${pantrySection}
     
     ${marketMemory}
+    ${knowledgeContext}
     ${automationContext}
   `;
 

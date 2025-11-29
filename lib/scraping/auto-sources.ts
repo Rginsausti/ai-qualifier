@@ -1,6 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
 import type { NearbyStore } from "./osm-discovery";
 
+type DefaultSourceInsert = {
+    store_id: string;
+    source_type: string;
+    source_identifier: string;
+    active: boolean;
+    priority: number;
+    config: Record<string, unknown>;
+};
+
 // Crea fuentes por defecto (website) para cada tienda que tenga website_url
 export async function ensureDefaultSourcesForStores(stores: NearbyStore[]): Promise<void> {
     if (!stores.length) return;
@@ -25,7 +34,7 @@ export async function ensureDefaultSourcesForStores(stores: NearbyStore[]): Prom
             (existing ?? []).map((row) => `${row.store_id}|${row.source_type}|${row.source_identifier ?? ""}`)
         );
 
-        const inserts: any[] = [];
+        const inserts: DefaultSourceInsert[] = [];
 
         for (const store of stores) {
             if (!store.id || !store.website_url) continue;
@@ -48,8 +57,6 @@ export async function ensureDefaultSourcesForStores(stores: NearbyStore[]): Prom
         const { error: insertError } = await supabase.from("store_sources").insert(inserts);
         if (insertError) {
             console.error("[AutoSources] Error inserting default sources", insertError.message);
-        } else {
-            console.log(`[AutoSources] Created ${inserts.length} default website sources`);
         }
     } catch (err) {
         console.error("[AutoSources] Unexpected error", err);

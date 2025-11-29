@@ -1,7 +1,6 @@
 "use client";
 
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { MissionHighlights } from "@/components/mission-highlights";
 import { QuickLogPanel } from "@/components/quick-log";
 import { CoachSection } from "@/components/coach-section";
 import { MultimodalInput } from "@/components/logging/MultimodalInput";
@@ -1174,13 +1173,7 @@ export default function DashboardClient({
           }}
         />
 
-        <section className="mt-10">
-          <MissionHighlights />
-        </section>
-
-        <SectionSeparator src="/images/separador_trimmed_3.png" height={200} className="mt-12" />
-
-        <section className="mt-10">
+        <section className="mt-12">
           <CoachSection />
         </section>
 
