@@ -24,8 +24,7 @@
           "stepConfirm": "「追加」で確定し、新しいアイコンからAlmaを開きます。",
           "close": "閉じる"
         }
-      },
-          "badge": "ローカルエクスプローラー",
+        },
       "footer": {
         "logout": "ログアウト",
         "loggingOut": "ログアウト中…"
@@ -114,7 +113,40 @@
       "detail": "毎日チェックイン、水、野菜料理を組み合わせました。",
       "days": "日",
       "next": "次のマイルストーン",
-      "cta": "アクティブな報酬を見る"
+      "cta": "マインドフルメダルを開く"
+    },
+    "rewards": {
+      "badge": "意識的な栄養ガイド",
+      "label": "アクティブリワード",
+      "cta": "マインドフルメダルを開く",
+      "nextHint": "{{days}}日で{{level}}へ",
+      "maxHint": "セルフケアの最高ランクに到達しました。",
+      "modalTitle": "マインドフル報酬ジャーニー",
+      "modalSubtitle": "連続達成ごとにホームで表示される意識的な栄養ステータスが進化します。",
+      "modalCurrent": "現在のステータス",
+      "modalLevels": "セルフケア階層",
+      "modalNextLabel": "次のステップ",
+      "modalClose": "ジャーニーを閉じる",
+      "modalProgress": "{{days}}日連続",
+      "modalDaysSuffix": "日",
+      "levels": {
+        "seed": {
+          "label": "気づきの種",
+          "detail": "水分・野菜・やさしいチェックインを2日続ける。"
+        },
+        "sprout": {
+          "label": "成長する芽",
+          "detail": "水分をキープし欲求を言葉にしながら4日以上続ける。"
+        },
+        "grove": {
+          "label": "導きの森",
+          "detail": "10日以上、食事・動き・振り返りをリズムで編み込む。"
+        },
+        "constellation": {
+          "label": "星座の守り手",
+          "detail": "21日以上の安定した儀式で周りをインスパイア。"
+        }
+      }
     },
     "quickwins": {
       "badge": "ショートカット",
@@ -124,7 +156,8 @@
       "pantryscan": "パントリーをスキャン",
       "pantryscanDetail": "3つの製品を追加",
       "walk": "マインドフルな散歩",
-      "walkDetail": "屋外で15分"
+      "walkDetail": "屋外で15分",
+      "walkPrefill": "膝がデリケートで体格も大きめの人向けに、15分の超やさしい散歩プランを教えてください。"
     },
     "quicklog": {
       "badge": "クイックチェックイン",
@@ -220,6 +253,29 @@
       "refresh": "更新",
       "empty": "この範囲ではまだヘルシーなスポットが見つかりませんでした。",
       "score": "マインドフル度 {{score}}%",
+      "manualCta": "手動で設定",
+      "manualEdit": "編集",
+      "clearLocation": "クリア",
+      "customLabel": "出発地点",
+      "manualSource": "手動",
+      "gpsSource": "GPS",
+      "addressLoading": "住所を取得しています...",
+      "addressFallback": "住所を取得できていません",
+      "manualDialog": {
+        "title": "出発地点を設定",
+        "description": "信頼できる住所を入力してください。今後の提案に利用します。",
+        "labelLabel": "ラベル",
+        "addressLabel": "住所",
+        "addressPlaceholder": "丁目・番地・市区町村",
+        "helper": "地図を調整するため、この情報は端末内にのみ保存します。",
+        "cancel": "キャンセル",
+        "save": "住所を保存",
+        "saving": "保存中...",
+        "errorAddress": "住所を入力してください。",
+        "errorGeocode": "その住所が見つかりませんでした。詳細を追加してください。",
+        "errorGeneric": "位置情報を保存できませんでした。もう一度お試しください。",
+        "defaultLabel": "自宅"
+      },
       "greenMood": {
         "name": "Green Mood",
         "detail": "オーガニックボウルとスムージー"
@@ -690,6 +746,7 @@
     }
   },
   "productSearch": {
+    "badge": "ローカルエクスプローラー",
     "title": "近くの商品の検索",
     "subtitle": "近所のスーパーマーケットでベストプライスを見つけましょう",
     "locationRequired": "位置情報が必要です",
@@ -707,5 +764,47 @@
     "cached": "キャッシュ",
     "storesSearched": "店舗を検索しました",
     "noResults": "該当する商品が見つかりませんでした。別の検索をお試しください。"
+  },
+  "modals": {
+    "pantry": {
+      "title": "マイパントリー",
+      "addItem": "アイテムを追加",
+      "itemName": "アイテム名",
+      "category": "カテゴリ",
+      "selectCategory": "選択...",
+      "categories": {
+        "protein": "たんぱく質",
+        "carbs": "炭水化物",
+        "vegetables": "野菜",
+        "fruits": "果物",
+        "snacks": "スナック",
+        "beverages": "ドリンク"
+      },
+      "expiryDate": "賞味期限",
+      "quantity": "数量",
+      "unit": "単位",
+      "notes": "メモ",
+      "cancel": "キャンセル",
+      "add": "追加",
+      "update": "更新",
+      "loading": "読み込み中...",
+      "empty": "登録されたアイテムはありません",
+      "confirmDelete": "このアイテムを削除しますか？",
+      "expires": "期限",
+      "quickAdd": {
+        "title": "クイック登録",
+        "subtitle": "手持ちの食材を話すか入力してください。カンマまたは改行で区切ります。",
+        "placeholder": "例: オートミール、木綿豆腐、青りんご",
+        "voice": "リストを音声入力",
+        "stop": "停止",
+        "cta": "パントリーに保存",
+        "saving": "保存中...",
+        "transcribing": "文字起こし中...",
+        "recording": "録音中...",
+        "empty": "少なくとも1つ入力してください。",
+        "success": "{{count}} 件を追加しました。",
+        "error": "リストを保存できませんでした。"
+      }
+    }
   }
 }

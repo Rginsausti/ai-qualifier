@@ -224,7 +224,27 @@ const NON_FOOD_KEYWORDS = mergeKeywordGroups({
         'crema corporal',
         'crema facial',
         'crema hidratante',
-        'after sun'
+        'after sun',
+        'adorno',
+        'adornos',
+        'ornamento',
+        'ornamentos',
+        'decoracion',
+        'decoraciones',
+        'decorativo',
+        'decorativos',
+        'decorativa',
+        'guirnalda',
+        'guirnaldas',
+        'luces navidad',
+        'luces led',
+        'arbolito',
+        'arbol de navidad',
+        'muñeco navidad',
+        'muneco navidad',
+        'cascanueces',
+        'campana decorativa',
+        'campanas navidad'
     ],
     en: [
         'shampoo',
@@ -259,7 +279,20 @@ const NON_FOOD_KEYWORDS = mergeKeywordGroups({
         'body lotion',
         'face cream',
         'moisturizer',
-        'hand cream'
+        'hand cream',
+        'ornament',
+        'christmas ornament',
+        'holiday ornament',
+        'xeric decor',
+        'xmas',
+        'nutcracker',
+        'garland',
+        'string lights',
+        'fairy lights',
+        'holiday decoration',
+        'tree topper',
+        'wreath',
+        'jingle bell'
     ],
     pt: [
         'shampoo',
@@ -293,7 +326,16 @@ const NON_FOOD_KEYWORDS = mergeKeywordGroups({
         'protetor solar',
         'hidratante',
         'creme corporal',
-        'creme facial'
+        'creme facial',
+        'ornamento',
+        'ornamentos',
+        'decoracao de natal',
+        'enfeite',
+        'enfeites',
+        'guirlanda',
+        'pisca pisca',
+        'luzes de natal',
+        'sino decorativo'
     ],
     it: [
         'shampoo',
@@ -323,7 +365,13 @@ const NON_FOOD_KEYWORDS = mergeKeywordGroups({
         'crema solare',
         'lozione corpo',
         'crema viso',
-        'idratante'
+        'idratante',
+        'ornamento natalizio',
+        'decorazione natalizia',
+        'ghirlanda',
+        'luci di natale',
+        'campanella',
+        'schiaccianoci'
     ],
     fr: [
         'shampoing',
@@ -353,7 +401,15 @@ const NON_FOOD_KEYWORDS = mergeKeywordGroups({
         'creme solaire',
         'lotion pour le corps',
         'creme visage',
-        'hydratant'
+        'hydratant',
+        'decoration de noel',
+        'ornement',
+        'boule de noel',
+        'guirlande',
+        'couronne',
+        'figurine casse noisette',
+        'clochette',
+        'xmas'
     ],
     de: [
         'shampoo',
@@ -383,7 +439,14 @@ const NON_FOOD_KEYWORDS = mergeKeywordGroups({
         'sonnencreme',
         'korperlotion',
         'gesichtscreme',
-        'feuchtigkeitscreme'
+        'feuchtigkeitscreme',
+        'weihnachtsdeko',
+        'weihnachtskugel',
+        'girlande',
+        'lichterkette',
+        'nussknacker',
+        'dekoration',
+        'glöckchen'
     ],
     ja: [
         'シャンプー',
@@ -414,7 +477,14 @@ const NON_FOOD_KEYWORDS = mergeKeywordGroups({
         '日焼け止め',
         'ボディローション',
         'フェイスクリーム',
-        '保湿クリーム'
+        '保湿クリーム',
+        'オーナメント',
+        'クリスマスオーナメント',
+        'ガーランド',
+        '飾り',
+        'ナッツクラッカー',
+        'ベル飾り',
+        'イルミネーション'
     ]
 });
 
@@ -604,6 +674,164 @@ const JUNK_FOOD_BRANDS = [
     'sugus'
 ];
 
+const ULTRA_PROCESSED_KEYWORDS = mergeKeywordGroups({
+    es: [
+        'gaseosa',
+        'refresco',
+        'cola',
+        'bebida cola',
+        'bebida azucarada',
+        'energy drink',
+        'bebida energetica',
+        'energizante',
+        'cerveza',
+        'fernet',
+        'licor',
+        'vodka',
+        'whisky',
+        'whiskey',
+        'gin',
+        'champagne',
+        'espumante',
+        'sidra',
+        'aperitivo',
+        'spritz',
+        'pan dulce',
+        'budin navideno',
+        'medialuna',
+        'factura',
+        'snack frito',
+        'papas fritas',
+        'nachos',
+        'hamburguesa congelada'
+    ],
+    en: [
+        'soda',
+        'soft drink',
+        'cola',
+        'energy drink',
+        'sports drink',
+        'beer',
+        'lager',
+        'ale',
+        'stout',
+        'vodka',
+        'whisky',
+        'whiskey',
+        'rum',
+        'gin',
+        'liquor',
+        'liqueur',
+        'alcoholic beverage',
+        'champagne',
+        'sparkling wine'
+    ],
+    pt: [
+        'refrigerante',
+        'cola',
+        'bebida acucarada',
+        'energetico',
+        'bebida energetica',
+        'cerveja',
+        'vodka',
+        'uísque',
+        'whisky',
+        'gin',
+        'licor',
+        'bebida alcoolica',
+        'champanhe',
+        'espumante'
+    ],
+    it: [
+        'bibita',
+        'bevanda gassata',
+        'cola',
+        'energy drink',
+        'bevanda energetica',
+        'birra',
+        'vino',
+        'vodka',
+        'whisky',
+        'liquore',
+        'alcolico',
+        'spumante'
+    ],
+    fr: [
+        'soda',
+        'boisson gazeuse',
+        'cola',
+        'boisson energetique',
+        'biere',
+        'vin',
+        'vodka',
+        'whisky',
+        'gin',
+        'liqueur',
+        'alcool',
+        'champagne'
+    ],
+    de: [
+        'limo',
+        'limonade',
+        'cola',
+        'energydrink',
+        'energy drink',
+        'bier',
+        'wein',
+        'vodka',
+        'whisky',
+        'likor',
+        'schnaps',
+        'alkohol'
+    ],
+    ja: [
+        'ソーダ',
+        '炭酸飲料',
+        'コーラ',
+        'エナジードリンク',
+        'スポーツドリンク',
+        'ビール',
+        'ワイン',
+        'ウォッカ',
+        'ウイスキー',
+        'ジン',
+        'リキュール',
+        'アルコール飲料'
+    ]
+});
+
+const ULTRA_PROCESSED_BRANDS = [
+    'coca cola',
+    'pepsi',
+    'fanta',
+    'sprite',
+    '7up',
+    'seven up',
+    'mirinda',
+    'manaos',
+    'secco',
+    'paso de los toros',
+    'red bull',
+    'monster',
+    'speed unlimited',
+    'rockstar',
+    'schweppes',
+    'quilmes',
+    'heineken',
+    'budweiser',
+    'andes',
+    'brahma',
+    'smirnoff',
+    'absolut',
+    'bacardi',
+    'campari',
+    'fernet branca',
+    'jagermeister',
+    'johnnie walker',
+    'gin beefeater',
+    'bombay sapphire'
+];
+
 const filterOutNonFoodProducts = (products: AggregatedProduct[]) => {
     let removed = 0;
 
@@ -667,14 +895,145 @@ const filterOutJunkFoodProducts = (products: AggregatedProduct[]) => {
     return { products: filtered, removed };
 };
 
+const filterOutUltraProcessedProducts = (products: AggregatedProduct[]) => {
+    let removed = 0;
+
+    const filtered = products.filter((product) => {
+        const haystack = buildProductHaystack(product);
+        if (!haystack) return true;
+
+        const brandMatch = product.brand
+            ? ULTRA_PROCESSED_BRANDS.some((brand) =>
+                normalizeText(product.brand).includes(normalizeText(brand))
+            )
+            : false;
+
+        const keywordMatch = ULTRA_PROCESSED_KEYWORDS.some((keyword) =>
+            haystack.includes(normalizeText(keyword))
+        );
+
+        if (brandMatch || keywordMatch) {
+            removed += 1;
+            return false;
+        }
+
+        return true;
+    });
+
+    return { products: filtered, removed };
+};
+
 const applyContentFilters = (products: AggregatedProduct[]) => {
     const nonFood = filterOutNonFoodProducts(products);
     const junk = filterOutJunkFoodProducts(nonFood.products);
+    const ultraProcessed = filterOutUltraProcessedProducts(junk.products);
     return {
-        products: junk.products,
-        removed: nonFood.removed + junk.removed,
+        products: ultraProcessed.products,
+        removed: nonFood.removed + junk.removed + ultraProcessed.removed,
     };
 };
+
+const LLM_BATCH_SIZE = 24;
+
+type GroqDecision = {
+    id: string;
+    is_food: boolean;
+    is_healthy: boolean;
+};
+
+const GROQ_PRODUCT_SYSTEM_PROMPT = `Sos una nutricionista que evalúa productos detectados en supermercados. Marcá is_food = true solo si el ítem es comestible o bebible. Entre esos, marcá is_healthy = true únicamente si es un alimento fresco, mínimamente procesado o alineado a planes mindful (verduras, frutas, proteínas magras, lácteos simples, legumbres, snacks integrales, bebidas sin azúcar, etc.). Marca is_healthy = false cuando sea alcohol, bebidas azucaradas, snacks ultra procesados, postres, panadería industrial, dulces, decoración, productos de limpieza o cualquier cosa no nutritiva. Respondé SOLO JSON válido con este formato exacto:
+{
+  "decisions": [
+    { "id": string, "is_food": boolean, "is_healthy": boolean }
+  ]
+}`;
+
+async function guardProductsWithGroq(
+    products: AggregatedProduct[],
+    query: string
+): Promise<{ products: AggregatedProduct[]; removed: number }> {
+    if (!process.env.GROQ_API_KEY || products.length === 0) {
+        return { products, removed: 0 };
+    }
+
+    const indexesToDrop = new Set<number>();
+
+    for (let start = 0; start < products.length; start += LLM_BATCH_SIZE) {
+        const batch = products.slice(start, start + LLM_BATCH_SIZE);
+        const blocked = await classifyProductBatchWithGroq(batch, query, start);
+        blocked.forEach((index) => indexesToDrop.add(index));
+    }
+
+    if (indexesToDrop.size === 0) {
+        return { products, removed: 0 };
+    }
+
+    const filtered = products.filter((_, index) => !indexesToDrop.has(index));
+    const removed = products.length - filtered.length;
+    return { products: filtered, removed };
+}
+
+async function classifyProductBatchWithGroq(
+    batch: AggregatedProduct[],
+    query: string,
+    offset: number
+): Promise<number[]> {
+    try {
+        const items = batch.map((product, index) => ({
+            id: `p${offset + index}`,
+            name: product.product_name,
+            brand: product.brand,
+            store: product.store_brand ?? product.store_name ?? null,
+            claims: product.nutritional_claims?.slice(0, 5) ?? [],
+            unit: product.unit,
+            price: product.price_current,
+            hints: buildProductHaystack(product).slice(0, 220),
+        }));
+
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                temperature: 0,
+                response_format: { type: "json_object" },
+                messages: [
+                    { role: 'system', content: GROQ_PRODUCT_SYSTEM_PROMPT },
+                    { role: 'user', content: JSON.stringify({ query, items }) },
+                ],
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Groq guard request failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const content = data?.choices?.[0]?.message?.content;
+        if (!content) return [];
+
+        const parsed = JSON.parse(content) as { decisions?: GroqDecision[] };
+        if (!parsed?.decisions || !Array.isArray(parsed.decisions)) return [];
+
+        const blockedIndexes: number[] = [];
+        parsed.decisions.forEach((decision) => {
+            if (!decision || typeof decision.id !== 'string') return;
+            const match = decision.id.match(/^p(\d+)$/);
+            if (!match) return;
+            const globalIndex = Number(match[1]);
+            if (!decision.is_food || !decision.is_healthy) {
+                blockedIndexes.push(globalIndex);
+            }
+        });
+        return blockedIndexes;
+    } catch (error) {
+        console.error('[Orquestador] Error al clasificar productos con LLM:', error);
+        return [];
+    }
+}
 
 const filterProductsByRelevance = (
     products: AggregatedProduct[],
@@ -856,14 +1215,20 @@ export async function searchNearbyProducts(
         console.log('[Orquestador] Productos filtrados por intolerancias:', relevantProducts.length - personalizedProducts.length);
     }
 
+    const { products: llmGuardedProducts, removed: llmRemoved } = await guardProductsWithGroq(personalizedProducts, productQuery);
+    if (llmRemoved > 0) {
+        console.log('[Orquestador] Productos filtrados por LLM (no comida o no saludables):', llmRemoved);
+    }
+
     const filteredOutCount = contentRemoved +
         Math.max(contentSafeProducts.length - relevantProducts.length, 0) +
-        Math.max(relevantProducts.length - personalizedProducts.length, 0);
+        Math.max(relevantProducts.length - personalizedProducts.length, 0) +
+        llmRemoved;
 
-    await cacheResults(userLat, userLon, productQuery, personalizedProducts, scrapableStores.length);
+    await cacheResults(userLat, userLon, productQuery, llmGuardedProducts, scrapableStores.length);
 
     return {
-        products: personalizedProducts,
+        products: llmGuardedProducts,
         stores_searched: scrapableStores.length,
         cache_hit: false,
         search_latency_ms: Date.now() - startTime,

@@ -9,6 +9,7 @@ import {
   logWater,
   analyzeFoodFromText,
 } from "@/lib/actions";
+import { getPantryItems } from "@/lib/user-activities";
 import { getMarketContext } from "@/lib/market-prices";
 import { randomUUID } from "crypto";
 
@@ -21,13 +22,14 @@ type QuickLog = {
 };
 
 type MealLog = {
-  id?: string;
+  id?: string | number;
   created_at: string;
   name: string | null;
   calories: number | null;
   protein: number | null;
   carbs: number | null;
   fats: number | null;
+  meal_type?: string | null;
 };
 
 type LoggedMealCandidate = {
@@ -55,6 +57,7 @@ type HandleIngestionResult =
 
 const PENDING_MARKER_REGEX = /<!--PENDING_INGESTION:([A-Za-z0-9_-]+)-->+/g;
 const RESOLVED_MARKER_REGEX = /<!--PENDING_RESOLVED:([A-Za-z0-9_-]+)-->+/g;
+const AUTO_MOVEMENT_TRIGGER = "__AUTO_MOVEMENT__";
 
 const normalizeMealName = (value?: string | null) =>
   (value || "")
@@ -406,6 +409,8 @@ export async function POST(req: Request) {
   const payload = await req.json();
   const locale = typeof payload?.locale === "string" ? payload.locale : undefined;
   const userId = typeof payload?.userId === "string" ? payload.userId : undefined;
+  const intent = typeof payload?.intent === "string" ? payload.intent : "nutrition";
+  const hint = typeof payload?.hint === "string" ? payload.hint.trim() : "";
   const rawMessages: IncomingMessage[] = Array.isArray(payload?.messages) ? payload.messages : [];
 
   const sanitizedMessages = rawMessages
@@ -423,16 +428,26 @@ export async function POST(req: Request) {
 
   // 1. Memory System: Fetch User Profile & Recent Logs
   // Instead of generic RAG, we inject the specific user context ("Memory")
-  const [userProfile, recentLogs, todaysMealsRaw, dailyStats] = await Promise.all([
+  const [userProfile, recentLogs, todaysMealsRaw, dailyStats, pantryItems] = await Promise.all([
     getUserProfile(userId),
     getRecentQuickLogs(userId),
     getTodayNutritionLogs(userId, locale),
     userId ? getDailyStats(userId, locale) : Promise.resolve(null),
+    getPantryItems(),
   ]);
 
   // 2. Construct System Prompt with Memory
   const userLocale = userProfile?.locale || locale || 'es';
-  const todaysMeals = [...todaysMealsRaw];
+  const todaysMeals: MealLog[] = todaysMealsRaw.map((meal) => ({
+    id: typeof meal.id === "number" || typeof meal.id === "string" ? meal.id : undefined,
+    created_at: meal.created_at,
+    name: meal.name,
+    calories: meal.calories,
+    protein: meal.protein,
+    carbs: meal.carbs,
+    fats: meal.fats,
+    meal_type: meal.meal_type,
+  }));
 
   const ingestionResult = await handleIngestionFlow({
     messages: sanitizedMessages,
@@ -450,6 +465,19 @@ export async function POST(req: Request) {
 
   const autoActionNote = ingestionResult.autoActionNote;
   const marketMemory = getMarketContext(userLocale);
+  const pantrySection = pantryItems.length
+    ? pantryItems
+        .slice(0, 15)
+        .map((item) => {
+          const quantity = item.quantity ? `${item.quantity} ${item.unit || ""}`.trim() : "";
+          const expiry = item.expiry_date
+            ? new Date(item.expiry_date).toLocaleDateString(userLocale)
+            : "";
+          const detail = [quantity, expiry, item.notes?.trim()].filter(Boolean).join(" · ");
+          return `- ${item.item_name}${detail ? ` (${detail})` : ""}`;
+        })
+        .join("\n")
+    : "Sin registros de despensa activos.";
 
   // Format logs for better LLM readability
   const formattedLogs = recentLogs.map((log: QuickLog) => 
@@ -491,14 +519,7 @@ export async function POST(req: Request) {
     `
     : "";
 
-  const systemPrompt = `
-    You are Alma, a practical and direct AI Nutrition Coach.
-    
-    YOUR GOAL:
-    - Provide immediate, actionable advice for healthy eating.
-    - Minimize fluff and small talk. Get straight to the point.
-    - Your responses must be short and easy to read on a mobile screen.
-    
+  const sharedMemory = `
     USER MEMORY (CONTEXT):
     Profile: ${userProfile ? JSON.stringify(userProfile, null, 2) : "No specific profile found."}
     
@@ -510,21 +531,62 @@ export async function POST(req: Request) {
 
     HYDRATION (last 24h):
     ${hydrationSection}
+
+    PANTRY SNAPSHOT:
+    ${pantrySection}
     
     ${marketMemory}
     ${automationContext}
-    
-    INSTRUCTIONS:
-    - Reply in the user's language (${userLocale}).
-    - Use the User Memory to personalize answers (e.g., respect lactose intolerance).
-    - CRITICAL: Check the "RECENT CHECK-INS" for any health notes (e.g., "sick", "flu", "stomach pain") or cravings. If the user mentions being sick, prioritize comfort foods suitable for their condition.
-    - Use the MARKET MEMORY to give realistic budget advice. NEVER hallucinate prices.
-    - Be extremely concise. Use bullet points for options.
-    - Avoid long explanations unless explicitly asked.
-    - Ask MAX ONE follow-up question, and ONLY if critical to give a recommendation. Otherwise, do not ask anything.
-    - If the user asks "what to eat", give 2-3 concrete options immediately based on their profile.
-    - Do NOT provide medical diagnoses.
   `;
+
+  const privateHint = hint
+    ? `
+      PRIVATE MOVEMENT NOTE:
+      ${hint}
+      Use this note purely as context. Never repeat it verbatim or mention that it was supplied privately.
+    `
+    : "";
+
+  const systemPrompt = intent === "movement"
+    ? `
+      You are Alma Move Coach, a gentle mobility guide for people in larger bodies.
+      - Focus on low-impact, joint-friendly routines (slow walks, mobility drills, chair stretches).
+      - Prioritize safety: emphasize warm-ups, posture cues, breathing, and pain signals.
+      - Celebrate consistency over intensity. Offer pacing tips and rest intervals.
+      - Keep answers concise (max 4 sentences or bullet points) and encouraging.
+      - Never mention weight loss or calories unless the user brings it up first.
+      - If equipment is required, always offer a bodyweight or at-home alternative.
+      - Suggest grounding rituals (breath, music, scenery) for mindful walks.
+      - Ask at most one clarifying question only when essential for a safe plan.
+      - Respond in ${userLocale}.
+      ${hint ? `
+        If the latest user message equals "${AUTO_MOVEMENT_TRIGGER}", interpret it as an automatic request and lean on the PRIVATE NOTE to personalize the answer.
+        ` : ""}
+      ${privateHint}
+
+      ${sharedMemory}
+    `
+    : `
+      You are Alma, a practical and direct AI Nutrition Coach.
+      
+      YOUR GOAL:
+      - Provide immediate, actionable advice for healthy eating.
+      - Minimize fluff and small talk. Get straight to the point.
+      - Your responses must be short and easy to read on a mobile screen.
+      
+      ${sharedMemory}
+      
+      INSTRUCTIONS:
+      - Reply in the user's language (${userLocale}).
+      - Use the User Memory to personalize answers (e.g., respect lactose intolerance).
+      - CRITICAL: Check the "RECENT CHECK-INS" for any health notes (e.g., "sick", "flu", "stomach pain") or cravings. If the user mentions being sick, prioritize comfort foods suitable for their condition.
+      - Use the MARKET MEMORY to give realistic budget advice. NEVER hallucinate prices.
+      - Be extremely concise. Use bullet points for options.
+      - Avoid long explanations unless explicitly asked.
+      - Ask MAX ONE follow-up question, and ONLY if critical to give a recommendation. Otherwise, do not ask anything.
+      - If the user asks "what to eat", give 2-3 concrete options immediately based on their profile.
+      - Do NOT provide medical diagnoses.
+    `;
 
   // 3. Call Groq (Llama 3)
   if (!process.env.GROQ_API_KEY) {

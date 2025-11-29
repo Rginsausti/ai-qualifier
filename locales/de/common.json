@@ -24,8 +24,7 @@
           "stepConfirm": "Bestätige mit \"Hinzufügen\" und öffne Alma über das neue Icon.",
           "close": "Fertig"
         }
-      },
-          "badge": "Lokaler Explorer",
+        },
       "footer": {
         "logout": "Abmelden",
         "loggingOut": "Wird abgemeldet…"
@@ -114,7 +113,40 @@
       "detail": "Sie haben jeden Tag Check-ins, Wasser und ein Gemüsegericht kombiniert.",
       "days": "Tage",
       "next": "Nächstes Ziel",
-      "cta": "Aktive Belohnungen ansehen"
+      "cta": "Mindful-Medaille öffnen"
+    },
+    "rewards": {
+      "badge": "Bewusste:r Nährer:in",
+      "label": "Aktive Belohnungen",
+      "cta": "Mindful-Medaille öffnen",
+      "nextHint": "{{days}} Tage bis {{level}}",
+      "maxHint": "Du hast die höchste Fürsorge-Stufe erreicht.",
+      "modalTitle": "Mindful-Belohnungsreise",
+      "modalSubtitle": "Jede Serie schaltet einen neuen Status als bewusste:r Nährer:in auf deiner Startseite frei.",
+      "modalCurrent": "Aktueller Status",
+      "modalLevels": "Fürsorge-Stufen",
+      "modalNextLabel": "Nächste Stufe",
+      "modalClose": "Reise schließen",
+      "modalProgress": "{{days}} Tage im Einklang",
+      "modalDaysSuffix": "Tage",
+      "levels": {
+        "seed": {
+          "label": "Aufmerksame Saat",
+          "detail": "2 achtsame Tage mit Fokus auf Hydration, Gemüse und sanfte Check-ins."
+        },
+        "sprout": {
+          "label": "Aufblühender Trieb",
+          "detail": "4+ Tage, in denen du die Hydration hältst und Wünsche benennst."
+        },
+        "grove": {
+          "label": "Führender Hain",
+          "detail": "10+ Tage, die Mahlzeiten, Bewegung und Reflexion verbinden."
+        },
+        "constellation": {
+          "label": "Konstellations-Hüter:in",
+          "detail": "21+ Tage konstanter Rituale, die dein Umfeld inspirieren."
+        }
+      }
     },
     "quickwins": {
       "badge": "Verknüpfungen",
@@ -124,7 +156,8 @@
       "pantryscan": "Vorratskammer scannen",
       "pantryscanDetail": "3 Produkte hinzufügen",
       "walk": "Mindful-Spaziergang",
-      "walkDetail": "15 Min. im Freien"
+      "walkDetail": "15 Min. im Freien",
+      "walkPrefill": "Ich brauche einen sehr sanften Spaziergang von 15 Minuten mit Hinweisen für empfindliche Knie und höheres Körpergewicht."
     },
     "quicklog": {
       "badge": "Schneller Check-in",
@@ -220,6 +253,29 @@
       "refresh": "Aktualisieren",
       "empty": "Wir haben in diesem Radius noch keine gesunden Orte gefunden.",
       "score": "{{score}}% mindful",
+      "manualCta": "Manuell festlegen",
+      "manualEdit": "Bearbeiten",
+      "clearLocation": "Löschen",
+      "customLabel": "Mein Startpunkt",
+      "manualSource": "Manuell",
+      "gpsSource": "GPS",
+      "addressLoading": "Adresse wird abgerufen...",
+      "addressFallback": "Adresse ausstehend",
+      "manualDialog": {
+        "title": "Startpunkt festlegen",
+        "description": "Gib eine vertrauenswürdige Adresse ein. Wir nutzen sie für alle Vorschläge.",
+        "labelLabel": "Bezeichnung",
+        "addressLabel": "Adresse",
+        "addressPlaceholder": "Straße, Hausnummer, Stadt",
+        "helper": "Wir speichern das nur lokal, um Karten zu personalisieren.",
+        "cancel": "Abbrechen",
+        "save": "Adresse speichern",
+        "saving": "Speichere...",
+        "errorAddress": "Bitte gib eine Adresse ein.",
+        "errorGeocode": "Wir konnten diese Adresse nicht finden. Präzisiere sie.",
+        "errorGeneric": "Wir konnten diesen Standort nicht speichern. Versuche es erneut.",
+        "defaultLabel": "Zuhause"
+      },
       "greenMood": {
         "name": "Green Mood",
         "detail": "Bio-Bowls und Smoothies"
@@ -690,6 +746,7 @@
     }
   },
   "productSearch": {
+    "badge": "Lokaler Explorer",
     "title": "Produkte in der Nähe finden",
     "subtitle": "Finde die besten Preise in Supermärkten in deiner Umgebung",
     "locationRequired": "Wir benötigen deinen Standort",
@@ -707,5 +764,47 @@
     "cached": "Zwischengespeichert",
     "storesSearched": "Geschäfte durchsucht",
     "noResults": "Keine Produkte gefunden. Versuche eine andere Suche."
+  },
+  "modals": {
+    "pantry": {
+      "title": "Meine Vorratskammer",
+      "addItem": "Artikel hinzufügen",
+      "itemName": "Artikelname",
+      "category": "Kategorie",
+      "selectCategory": "Auswählen...",
+      "categories": {
+        "protein": "Proteine",
+        "carbs": "Kohlenhydrate",
+        "vegetables": "Gemüse",
+        "fruits": "Obst",
+        "snacks": "Snacks",
+        "beverages": "Getränke"
+      },
+      "expiryDate": "Mindesthaltbarkeit",
+      "quantity": "Menge",
+      "unit": "Einheit",
+      "notes": "Notizen",
+      "cancel": "Abbrechen",
+      "add": "Hinzufügen",
+      "update": "Aktualisieren",
+      "loading": "Lädt...",
+      "empty": "Noch keine Artikel erfasst",
+      "confirmDelete": "Diesen Artikel löschen?",
+      "expires": "Läuft ab",
+      "quickAdd": {
+        "title": "Schnellerfassung",
+        "subtitle": "Sprich oder tippe die Produkte, die du hast. Trenne sie mit Kommas oder Zeilenumbrüchen.",
+        "placeholder": "Z. B. Haferflocken, Tofu, grüne Äpfel",
+        "voice": "Liste diktieren",
+        "stop": "Diktat stoppen",
+        "cta": "In Vorrat speichern",
+        "saving": "Speichern...",
+        "transcribing": "Transkribiere...",
+        "recording": "Höre zu...",
+        "empty": "Mindestens ein Produkt hinzufügen.",
+        "success": "{{count}} Artikel hinzugefügt.",
+        "error": "Konnte die Liste nicht speichern."
+      }
+    }
   }
 }

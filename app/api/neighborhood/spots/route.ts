@@ -41,7 +41,8 @@ export async function POST(request: NextRequest) {
         distance_m: store.distance ?? null,
         lat: store.latitude,
         lon: store.longitude,
-      }));
+      }))
+      .filter((candidate) => !isClearlyIndulgentBakery(candidate));
 
     let ranked = await scoreStoresWithGroq(candidates, limit);
     if (!ranked.length) {
@@ -68,7 +69,7 @@ async function scoreStoresWithGroq(
   }
 
   try {
-    const systemPrompt = `Eres un scout de alimentación saludable. Recibes un JSON con locales cercanos. Debes priorizar los que probablemente ofrezcan opciones nutritivas según su nombre, tipo y marca. Asigna un score de 0 a 100 (100 = súper saludable). Devuelve SOLO JSON válido con este formato:
+    const systemPrompt = `Eres un scout de alimentación saludable. Recibes un JSON con locales cercanos. Debes priorizar los que probablemente ofrezcan opciones nutritivas según su nombre, tipo y marca. DESCARTÁ panaderías tradicionales (solo harinas/azúcares) a menos que su nombre incluya pistas de masa madre, integral, vegano, sin azúcar o harinas alternativas. Asigna un score de 0 a 100 (100 = súper saludable). Devuelve SOLO JSON válido con este formato:
 {
   "spots": [
     {
@@ -114,9 +115,17 @@ Incluye como máximo ${limit} entradas con score mayor o igual a 55. Ordena por 
     }
 
     const candidateMap = new Map(candidates.map((c) => [c.id, c]));
+    const scoredSpots = parsed.spots as unknown[];
 
-    return parsed.spots
-      .map((spot: any) => {
+    return scoredSpots
+      .filter((spot: unknown): spot is GroqScoredSpot =>
+        Boolean(
+          spot &&
+          typeof spot === "object" &&
+          typeof (spot as { id?: unknown }).id === "number"
+        )
+      )
+      .map((spot) => {
         const candidate = candidateMap.get(spot.id);
         if (!candidate) return null;
         return {
@@ -136,7 +145,7 @@ Incluye como máximo ${limit} entradas con score mayor o igual a 55. Ordena por 
           lon: candidate.lon,
         } as HealthySpot;
       })
-      .filter(Boolean)
+      .filter((spot): spot is HealthySpot => Boolean(spot))
       .slice(0, limit);
   } catch (error) {
     console.error("scoreStoresWithGroq", error);
@@ -155,7 +164,6 @@ function fallbackScore(candidates: CandidateSpot[], limit: number): HealthySpot[
     health_food: 92,
     greengrocer: 86,
     produce: 82,
-    bakery: 70,
     cafe: 65,
     deli: 64,
     supermarket: 58,
@@ -167,9 +175,16 @@ function fallbackScore(candidates: CandidateSpot[], limit: number): HealthySpot[
 
   return candidates
     .map((candidate) => {
-      let score = typeBase[candidate.type] ?? 55;
+      const bakeryHealthy = hasBakeryHealthHint(candidate);
+      let score = candidate.type === "bakery"
+        ? bakeryHealthy ? 72 : 38
+        : typeBase[candidate.type] ?? 55;
       const tags: string[] = [];
       const name = candidate.name || "";
+
+      if (candidate.type === "bakery" && bakeryHealthy) {
+        tags.push("Pan integral");
+      }
 
       keywordBoosts.forEach(({ regex, boost, tag }) => {
         if (regex.test(name)) {
@@ -182,6 +197,9 @@ function fallbackScore(candidates: CandidateSpot[], limit: number): HealthySpot[
       score = clamp(score - distancePenalty, 30, 99);
 
       const reasonParts = [candidate.type.replace(/_/g, " ")];
+      if (candidate.type === "bakery" && !bakeryHealthy) {
+        reasonParts.push("solo harinas refinadas");
+      }
       if (tags.length) {
         reasonParts.push(tags.join(", "));
       }
@@ -230,3 +248,33 @@ type HealthySpot = {
   lat: number;
   lon: number;
 };
+
+type GroqScoredSpot = {
+  id: number;
+  score?: unknown;
+  reason?: unknown;
+  tags?: unknown;
+};
+
+const BAKERY_HEALTH_HINTS = [
+  /(masa madre|sourdough)/i,
+  /(integral|whole grain|grano entero|multicereal)/i,
+  /(sin azucar|sugar free|sin azúcar)/i,
+  /(vegano|plant based|vegana)/i,
+  /(sin gluten|gluten free|sin tacc)/i,
+  /(harina de almendra|harina de coco|harinas alternativas)/i,
+];
+
+function hasBakeryHealthHint(candidate: CandidateSpot): boolean {
+  const haystack = [candidate.name, candidate.brand]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  if (!haystack) return false;
+  return BAKERY_HEALTH_HINTS.some((regex) => regex.test(haystack));
+}
+
+function isClearlyIndulgentBakery(candidate: CandidateSpot): boolean {
+  if (candidate.type !== "bakery") return false;
+  return !hasBakeryHealthHint(candidate);
+}

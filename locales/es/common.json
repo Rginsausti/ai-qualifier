@@ -147,7 +147,40 @@
       "detail": "Combinaste check-ins, agua y un plato vegetal cada día.",
       "days": "días",
       "next": "Próxima meta",
-      "cta": "Ver premios activos"
+      "cta": "Abrir medalla mindful"
+    },
+    "rewards": {
+      "badge": "Nutridor consciente",
+      "label": "Recompensas activas",
+      "cta": "Abrir medalla mindful",
+      "nextHint": "{{days}} días para alcanzar {{level}}",
+      "maxHint": "Alcanzaste el nivel máximo de autocuidado.",
+      "modalTitle": "Recorrido de recompensas mindful",
+      "modalSubtitle": "Cada racha desbloquea un nuevo estado de nutridor consciente en tu inicio.",
+      "modalCurrent": "Estado actual",
+      "modalLevels": "Capas de autocuidado",
+      "modalNextLabel": "Próxima elevación",
+      "modalClose": "Cerrar recorrido",
+      "modalProgress": "{{days}} días en sintonía",
+      "modalDaysSuffix": "días",
+      "levels": {
+        "seed": {
+          "label": "Semilla atenta",
+          "detail": "2 días mindful cuidando hidratación, vegetales y check-ins."
+        },
+        "sprout": {
+          "label": "Brotes firmes",
+          "detail": "4+ días sosteniendo hidratación y expresando antojos reales."
+        },
+        "grove": {
+          "label": "Huerta guía",
+          "detail": "10+ días hilando comidas, movimiento y reflexiones en ritmo."
+        },
+        "constellation": {
+          "label": "Constelación nutridora",
+          "detail": "21+ días de rituales constantes que inspiran a tu círculo."
+        }
+      }
     },
     "quickwins": {
       "badge": "Atajos",
@@ -157,7 +190,8 @@
       "pantryscan": "Escanear alacena",
       "pantryscanDetail": "Agrega 3 productos",
       "walk": "Caminata mindful",
-      "walkDetail": "15 min al aire libre"
+      "walkDetail": "15 min al aire libre",
+      "walkPrefill": "Quiero una caminata muy suave de 15 minutos con indicaciones para rodillas sensibles y sobrepeso."
     },
     "quicklog": {
       "badge": "Check-in rápido",
@@ -253,6 +287,29 @@
       "refresh": "Actualizar",
       "empty": "No encontramos lugares saludables en este radio todavía.",
       "score": "{{score}}% mindful",
+      "manualCta": "Ajustar manualmente",
+      "manualEdit": "Editar",
+      "clearLocation": "Limpiar",
+      "customLabel": "Mi punto de partida",
+      "manualSource": "Manual",
+      "gpsSource": "GPS",
+      "addressLoading": "Buscando dirección...",
+      "addressFallback": "Dirección pendiente",
+      "manualDialog": {
+        "title": "Ajustar ubicación manual",
+        "description": "Ingresá una dirección de confianza y la usaremos como origen.",
+        "labelLabel": "Etiqueta",
+        "addressLabel": "Dirección",
+        "addressPlaceholder": "Calle, número y ciudad",
+        "helper": "Solo se guarda en tu dispositivo para personalizar mapas.",
+        "cancel": "Cancelar",
+        "save": "Guardar dirección",
+        "saving": "Guardando...",
+        "errorAddress": "Ingresá una dirección.",
+        "errorGeocode": "No encontramos esa dirección. Probá con más detalles.",
+        "errorGeneric": "No pudimos guardar la ubicación. Probá de nuevo.",
+        "defaultLabel": "Casa"
+      },
       "greenMood": {
         "name": "Green Mood",
         "detail": "Bowls y smoothies orgánicos"
@@ -730,5 +787,47 @@
     "locationRequired": "Necesitamos tu ubicación para buscar",
     "queryTooShort": "La búsqueda debe tener al menos 2 caracteres",
     "searchFailed": "Error al buscar productos. Intentá nuevamente."
+  },
+  "modals": {
+    "pantry": {
+      "title": "Mi despensa",
+      "addItem": "Agregar ítem",
+      "itemName": "Nombre del ítem",
+      "category": "Categoría",
+      "selectCategory": "Seleccionar...",
+      "categories": {
+        "protein": "Proteínas",
+        "carbs": "Carbohidratos",
+        "vegetables": "Vegetales",
+        "fruits": "Frutas",
+        "snacks": "Snacks",
+        "beverages": "Bebidas"
+      },
+      "expiryDate": "Fecha de vencimiento",
+      "quantity": "Cantidad",
+      "unit": "Unidad",
+      "notes": "Notas",
+      "cancel": "Cancelar",
+      "add": "Agregar",
+      "update": "Actualizar",
+      "loading": "Cargando...",
+      "empty": "Todavía no registraste productos",
+      "confirmDelete": "¿Eliminar este ítem?",
+      "expires": "Vence",
+      "quickAdd": {
+        "title": "Registro rápido",
+        "subtitle": "Dictá o escribí los productos que tenés. Separalos por comas o saltos de línea.",
+        "placeholder": "Ej: avena, tofu firme, manzanas verdes",
+        "voice": "Dictar lista",
+        "stop": "Detener dictado",
+        "cta": "Guardar en despensa",
+        "saving": "Guardando...",
+        "transcribing": "Transcribiendo...",
+        "recording": "Escuchando...",
+        "empty": "Necesito al menos un producto.",
+        "success": "Agregué {{count}} productos.",
+        "error": "No pude guardar la lista."
+      }
+    }
   }
 }

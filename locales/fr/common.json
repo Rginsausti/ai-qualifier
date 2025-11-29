@@ -147,8 +147,41 @@
       "detail": "Vous avez combiné check-ins, eau et plat végétal chaque jour.",
       "days": "jours",
       "next": "Prochain objectif",
-      "cta": "Voir récompenses actives"
+      "cta": "Ouvrir la médaille mindful"
     },
+      "rewards": {
+        "badge": "Nourrisseur conscient",
+        "label": "Récompenses actives",
+        "cta": "Ouvrir la médaille mindful",
+        "nextHint": "{{days}} jours avant d’atteindre {{level}}",
+        "maxHint": "Tu as atteint la plus haute étape de soin.",
+        "modalTitle": "Parcours de récompenses mindful",
+        "modalSubtitle": "Chaque série débloque un nouvel état de nourrisseur conscient sur l’accueil.",
+        "modalCurrent": "État actuel",
+        "modalLevels": "Niveaux de soin",
+        "modalNextLabel": "Prochaine élévation",
+        "modalClose": "Fermer le parcours",
+        "modalProgress": "{{days}} jours en harmonie",
+        "modalDaysSuffix": "jours",
+        "levels": {
+          "seed": {
+            "label": "Graine attentive",
+            "detail": "2 jours mindful dédiés à l’hydratation, aux légumes et aux check-ins doux."
+          },
+          "sprout": {
+            "label": "Pousse en élan",
+            "detail": "4+ jours en gardant l’hydratation stable et en nommant les envies."
+          },
+          "grove": {
+            "label": "Canopée guide",
+            "detail": "10+ jours reliant repas, mouvement et réflexions dans un même rythme."
+          },
+          "constellation": {
+            "label": "Constellation gardienne",
+            "detail": "21+ jours de rituels constants qui inspirent ton entourage."
+          }
+        }
+      },
     "quickwins": {
       "badge": "Raccourcis",
       "title": "Actions rapides",
@@ -157,7 +190,8 @@
       "pantryscan": "Scanner garde-manger",
       "pantryscanDetail": "Ajouter 3 produits",
       "walk": "Marche mindful",
-      "walkDetail": "15 min en plein air"
+      "walkDetail": "15 min en extérieur",
+      "walkPrefill": "J'ai besoin d'une marche ultra douce de 15 minutes avec des repères pour des genoux sensibles et un corps plus généreux."
     },
     "quicklog": {
       "badge": "Check-in express",
@@ -253,6 +287,29 @@
       "refresh": "Actualiser",
       "empty": "Nous n'avons pas encore trouvé d'adresses saines dans ce rayon.",
       "score": "{{score}}% mindful",
+      "manualCta": "Régler manuellement",
+      "manualEdit": "Modifier",
+      "clearLocation": "Effacer",
+      "customLabel": "Mon point de départ",
+      "manualSource": "Manuel",
+      "gpsSource": "GPS",
+      "addressLoading": "Recherche de l'adresse...",
+      "addressFallback": "Adresse en attente",
+      "manualDialog": {
+        "title": "Définir votre point de départ",
+        "description": "Saisissez une adresse de confiance. Nous l'utiliserons pour toutes les propositions.",
+        "labelLabel": "Libellé",
+        "addressLabel": "Adresse",
+        "addressPlaceholder": "Rue, numéro, ville",
+        "helper": "Nous conservons ces données uniquement en local pour personnaliser les cartes.",
+        "cancel": "Annuler",
+        "save": "Enregistrer l'adresse",
+        "saving": "Enregistrement...",
+        "errorAddress": "Veuillez renseigner une adresse.",
+        "errorGeocode": "Adresse introuvable. Ajoutez plus de détails.",
+        "errorGeneric": "Impossible d'enregistrer cette localisation. Réessayez.",
+        "defaultLabel": "Maison"
+      },
       "greenMood": {
         "name": "Green Mood",
         "detail": "Bowls et smoothies bio"
@@ -707,5 +764,47 @@
     "cached": "En cache",
     "storesSearched": "commerces consultés",
     "noResults": "Aucun produit trouvé. Essaie une autre recherche."
+  },
+  "modals": {
+    "pantry": {
+      "title": "Mon garde-manger",
+      "addItem": "Ajouter un produit",
+      "itemName": "Nom du produit",
+      "category": "Catégorie",
+      "selectCategory": "Sélectionner...",
+      "categories": {
+        "protein": "Protéines",
+        "carbs": "Glucides",
+        "vegetables": "Légumes",
+        "fruits": "Fruits",
+        "snacks": "Snacks",
+        "beverages": "Boissons"
+      },
+      "expiryDate": "Date de péremption",
+      "quantity": "Quantité",
+      "unit": "Unité",
+      "notes": "Notes",
+      "cancel": "Annuler",
+      "add": "Ajouter",
+      "update": "Mettre à jour",
+      "loading": "Chargement...",
+      "empty": "Aucun produit enregistré",
+      "confirmDelete": "Supprimer cet élément ?",
+      "expires": "Expire",
+      "quickAdd": {
+        "title": "Ajout rapide",
+        "subtitle": "Dicte ou écris les produits disponibles. Sépare-les par des virgules ou des retours à la ligne.",
+        "placeholder": "Ex : flocons d'avoine, tofu ferme, pommes vertes",
+        "voice": "Dicter la liste",
+        "stop": "Arrêter",
+        "cta": "Enregistrer dans le garde-manger",
+        "saving": "Enregistrement...",
+        "transcribing": "Transcription...",
+        "recording": "À l'écoute...",
+        "empty": "Ajoute au moins un produit.",
+        "success": "{{count}} produits ajoutés.",
+        "error": "Impossible d'enregistrer cette liste."
+      }
+    }
   }
 }

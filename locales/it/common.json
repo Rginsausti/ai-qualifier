@@ -24,8 +24,7 @@
           "stepConfirm": "Conferma con \"Aggiungi\" e riapri Alma dalla nuova icona.",
           "close": "Fatto"
         }
-      },
-          "badge": "Esploratore locale",
+        },
       "footer": {
         "logout": "Esci",
         "loggingOut": "Chiusura sessione…"
@@ -114,7 +113,40 @@
       "detail": "Hai combinato check-in, acqua e un piatto vegetale ogni giorno.",
       "days": "giorni",
       "next": "Prossimo obiettivo",
-      "cta": "Vedi premi attivi"
+      "cta": "Apri la medaglia mindful"
+    },
+    "rewards": {
+      "badge": "Nutriente consapevole",
+      "label": "Ricompense attive",
+      "cta": "Apri la medaglia mindful",
+      "nextHint": "{{days}} giorni per raggiungere {{level}}",
+      "maxHint": "Hai già sbloccato il livello di cura più alto.",
+      "modalTitle": "Percorso delle ricompense mindful",
+      "modalSubtitle": "Ogni streak sblocca un nuovo stato di nutriente consapevole nella home.",
+      "modalCurrent": "Stato attuale",
+      "modalLevels": "Livelli di autocura",
+      "modalNextLabel": "Prossima elevazione",
+      "modalClose": "Chiudi il percorso",
+      "modalProgress": "{{days}} giorni in sincronia",
+      "modalDaysSuffix": "giorni",
+      "levels": {
+        "seed": {
+          "label": "Seme attento",
+          "detail": "2 giorni mindful curando idratazione, verdure e check-in gentili."
+        },
+        "sprout": {
+          "label": "Germoglio in slancio",
+          "detail": "4+ giorni mantenendo l’idratazione stabile e nominando i desideri."
+        },
+        "grove": {
+          "label": "Bosco guida",
+          "detail": "10+ giorni intrecciando pasti, movimento e riflessioni in ritmo."
+        },
+        "constellation": {
+          "label": "Costellazione custode",
+          "detail": "21+ giorni di rituali costanti che ispirano chi ti circonda."
+        }
+      }
     },
     "quickwins": {
       "badge": "Scorciatoie",
@@ -124,7 +156,8 @@
       "pantryscan": "Scansiona dispensa",
       "pantryscanDetail": "Aggiungi 3 prodotti",
       "walk": "Camminata mindful",
-      "walkDetail": "15 min all'aperto"
+      "walkDetail": "15 min all'aperto",
+      "walkPrefill": "Ho bisogno di una camminata ultra delicata di 15 minuti con indicazioni per ginocchia sensibili e un corpo più generoso."
     },
     "quicklog": {
       "badge": "Check-in rapido",
@@ -220,6 +253,29 @@
       "refresh": "Aggiorna",
       "empty": "Non abbiamo ancora trovato luoghi salutari in questo raggio.",
       "score": "{{score}}% mindful",
+      "manualCta": "Imposta manualmente",
+      "manualEdit": "Modifica",
+      "clearLocation": "Pulisci",
+      "customLabel": "Il mio punto di partenza",
+      "manualSource": "Manuale",
+      "gpsSource": "GPS",
+      "addressLoading": "Recupero dell'indirizzo...",
+      "addressFallback": "Indirizzo in attesa",
+      "manualDialog": {
+        "title": "Imposta il punto di partenza",
+        "description": "Inserisci un indirizzo affidabile. Lo useremo per tutte le indicazioni.",
+        "labelLabel": "Etichetta",
+        "addressLabel": "Indirizzo",
+        "addressPlaceholder": "Via, numero, città",
+        "helper": "Lo salviamo solo sul tuo dispositivo per personalizzare le mappe.",
+        "cancel": "Annulla",
+        "save": "Salva indirizzo",
+        "saving": "Salvataggio...",
+        "errorAddress": "Inserisci un indirizzo.",
+        "errorGeocode": "Non abbiamo trovato quell'indirizzo. Prova con più dettagli.",
+        "errorGeneric": "Non siamo riusciti a salvare la posizione. Riprova.",
+        "defaultLabel": "Casa"
+      },
       "greenMood": {
         "name": "Green Mood",
         "detail": "Bowl e smoothie biologici"
@@ -690,6 +746,7 @@
     }
   },
   "productSearch": {
+    "badge": "Esploratore locale",
     "title": "Cerca prodotti vicino a te",
     "subtitle": "Trova i prezzi migliori nei supermercati della tua zona",
     "locationRequired": "Abbiamo bisogno della tua posizione",
@@ -707,5 +764,47 @@
     "cached": "In cache",
     "storesSearched": "negozi consultati",
     "noResults": "Nessun prodotto trovato. Prova con un'altra ricerca."
+  },
+  "modals": {
+    "pantry": {
+      "title": "La mia dispensa",
+      "addItem": "Aggiungi prodotto",
+      "itemName": "Nome prodotto",
+      "category": "Categoria",
+      "selectCategory": "Seleziona...",
+      "categories": {
+        "protein": "Proteine",
+        "carbs": "Carboidrati",
+        "vegetables": "Verdure",
+        "fruits": "Frutta",
+        "snacks": "Snack",
+        "beverages": "Bevande"
+      },
+      "expiryDate": "Data di scadenza",
+      "quantity": "Quantità",
+      "unit": "Unità",
+      "notes": "Note",
+      "cancel": "Annulla",
+      "add": "Aggiungi",
+      "update": "Aggiorna",
+      "loading": "Caricamento...",
+      "empty": "Nessun prodotto salvato",
+      "confirmDelete": "Eliminare questo elemento?",
+      "expires": "Scade",
+      "quickAdd": {
+        "title": "Registrazione rapida",
+        "subtitle": "Detta o scrivi i prodotti che hai già. Separali con virgole o a capo.",
+        "placeholder": "Es: fiocchi d'avena, tofu compatto, mele verdi",
+        "voice": "Detta elenco",
+        "stop": "Ferma dettatura",
+        "cta": "Salva nella dispensa",
+        "saving": "Salvataggio...",
+        "transcribing": "Trascrizione...",
+        "recording": "In ascolto...",
+        "empty": "Aggiungi almeno un prodotto.",
+        "success": "Aggiunti {{count}} prodotti.",
+        "error": "Non sono riuscita a salvare questa lista."
+      }
+    }
   }
 }

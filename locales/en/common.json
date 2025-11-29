@@ -147,7 +147,40 @@
       "detail": "You combined check-ins, water, and a veggie dish each day.",
       "days": "days",
       "next": "Next milestone",
-      "cta": "See active rewards"
+      "cta": "Open mindful medal"
+    },
+    "rewards": {
+      "badge": "Conscious nourisher",
+      "label": "Active rewards",
+      "cta": "Open mindful medal",
+      "nextHint": "{{days}} days to reach {{level}}",
+      "maxHint": "You unlocked the highest care tier.",
+      "modalTitle": "Mindful rewards journey",
+      "modalSubtitle": "Each streak unlocks a new conscious nourisher state for your home view.",
+      "modalCurrent": "Current state",
+      "modalLevels": "Care tiers",
+      "modalNextLabel": "Next elevation",
+      "modalClose": "Close journey",
+      "modalProgress": "{{days}} days in sync",
+      "modalDaysSuffix": "days",
+      "levels": {
+        "seed": {
+          "label": "Seed of awareness",
+          "detail": "2 mindful days honoring hydration, veggies, and gentle check-ins."
+        },
+        "sprout": {
+          "label": "Sprout of momentum",
+          "detail": "4+ days keeping hydration steady and voicing cravings."
+        },
+        "grove": {
+          "label": "Guiding grove",
+          "detail": "10+ days weaving meals, movement, and reflections in rhythm."
+        },
+        "constellation": {
+          "label": "Constellation guardian",
+          "detail": "21+ days of caring rituals that inspire your circle."
+        }
+      }
     },
     "quickwins": {
       "badge": "Shortcuts",
@@ -157,7 +190,8 @@
       "pantryscan": "Scan pantry",
       "pantryscanDetail": "Add 3 products",
       "walk": "Mindful walk",
-      "walkDetail": "15 min outdoors"
+      "walkDetail": "15 min outdoors",
+      "walkPrefill": "I need an ultra-gentle 15 minute walk with cues for sensitive knees and a larger body."
     },
     "quicklog": {
       "badge": "Quick check-in",
@@ -253,6 +287,29 @@
       "refresh": "Refresh",
       "empty": "We didn’t find healthy spots within this radius yet.",
       "score": "{{score}}% mindful",
+      "manualCta": "Set manually",
+      "manualEdit": "Edit",
+      "clearLocation": "Clear",
+      "customLabel": "My starting point",
+      "manualSource": "Manual",
+      "gpsSource": "GPS",
+      "addressLoading": "Fetching address…",
+      "addressFallback": "Address pending",
+      "manualDialog": {
+        "title": "Set your starting point",
+        "description": "Enter a trusted address. We'll geocode it and use it for every suggestion.",
+        "labelLabel": "Label",
+        "addressLabel": "Address",
+        "addressPlaceholder": "Street, number, city",
+        "helper": "We only store this locally to personalize maps.",
+        "cancel": "Cancel",
+        "save": "Save address",
+        "saving": "Saving…",
+        "errorAddress": "Please enter an address.",
+        "errorGeocode": "We couldn't find that address. Try refining it.",
+        "errorGeneric": "We couldn't save this location. Try again.",
+        "defaultLabel": "Home"
+      },
       "greenMood": {
         "name": "Green Mood",
         "detail": "Organic bowls and smoothies"
@@ -726,5 +783,47 @@
     "locationRequired": "We need your location to search",
     "queryTooShort": "Search must be at least 2 characters",
     "searchFailed": "Error searching for products. Try again."
+  },
+  "modals": {
+    "pantry": {
+      "title": "My pantry",
+      "addItem": "Add item",
+      "itemName": "Item name",
+      "category": "Category",
+      "selectCategory": "Select...",
+      "categories": {
+        "protein": "Protein",
+        "carbs": "Carbs",
+        "vegetables": "Vegetables",
+        "fruits": "Fruits",
+        "snacks": "Snacks",
+        "beverages": "Beverages"
+      },
+      "expiryDate": "Expiration date",
+      "quantity": "Quantity",
+      "unit": "Unit",
+      "notes": "Notes",
+      "cancel": "Cancel",
+      "add": "Add",
+      "update": "Update",
+      "loading": "Loading...",
+      "empty": "No pantry items yet",
+      "confirmDelete": "Delete this item?",
+      "expires": "Expires",
+      "quickAdd": {
+        "title": "Quick log",
+        "subtitle": "Speak or type the products you already have. Separate them with commas or line breaks.",
+        "placeholder": "E.g. oats, firm tofu, green apples",
+        "voice": "Dictate list",
+        "stop": "Stop dictation",
+        "cta": "Save to pantry",
+        "saving": "Saving...",
+        "transcribing": "Transcribing...",
+        "recording": "Listening...",
+        "empty": "Add at least one product.",
+        "success": "Added {{count}} pantry items.",
+        "error": "I couldn't save this list."
+      }
+    }
   }
 }

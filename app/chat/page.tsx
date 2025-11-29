@@ -8,10 +8,13 @@ import { useTranslation } from "react-i18next";
 import { useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
+const AUTO_MOVEMENT_TRIGGER = "__AUTO_MOVEMENT__";
+
 type Message = {
     id: string;
     role: "user" | "assistant";
     content: string;
+    hidden?: boolean;
 };
 
 export default function ChatPage() {
@@ -23,7 +26,12 @@ export default function ChatPage() {
     const [error, setError] = useState<string | null>(null);
     const [userId, setUserId] = useState<string | null>(null);
     const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
+    const hintParam = searchParams.get("hint");
+    const prefillParam = searchParams.get("prefill");
     const [prefillToSend, setPrefillToSend] = useState<string | null>(null);
+    const hintSentRef = useRef(false);
+    const prefillSentRef = useRef(false);
+    const intent = searchParams.get("intent") || "nutrition";
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -48,7 +56,7 @@ export default function ChatPage() {
         }
     }, []);
 
-    const sendMessage = useCallback(async (content: string) => {
+    const sendMessage = useCallback(async (content: string, options?: { hidden?: boolean; hint?: string; includeHiddenHistory?: boolean }) => {
         if (!content.trim() || isLoading) return;
 
         const trimmed = content.trim();
@@ -56,10 +64,13 @@ export default function ChatPage() {
             id: Date.now().toString(),
             role: "user",
             content: trimmed,
+            hidden: options?.hidden ?? false,
         };
 
-        const conversation = [...messages, userMessage];
-        setMessages(conversation);
+        const nextMessages = [...messages, userMessage];
+        setMessages(nextMessages);
+        const baseHistory = options?.includeHiddenHistory ? messages : messages.filter((msg) => !msg.hidden);
+        const conversation = [...baseHistory, userMessage];
         setIsLoading(true);
         setError(null);
 
@@ -72,6 +83,8 @@ export default function ChatPage() {
                     locale: i18n.language,
                     userId,
                     location,
+                    intent,
+                    hint: options?.hint,
                 }),
             });
 
@@ -114,7 +127,7 @@ export default function ChatPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [i18n.language, isLoading, location, messages, userId]);
+    }, [i18n.language, intent, isLoading, location, messages, userId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -124,20 +137,30 @@ export default function ChatPage() {
         await sendMessage(message);
     };
 
-    const prefillParam = searchParams.get("prefill");
+    useEffect(() => {
+        if (!hintParam || hintSentRef.current) return;
+        if (messages.length > 0 || isLoading) return;
+        hintSentRef.current = true;
+        sendMessage(AUTO_MOVEMENT_TRIGGER, {
+            hidden: true,
+            hint: hintParam,
+            includeHiddenHistory: true,
+        });
+    }, [hintParam, messages.length, isLoading, sendMessage]);
 
     useEffect(() => {
-        if (prefillParam && messages.length === 0) {
-            setPrefillToSend(prefillParam);
-        }
+        if (!prefillParam || prefillSentRef.current) return;
+        if (messages.length > 0) return;
+        setPrefillToSend(prefillParam);
     }, [prefillParam, messages.length]);
 
     useEffect(() => {
-        if (prefillToSend && messages.length === 0 && !isLoading) {
-            sendMessage(prefillToSend);
-            setPrefillToSend(null);
-        }
-    }, [prefillToSend, messages.length, isLoading, sendMessage]);
+        if (!prefillToSend || prefillSentRef.current) return;
+        if (messages.length > 0 || isLoading || hintParam) return;
+        prefillSentRef.current = true;
+        sendMessage(prefillToSend);
+        setPrefillToSend(null);
+    }, [prefillToSend, messages.length, isLoading, hintParam, sendMessage]);
 
     // Auto-scroll to bottom
     useEffect(() => {
@@ -185,7 +208,7 @@ export default function ChatPage() {
                         </div>
                     )}
 
-                    {messages.map((m) => (
+                    {messages.filter((m) => !m.hidden).map((m) => (
                         <div
                             key={m.id}
                             className={`flex ${m.role === "user" ? "justify-end" : "justify-start"

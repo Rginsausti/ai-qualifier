@@ -15,8 +15,10 @@ import { logWater, logNutrition, analyzeFoodFromText } from "@/lib/actions";
 import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
 import HealthyNeighborhoodPanel from "@/components/neighborhood/HealthySpotList";
 import { signOut } from "@/lib/auth-actions";
+import { PantryModal } from "@/components/modals/PantryModal";
 import {
   ArrowRight,
+  Award,
   BellRing,
   Droplet,
   Droplets,
@@ -114,19 +116,76 @@ const actionPlan = [
 
 const quickWins = [
   {
+    id: "voice",
     labelKey: "dashboard.quickwins.voice",
     detailKey: "dashboard.quickwins.voiceDetail",
     icon: Timer,
   },
   {
+    id: "pantry",
     labelKey: "dashboard.quickwins.pantryscan",
     detailKey: "dashboard.quickwins.pantryscanDetail",
     icon: TrendingUp,
   },
   {
+    id: "walk",
     labelKey: "dashboard.quickwins.walk",
     detailKey: "dashboard.quickwins.walkDetail",
     icon: MapPin,
+  },
+];
+
+type RewardLevel = {
+  id: string;
+  minDays: number;
+  labelKey: string;
+  detailKey: string;
+  icon: LucideIcon;
+  accent: string;
+  fallbackLabel: string;
+  fallbackDetail: string;
+};
+
+const nourisherRewardLevels: RewardLevel[] = [
+  {
+    id: "seed",
+    minDays: 0,
+    labelKey: "dashboard.rewards.levels.seed.label",
+    detailKey: "dashboard.rewards.levels.seed.detail",
+    icon: Leaf,
+    accent: "from-emerald-100 via-emerald-200 to-lime-200",
+    fallbackLabel: "Seed of awareness",
+    fallbackDetail: "2 mindful days syncing hydration, veggies, and check-ins.",
+  },
+  {
+    id: "sprout",
+    minDays: 4,
+    labelKey: "dashboard.rewards.levels.sprout.label",
+    detailKey: "dashboard.rewards.levels.sprout.detail",
+    icon: Droplets,
+    accent: "from-sky-100 via-cyan-200 to-emerald-200",
+    fallbackLabel: "Sprout of momentum",
+    fallbackDetail: "4+ days keeping hydration steady and logging cravings.",
+  },
+  {
+    id: "grove",
+    minDays: 10,
+    labelKey: "dashboard.rewards.levels.grove.label",
+    detailKey: "dashboard.rewards.levels.grove.detail",
+    icon: HeartPulse,
+    accent: "from-amber-100 via-orange-200 to-rose-200",
+    fallbackLabel: "Guiding grove",
+    fallbackDetail: "10+ days balancing meals and movement in harmony.",
+  },
+  {
+    id: "constellation",
+    minDays: 21,
+    labelKey: "dashboard.rewards.levels.constellation.label",
+    detailKey: "dashboard.rewards.levels.constellation.detail",
+    icon: Sparkles,
+    accent: "from-rose-100 via-fuchsia-200 to-indigo-200",
+    fallbackLabel: "Constellation guardian",
+    fallbackDetail: "21+ days of steady rituals that inspire others.",
   },
 ];
 
@@ -249,6 +308,8 @@ export default function DashboardClient({
   const [foodNoteStatus, setFoodNoteStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [foodNoteError, setFoodNoteError] = useState<string | null>(null);
   const [isFoodNoteDialogOpen, setIsFoodNoteDialogOpen] = useState(false);
+  const [isPantryModalOpen, setIsPantryModalOpen] = useState(false);
+  const [isRewardsModalOpen, setIsRewardsModalOpen] = useState(false);
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const planSectionRef = useRef<HTMLElement | null>(null);
   const quickLogSectionRef = useRef<HTMLElement | null>(null);
@@ -286,6 +347,19 @@ export default function DashboardClient({
     });
   };
 
+  const handleQuickVoice = () => {
+    setMultimodalMode("voice");
+    setIsMultimodalOpen(true);
+  };
+
+  const handleQuickPantry = () => {
+    setIsPantryModalOpen(true);
+  };
+
+  const handleMindfulWalk = () => {
+    router.push(`/chat?intent=movement&hint=${encodeURIComponent(walkPrefill)}`);
+  };
+
   const locale = t("dashboard.locale", { defaultValue: "es-AR" });
   const today = new Date();
   const formattedDate = new Intl.DateTimeFormat(locale, {
@@ -321,6 +395,63 @@ export default function DashboardClient({
     [t]
   );
 
+  const streakDays = streak;
+  const currentRewardLevel = useMemo(() => {
+    const unlocked = [...nourisherRewardLevels].reverse().find((level) => streakDays >= level.minDays);
+    return unlocked ?? nourisherRewardLevels[0];
+  }, [streakDays]);
+
+  const nextRewardLevel = useMemo(
+    () => nourisherRewardLevels.find((level) => level.minDays > streakDays) ?? null,
+    [streakDays]
+  );
+
+  const currentRewardLabel = getCopy(currentRewardLevel.labelKey, currentRewardLevel.fallbackLabel);
+  const currentRewardDetail = getCopy(currentRewardLevel.detailKey, currentRewardLevel.fallbackDetail);
+  const nextRewardLabel = nextRewardLevel
+    ? getCopy(nextRewardLevel.labelKey, nextRewardLevel.fallbackLabel)
+    : null;
+
+  const daysToNextReward = nextRewardLevel ? Math.max(nextRewardLevel.minDays - streakDays, 0) : 0;
+
+  const rewardProgressBetweenLevels = useMemo(() => {
+    if (!nextRewardLevel) return 1;
+    const range = nextRewardLevel.minDays - currentRewardLevel.minDays;
+    if (range <= 0) return 1;
+    return Math.min(1, (streakDays - currentRewardLevel.minDays) / range);
+  }, [currentRewardLevel.minDays, nextRewardLevel, streakDays]);
+
+  const rewardStatusHint = nextRewardLevel
+    ? t("dashboard.rewards.nextHint", {
+        days: daysToNextReward,
+        level: nextRewardLabel ?? "",
+        defaultValue: `${daysToNextReward} days to reach ${nextRewardLabel ?? ""}`,
+      })
+    : getCopy("dashboard.rewards.maxHint", "Alcanzaste el nivel máximo de autocuidado.");
+
+  const rewardsBadgeLabel = getCopy("dashboard.rewards.badge", "Nutridor consciente");
+  const rewardsActiveLabel = getCopy("dashboard.rewards.label", "Recompensas activas");
+  const rewardsCtaLabel = getCopy("dashboard.rewards.cta", "Abrir medalla mindful");
+  const rewardDaysSuffix = getCopy("dashboard.rewards.modalDaysSuffix", "días");
+  const rewardsModalTitle = getCopy("dashboard.rewards.modalTitle", "Recorrido de recompensas mindful");
+  const rewardsModalSubtitle = getCopy(
+    "dashboard.rewards.modalSubtitle",
+    "Cada racha desbloquea un nuevo estado de nutridor consciente en tu inicio."
+  );
+  const rewardsModalCurrent = getCopy("dashboard.rewards.modalCurrent", "Estado actual");
+  const rewardsModalLevels = getCopy("dashboard.rewards.modalLevels", "Capas de autocuidado");
+  const rewardsModalNext = getCopy("dashboard.rewards.modalNextLabel", "Próxima elevación");
+  const rewardsModalClose = getCopy("dashboard.rewards.modalClose", "Cerrar recorrido");
+  const rewardsModalProgress = t("dashboard.rewards.modalProgress", {
+    days: streakDays,
+    defaultValue: `${streakDays} días en sintonía`,
+  });
+
+  const walkPrefill = getCopy(
+    "dashboard.quickwins.walkPrefill",
+    "Necesito una caminata muy suave de 15 minutos, con indicaciones para rodillas sensibles y sobrepeso."
+  );
+
   const heroTarget = stats?.goals.calories || 2000;
   const heroCurrent = stats?.nutrition.calories || 0;
   const heroProgress = Math.min(heroCurrent / heroTarget, 1);
@@ -329,7 +460,6 @@ export default function DashboardClient({
   const hydrationCurrent = stats?.water || 0;
   const hydrationGlasses = 8;
   const hydrationDone = Math.min(Math.floor((hydrationCurrent / hydrationGoal) * hydrationGlasses), hydrationGlasses);
-  const streakDays = streak;
 
   const hungerBand: "low" | "medium" | "high" = useMemo(() => {
     if (hungerLevel <= 2) return "low";
@@ -672,6 +802,40 @@ export default function DashboardClient({
             </div>
           )}
         </header>
+
+        <div className="mb-8">
+          <button
+            type="button"
+            onClick={() => setIsRewardsModalOpen(true)}
+            className="flex w-full flex-wrap items-center gap-4 rounded-3xl border border-white/60 bg-white/90 px-5 py-4 text-left shadow-lg shadow-emerald-100 transition hover:-translate-y-0.5 hover:border-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
+          >
+            <div className="relative">
+              <div className={`flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${currentRewardLevel.accent} text-slate-900`}>
+                <Award className="h-7 w-7 text-amber-500" />
+              </div>
+              <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg">
+                <currentRewardLevel.icon className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="min-w-[200px] flex-1">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-400">
+                {rewardsBadgeLabel}
+              </p>
+              <p className="text-lg font-semibold text-slate-900">
+                {currentRewardLabel}
+              </p>
+              <p className="text-xs text-slate-500">{rewardStatusHint}</p>
+            </div>
+            <div className="flex flex-col items-end text-right text-xs">
+              <span className="rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-700">
+                {rewardsActiveLabel}
+              </span>
+              <span className="mt-2 font-semibold uppercase tracking-[0.35em] text-slate-500">
+                {rewardsCtaLabel}
+              </span>
+            </div>
+          </button>
+        </div>
 
         <section
           ref={planSectionRef}
@@ -1066,8 +1230,12 @@ export default function DashboardClient({
                 </div>
               </div>
             </div>
-            <button className="mt-6 inline-flex items-center gap-2 rounded-full border border-slate-300/80 px-5 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-900">
-              {getCopy("dashboard.streak.cta", "Ver premios activos")}
+            <button
+              type="button"
+              onClick={() => setIsRewardsModalOpen(true)}
+              className="mt-6 inline-flex items-center gap-2 rounded-full border border-slate-300/80 px-5 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-900"
+            >
+              {getCopy("dashboard.streak.cta", "Abrir medalla mindful")}
             </button>
           </article>
         </section>
@@ -1094,22 +1262,32 @@ export default function DashboardClient({
               <Zap className="h-6 w-6 text-emerald-500" />
             </div>
             <div className="mt-6 grid gap-4 md:grid-cols-3">
-              {quickWins.map((item) => (
-                <div
-                  key={item.labelKey}
-                  className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4"
-                >
-                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-900 shadow">
-                    <item.icon className="h-5 w-5" />
-                  </div>
-                  <p className="mt-3 text-sm font-semibold text-slate-900">
-                    {getCopy(item.labelKey, "Acción")}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {getCopy(item.detailKey, "Detalle breve")}
-                  </p>
-                </div>
-              ))}
+              {quickWins.map((item) => {
+                const actionMap: Record<string, () => void> = {
+                  voice: handleQuickVoice,
+                  pantry: handleQuickPantry,
+                  walk: handleMindfulWalk,
+                };
+                const onClick = actionMap[item.id] || (() => undefined);
+                return (
+                  <button
+                    type="button"
+                    key={item.labelKey}
+                    onClick={onClick}
+                    className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 text-left transition hover:border-emerald-400 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
+                  >
+                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-900 shadow">
+                      <item.icon className="h-5 w-5" />
+                    </div>
+                    <p className="mt-3 text-sm font-semibold text-slate-900">
+                      {getCopy(item.labelKey, "Acción")}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {getCopy(item.detailKey, "Detalle breve")}
+                    </p>
+                  </button>
+                );
+              })}
             </div>
           </article>
 
@@ -1148,6 +1326,113 @@ export default function DashboardClient({
           </button>
         </div>
       </main>
+      {isRewardsModalOpen && (
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/70 px-4 py-10"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setIsRewardsModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-2xl rounded-3xl border border-white/60 bg-white/95 p-6 text-slate-900 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-emerald-500">
+                  {rewardsBadgeLabel}
+                </p>
+                <h3 className="mt-1 text-2xl font-semibold text-slate-900">{rewardsModalTitle}</h3>
+                <p className="mt-2 text-sm text-slate-500">{rewardsModalSubtitle}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsRewardsModalOpen(false)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:border-slate-500"
+              >
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close</span>
+              </button>
+            </div>
+
+            <div className="mt-6 rounded-3xl border border-slate-100 bg-slate-50/70 p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
+                {rewardsModalCurrent}
+              </p>
+              <p className="mt-2 text-xl font-semibold text-slate-900">
+                {currentRewardLabel}
+              </p>
+              <p className="text-sm text-slate-500">
+                {currentRewardDetail}
+              </p>
+              <div className="mt-4">
+                <p className="text-xs font-semibold text-slate-500">{rewardsModalProgress}</p>
+                <div className="mt-2 h-2 rounded-full bg-white">
+                  <div
+                    className="h-full rounded-full bg-slate-900"
+                    style={{ width: `${rewardProgressBetweenLevels * 100}%` }}
+                  />
+                </div>
+                {nextRewardLevel ? (
+                  <p className="mt-2 text-xs text-slate-500">
+                    {rewardsModalNext}: {nextRewardLabel} · {daysToNextReward} {rewardDaysSuffix}
+                  </p>
+                ) : (
+                  <p className="mt-2 text-xs text-emerald-600">
+                    {getCopy("dashboard.rewards.maxHint", "Alcanzaste el nivel máximo de autocuidado.")}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
+                {rewardsModalLevels}
+              </p>
+              {nourisherRewardLevels.map((level) => {
+                const unlocked = streakDays >= level.minDays;
+                return (
+                  <div
+                    key={level.id}
+                    className={`flex items-center gap-4 rounded-2xl border px-4 py-3 ${
+                      unlocked
+                        ? "border-emerald-200 bg-emerald-50/80"
+                        : "border-slate-100 bg-white/80"
+                    }`}
+                  >
+                    <div
+                      className={`flex h-12 w-12 items-center justify-center rounded-full ${
+                        unlocked ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400"
+                      }`}
+                    >
+                      <level.icon className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-slate-900">
+                        {getCopy(level.labelKey, level.fallbackLabel)}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {getCopy(level.detailKey, level.fallbackDetail)}
+                      </p>
+                    </div>
+                    <p className="text-xs font-semibold text-slate-400">
+                      {level.minDays}+ {rewardDaysSuffix}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsRewardsModalOpen(false)}
+              className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
+            >
+              {rewardsModalClose}
+            </button>
+          </div>
+        </div>
+      )}
       <InstallGuideModal
         open={showInstallGuide}
         onClose={() => setShowInstallGuide(false)}
@@ -1171,6 +1456,11 @@ export default function DashboardClient({
           ),
         ]}
         closeLabel={getCopy("dashboard.header.alerts.installGuide.close", "Listo")}
+      />
+      <PantryModal
+        isOpen={isPantryModalOpen}
+        onClose={() => setIsPantryModalOpen(false)}
+        onUpdate={() => router.refresh()}
       />
     </div>
   );
