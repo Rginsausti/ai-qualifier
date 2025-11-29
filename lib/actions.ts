@@ -357,83 +357,87 @@ export async function analyzeFoodFromText(text: string) {
         throw new Error("Missing API Key");
     }
 
-    try {
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
-                messages: [
-                    {
-                        role: "system",
-                        content: `Eres un nutricionista experto. Analiza el texto del usuario y determina si describe comida/bebida con calorías o una toma de agua/hidratación.
-                        Responde SOLO con JSON válido, sin markdown ni explicaciones.
-                        Formato:
-                        {
-                            "type": "food" | "water",
-                            "intent": "log" | "consult",
-                            "name": "nombre del alimento o bebida",
-                            "calories": numero_de_calorias,
-                            "protein": gramos_de_proteina,
-                            "carbs": gramos_de_carbohidratos,
-                            "fats": gramos_de_grasas,
-                            "water_ml": mililitros_de_agua
-                        }
-                        Reglas:
-                        - "intent": "log" si el usuario dice que COMIÓ, BEBIÓ o está registrando algo (ej: "comí una manzana", "registra 2 vasos de agua").
-                        - "intent": "consult" si el usuario PREGUNTA qué cocinar, pide recetas, o menciona ingredientes sin indicar consumo (ej: "tengo manzanas, qué hago?", "receta de tarta", "que puedo cocinar con carne?").
-                        - Si el texto se refiere a agua (vasos, botellas, litros, etc.), establece type="water", fija macros y calorías en 0 e infiere water_ml (1 vaso estándar = 250 ml, 1 botella pequeña = 500 ml, 1 litro = 1000 ml).
-                        - Si describe comida o bebidas con calorías, establece type="food" y calcula macros/calorías (water_ml = 0).
-                        - Si mezcla ambos, prioriza el elemento principal del mensaje.
-                        - Usa la mejor estimación posible cuando falte información.`
-                    },
-                    {
-                        role: "user",
-                        content: text
-                    }
-                ],
-                temperature: 0.3,
-                max_tokens: 500,
-            }),
-        });
+    const models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error("analyzeFoodFromText: Groq API Error:", response.status, errorText);
-            return null;
-        }
-
-        const data = await response.json();
-
-        const content = data.choices[0].message.content;
-        if (!content) {
-            console.error("analyzeFoodFromText: Empty content");
-            return null;
-        }
-
-        let jsonContent = content.trim();
-        if (jsonContent.startsWith("```")) {
-            jsonContent = jsonContent
-                .replace(/```json\n?/g, "")
-                .replace(/```\n?/g, "")
-                .trim();
-        }
-
+    for (const model of models) {
         try {
-            const parsed = JSON.parse(jsonContent);
-            return parsed;
-        } catch (parseError) {
-            console.error("analyzeFoodFromText: JSON parse error", parseError, jsonContent);
-            return null;
+            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    model: model,
+                    messages: [
+                        {
+                            role: "system",
+                            content: `Eres un nutricionista experto. Analiza el texto del usuario y determina si describe comida/bebida con calorías o una toma de agua/hidratación.
+                            Responde SOLO con JSON válido, sin markdown ni explicaciones.
+                            Formato:
+                            {
+                                "type": "food" | "water",
+                                "intent": "log" | "consult",
+                                "name": "nombre del alimento o bebida",
+                                "calories": numero_de_calorias,
+                                "protein": gramos_de_proteina,
+                                "carbs": gramos_de_carbohidratos,
+                                "fats": gramos_de_grasas,
+                                "water_ml": mililitros_de_agua
+                            }
+                            Reglas:
+                            - "intent": "log" si el usuario dice que COMIÓ, BEBIÓ o está registrando algo (ej: "comí una manzana", "registra 2 vasos de agua").
+                            - "intent": "consult" si el usuario PREGUNTA qué cocinar, pide recetas, o menciona ingredientes sin indicar consumo (ej: "tengo manzanas, qué hago?", "receta de tarta", "que puedo cocinar con carne?").
+                            - Si el texto se refiere a agua (vasos, botellas, litros, etc.), establece type="water", fija macros y calorías en 0 e infiere water_ml (1 vaso estándar = 250 ml, 1 botella pequeña = 500 ml, 1 litro = 1000 ml).
+                            - Si describe comida o bebidas con calorías, establece type="food" y calcula macros/calorías (water_ml = 0).
+                            - Si mezcla ambos, prioriza el elemento principal del mensaje.
+                            - Usa la mejor estimación posible cuando falte información.`
+                        },
+                        {
+                            role: "user",
+                            content: text
+                        }
+                    ],
+                    temperature: 0.3,
+                    max_tokens: 500,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.warn(`analyzeFoodFromText: Model ${model} failed with ${response.status}: ${errorText}`);
+                // If it's the last model, throw to exit
+                if (model === models[models.length - 1]) {
+                     return null;
+                }
+                continue; // Try next model
+            }
+
+            const data = await response.json();
+            const content = data.choices[0].message.content;
+            if (!content) continue;
+
+            let jsonContent = content.trim();
+            if (jsonContent.startsWith("```")) {
+                jsonContent = jsonContent
+                    .replace(/```json\n?/g, "")
+                    .replace(/```\n?/g, "")
+                    .trim();
+            }
+
+            try {
+                return JSON.parse(jsonContent);
+            } catch (parseError) {
+                console.error(`analyzeFoodFromText: JSON parse error for ${model}`, parseError);
+                continue;
+            }
+
+        } catch (error) {
+            console.error(`analyzeFoodFromText: Exception with ${model}:`, error);
+             if (model === models[models.length - 1]) {
+                 return null;
+            }
         }
-    } catch (error) {
-        console.error("analyzeFoodFromText: Exception:", error);
-        if (error instanceof Error) {
-            console.error("analyzeFoodFromText: Error message:", error.message);
-        }
-        return null;
     }
+    return null;
 }

@@ -421,6 +421,9 @@ export async function POST(req: Request) {
   const hint = typeof payload?.hint === "string" ? payload.hint.trim() : "";
   const rawMessages: IncomingMessage[] = Array.isArray(payload?.messages) ? payload.messages : [];
 
+
+
+
   const sanitizedMessages = rawMessages
     .filter((message): message is Required<IncomingMessage> =>
       Boolean(message?.content && message.content.trim() && message?.role)
@@ -620,16 +623,29 @@ export async function POST(req: Request) {
     return new Response("Missing GROQ_API_KEY", { status: 500 });
   }
 
-  try {
-    const result = await streamText({
-      model: groq("llama-3.3-70b-versatile"),
-      system: systemPrompt,
-      messages: sanitizedMessages,
-    });
+    const models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
+    let lastError;
 
-    return result.toTextStreamResponse();
-  } catch (error) {
-    console.error("Error calling Groq:", error);
-    return jsonResponse({ error: "Error processing request" }, 500);
-  }
+    for (const model of models) {
+        try {
+            const result = await streamText({
+                model: groq(model),
+                system: systemPrompt,
+                messages: sanitizedMessages,
+            });
+
+            return result.toTextStreamResponse();
+        } catch (error) {
+            console.error(`Error calling Groq with model ${model}:`, error);
+            lastError = error;
+            // If it's a rate limit (429) or server error (5xx), try next model.
+            // Otherwise (e.g. invalid request), maybe stop? For now, let's try fallback for robustness.
+            continue;
+        }
+    }
+    
+    // If all failed
+    console.error("All models failed:", lastError);
+    return jsonResponse({ error: "Service busy, please try again." }, 429);
 }
+// Force rebuild
