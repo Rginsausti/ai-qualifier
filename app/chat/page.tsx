@@ -138,7 +138,7 @@ function ChatPageContent() {
             }
         } catch (err) {
             console.error("Chat error:", err);
-            setError("Error al conectar con el chat.");
+            setError(t("chat.connectionError"));
             // Remove the empty assistant message if it exists
             setMessages((prev) => {
                 const last = prev[prev.length - 1];

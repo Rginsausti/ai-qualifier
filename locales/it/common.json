@@ -709,7 +709,8 @@
       "title": "Ciao, sono Alma.",
       "description": "Conosco i tuoi obiettivi e preferenze. Chiedimi cosa mangiare, come sostituire un ingrediente o dimmi come ti senti."
     },
-    "inputPlaceholder": "Scrivi il tuo messaggio..."
+    "inputPlaceholder": "Scrivi il tuo messaggio...",
+    "connectionError": "Errore di connessione alla chat."
   },
   "auth": {
     "login": {

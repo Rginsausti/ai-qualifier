@@ -1,0 +1,83 @@
+[
+  {
+    "line": 1,
+    "type": "COMMENT",
+    "content": "# Supabase..."
+  },
+  {
+    "line": 2,
+    "type": "KEY",
+    "key": "NEXT_PUBLIC_SUPABASE_URL",
+    "val_len": 40
+  },
+  {
+    "line": 3,
+    "type": "KEY",
+    "key": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "val_len": 208
+  },
+  {
+    "line": 4,
+    "type": "KEY",
+    "key": "SUPABASE_SERVICE_ROLE_KEY",
+    "val_len": 219
+  },
+  {
+    "line": 5,
+    "type": "KEY",
+    "key": "HUGGINFACE_API_KEY",
+    "val_len": 37
+  },
+  {
+    "line": 6,
+    "type": "COMMENT",
+    "content": "#GROQ_API_..."
+  },
+  {
+    "line": 7,
+    "type": "KEY",
+    "key": "DATABASE_URL",
+    "val_len": 90
+  },
+  {
+    "line": 8,
+    "type": "KEY",
+    "key": "HEADLESSX_API_URL",
+    "val_len": 46
+  },
+  {
+    "line": 9,
+    "type": "KEY",
+    "key": "HEADLESSX_AUTH_TOKEN",
+    "val_len": 64
+  },
+  {
+    "line": 10,
+    "type": "COMMENT",
+    "content": "# Web Push..."
+  },
+  {
+    "line": 11,
+    "type": "KEY",
+    "key": "VAPID_PUBLIC_KEY",
+    "val_len": 87
+  },
+  {
+    "line": 12,
+    "type": "KEY",
+    "key": "VAPID_PRIVATE_KEY",
+    "val_len": 43
+  },
+  {
+    "line": 13,
+    "type": "KEY",
+    "key": "NEXT_PUBLIC_VAPID_PUBLIC_KEY",
+    "val_len": 87
+  },
+  {
+    "line": 14,
+    "type": "KEY",
+    "key": "PUSH_NOTIFICATIONS_CONTACT",
+    "val_len": 26
+  }
+]

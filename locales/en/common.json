@@ -755,7 +755,8 @@
       "title": "Hello, I'm Alma.",
       "description": "I know your goals and preferences. Ask me what to eat, how to replace an ingredient, or tell me how you feel."
     },
-    "inputPlaceholder": "Type your message..."
+    "inputPlaceholder": "Type your message...",
+    "connectionError": "Error connecting to chat."
   },
   "productSearch": {
     "badge": "Local explorer",

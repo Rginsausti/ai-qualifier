@@ -1,4 +1,5 @@
 import { groq } from "@ai-sdk/groq";
+import { createHuggingFace } from "@ai-sdk/huggingface";
 import { streamText } from "ai";
 import {
   getUserProfile,
@@ -618,28 +619,38 @@ export async function POST(req: Request) {
       - Do NOT provide medical diagnoses.
     `;
 
-  // 3. Call Groq (Llama 3)
-  if (!process.env.GROQ_API_KEY) {
-    return new Response("Missing GROQ_API_KEY", { status: 500 });
+  const modelCandidates = [];
+
+  if (process.env.GROQ_API_KEY) {
+    modelCandidates.push({ provider: "groq", model: groq("llama-3.3-70b-versatile"), name: "llama-3.3-70b-versatile" });
+    modelCandidates.push({ provider: "groq", model: groq("llama-3.1-8b-instant"), name: "llama-3.1-8b-instant" });
   }
 
-    const models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
+  if (process.env.HUGGINGFACE_API_KEY) {
+    const huggingface = createHuggingFace({
+      apiKey: process.env.HUGGINGFACE_API_KEY,
+    });
+    modelCandidates.push({ provider: "huggingface", model: huggingface("meta-llama/Meta-Llama-3-8B-Instruct"), name: "meta-llama/Meta-Llama-3-8B-Instruct" });
+  }
+
+  if (modelCandidates.length === 0) {
+    return new Response("No available LLM providers (missing API keys)", { status: 500 });
+  }
+
     let lastError;
 
-    for (const model of models) {
+    for (const candidate of modelCandidates) {
         try {
             const result = await streamText({
-                model: groq(model),
+                model: candidate.model,
                 system: systemPrompt,
                 messages: sanitizedMessages,
             });
 
             return result.toTextStreamResponse();
         } catch (error) {
-            console.error(`Error calling Groq with model ${model}:`, error);
+            console.error(`Error calling ${candidate.provider} with model ${candidate.name}:`, error);
             lastError = error;
-            // If it's a rate limit (429) or server error (5xx), try next model.
-            // Otherwise (e.g. invalid request), maybe stop? For now, let's try fallback for robustness.
             continue;
         }
     }

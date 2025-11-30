@@ -41,17 +41,23 @@ export const viewport: Viewport = {
   themeColor: "#0f172a",
 };
 
-export default function RootLayout({
+import { cookies } from "next/headers";
+import { DEFAULT_LANGUAGE } from "@/i18n/settings";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const lang = cookieStore.get("alma-language")?.value || DEFAULT_LANGUAGE;
+
   return (
-  <html lang="es">
+    <html lang={lang}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <I18nProvider>{children}</I18nProvider>
+        <I18nProvider initialLanguage={lang}>{children}</I18nProvider>
       </body>
     </html>
   );

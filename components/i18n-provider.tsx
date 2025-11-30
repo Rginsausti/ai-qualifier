@@ -1,28 +1,37 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
-import { I18nextProvider } from "react-i18next";
-import { AVAILABLE_LANGUAGES, DEFAULT_LANGUAGE, initI18n } from "@/i18n/config";
+import { ReactNode, useState } from "react";
+import { I18nextProvider, initReactI18next } from "react-i18next";
+import { createInstance } from "i18next";
+import { DEFAULT_LANGUAGE, DEFAULT_NAMESPACE, resources } from "@/i18n/settings";
 
-const STORAGE_KEY = "alma-language";
+const COOKIE_NAME = "alma-language";
 
 type Props = {
   children: ReactNode;
+  initialLanguage: string;
 };
 
-export function I18nProvider({ children }: Props) {
-  const [i18nInstance] = useState(() => initI18n(DEFAULT_LANGUAGE));
+export function I18nProvider({ children, initialLanguage }: Props) {
+  const [i18nInstance] = useState(() => {
+    const i18n = createInstance();
+    i18n.use(initReactI18next).init({
+      resources,
+      lng: initialLanguage,
+      fallbackLng: DEFAULT_LANGUAGE,
+      defaultNS: DEFAULT_NAMESPACE,
+      interpolation: {
+        escapeValue: false,
+      },
+    });
+    
+    // Sync language change to cookie
+    i18n.on('languageChanged', (lng) => {
+      document.cookie = `${COOKIE_NAME}=${lng}; path=/; max-age=31536000`; // 1 year
+    });
 
-  useEffect(() => {
-    const stored = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
-    const initialLang = stored && AVAILABLE_LANGUAGES.some((lang) => lang.code === stored)
-      ? stored
-      : DEFAULT_LANGUAGE;
-
-    if (i18nInstance.language !== initialLang) {
-      i18nInstance.changeLanguage(initialLang);
-    }
-  }, [i18nInstance]);
+    return i18n;
+  });
 
   return <I18nextProvider i18n={i18nInstance}>{children}</I18nextProvider>;
 }

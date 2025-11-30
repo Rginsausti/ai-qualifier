@@ -743,7 +743,8 @@
       "title": "Bonjour, je suis Alma.",
       "description": "Je connais tes objectifs et préférences. Demande-moi quoi manger, comment remplacer un ingrédient ou dis-moi comment tu te sens."
     },
-    "inputPlaceholder": "Écris ton message..."
+    "inputPlaceholder": "Écris ton message...",
+    "connectionError": "Erreur de connexion au chat."
   },
   "productSearch": {
     "badge": "Explorateur local",

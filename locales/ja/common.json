@@ -709,7 +709,8 @@
       "title": "こんにちは、Almaです。",
       "description": "あなたの目標と好みを知っています。何を食べるか、材料をどう置き換えるか、または気分を教えてください。"
     },
-    "inputPlaceholder": "メッセージを入力..."
+    "inputPlaceholder": "メッセージを入力...",
+    "connectionError": "チャットへの接続エラー。"
   },
   "auth": {
     "login": {
