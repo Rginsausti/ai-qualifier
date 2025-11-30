@@ -830,5 +830,6 @@
         "error": "No pude guardar la lista."
       }
     }
-  }
+  },
+  "cancel": "Cancelar"
 }

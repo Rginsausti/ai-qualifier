@@ -88,7 +88,8 @@
         "cta": "Guardar nota",
         "success": "Registado",
         "error": "Não consegui registar essa nota. Tenta novamente.",
-        "empty": "Preciso de uma nota para registar."
+        "empty": "Preciso de uma nota para registar.",
+        "cancel": "Cancelar"
       }
     },
     "mindful": {
@@ -807,5 +808,6 @@
         "error": "Não consegui salvar essa lista."
       }
     }
-  }
+  },
+  "cancel": "Cancelar"
 }

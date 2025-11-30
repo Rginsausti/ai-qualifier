@@ -87,7 +87,8 @@
         "cta": "Save note",
         "success": "Saved",
         "error": "Couldn’t log that note. Try again.",
-        "empty": "Please write a note first."
+        "empty": "Please write a note first.",
+        "cancel": "Cancel"
       }
     },
     "mindful": {
@@ -826,5 +827,6 @@
         "error": "I couldn't save this list."
       }
     }
-  }
+  },
+  "cancel": "Cancel"
 }

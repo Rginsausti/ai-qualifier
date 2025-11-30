@@ -53,7 +53,8 @@
         "cta": "Notiz speichern",
         "success": "Gespeichert",
         "error": "Die Notiz konnte nicht gespeichert werden. Versuch’s noch einmal.",
-        "empty": "Bitte schreib zuerst eine Notiz."
+        "empty": "Bitte schreib zuerst eine Notiz.",
+        "cancel": "Abbrechen"
       }
     },
     "mindful": {

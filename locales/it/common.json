@@ -53,7 +53,8 @@
         "cta": "Registra nota",
         "success": "Salvato",
         "error": "Non sono riuscita a registrare la nota. Riprova.",
-        "empty": "Scrivi prima una nota."
+        "empty": "Scrivi prima una nota.",
+        "cancel": "Annulla"
       }
     },
     "mindful": {
@@ -807,5 +808,6 @@
         "error": "Non sono riuscita a salvare questa lista."
       }
     }
-  }
+  },
+  "cancel": "Annulla"
 }

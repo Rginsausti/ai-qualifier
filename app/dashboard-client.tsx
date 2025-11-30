@@ -1137,7 +1137,7 @@ export default function DashboardClient({
                   }}
                   className="inline-flex min-w-[120px] items-center justify-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-900"
                 >
-                  {getCopy("dashboard.hero.note.close", "Cancelar")}
+                 {getCopy("dashboard.hero.note.cancel", "Cancelar")}
                 </button>
               </div>
             </div>
