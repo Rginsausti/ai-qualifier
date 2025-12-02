@@ -20,7 +20,7 @@ export function LanguageSwitcher({ className = "", variant = "default" }: Langua
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const showControls = variant === "default";
+  const showControls = true;
 
   const activeCode = useMemo(() => {
     const current = i18n.language?.split("-")[0]?.toLowerCase();
@@ -114,12 +114,15 @@ export function LanguageSwitcher({ className = "", variant = "default" }: Langua
         {showControls && (
           <button
             type="button"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:text-slate-900 disabled:opacity-30"
+            className={cx(
+              "inline-flex items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:text-slate-900 disabled:opacity-30",
+              variant === "minimal" ? "h-6 w-6" : "h-8 w-8"
+            )}
             onClick={() => handleScroll("left")}
             disabled={!canScrollLeft}
             aria-label={t("language.scrollLeft")}
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className={cx(variant === "minimal" ? "h-3 w-3" : "h-4 w-4")} />
           </button>
         )}
         <div
@@ -166,12 +169,15 @@ export function LanguageSwitcher({ className = "", variant = "default" }: Langua
         {showControls && (
           <button
             type="button"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:text-slate-900 disabled:opacity-30"
+            className={cx(
+              "inline-flex items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:text-slate-900 disabled:opacity-30",
+              variant === "minimal" ? "h-6 w-6" : "h-8 w-8"
+            )}
             onClick={() => handleScroll("right")}
             disabled={!canScrollRight}
             aria-label={t("language.scrollRight")}
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className={cx(variant === "minimal" ? "h-3 w-3" : "h-4 w-4")} />
           </button>
         )}
       </div>

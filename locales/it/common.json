@@ -251,6 +251,8 @@
       "locationDenied": "Servono i permessi di posizione per suggerire locali vicini.",
       "loading": "Analizziamo i luoghi sani intorno a te…",
       "error": "Non sono riuscita ad analizzare la zona",
+      "errorGeneric": "Non siamo riusciti a ottenere la tua posizione. Attiva il GPS.",
+      "lowAccuracy": "Posizione imprecisa. Attiva il GPS o inserisci l'indirizzo.",
       "refresh": "Aggiorna",
       "empty": "Non abbiamo ancora trovato luoghi salutari in questo raggio.",
       "score": "{{score}}% mindful",

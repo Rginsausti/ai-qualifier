@@ -20,7 +20,7 @@ export type HealthySpot = {
 
 const GEOLOCATION_OPTIONS: PositionOptions = {
   enableHighAccuracy: true,
-  timeout: 10000,
+  timeout: 20000,
   maximumAge: 0,
 };
 
@@ -232,22 +232,57 @@ export default function HealthyNeighborhoodPanel() {
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        applyLocation(
-          {
-            lat: position.coords.latitude,
-            lon: position.coords.longitude,
-          },
-          { source: "gps" }
-        );
-      },
-      () => {
+    const requestWithHighAccuracy = () => {
+      navigator.geolocation.getCurrentPosition(
+        handleSuccess,
+        (error) => {
+          // If high accuracy fails (timeout or unavailable), try low accuracy
+          if (error.code !== 1) { // Not PERMISSION_DENIED
+            requestWithLowAccuracy();
+          } else {
+            handleError(error);
+          }
+        },
+        GEOLOCATION_OPTIONS
+      );
+    };
+
+    const requestWithLowAccuracy = () => {
+      navigator.geolocation.getCurrentPosition(
+        handleSuccess,
+        handleError,
+        { ...GEOLOCATION_OPTIONS, enableHighAccuracy: false, timeout: 10000 }
+      );
+    };
+
+    const handleSuccess = (position: GeolocationPosition) => {
+      const accuracy = position.coords.accuracy;
+      if (accuracy > 200) {
+        setManualError(t("dashboard.neighborhood.lowAccuracy", "Ubicación imprecisa. Activá tu GPS o ingresá tu dirección."));
+        setIsManualOpen(true);
+        return;
+      }
+
+      applyLocation(
+        {
+          lat: position.coords.latitude,
+          lon: position.coords.longitude,
+        },
+        { source: "gps" }
+      );
+    };
+
+    const handleError = (error: GeolocationPositionError) => {
+      if (error.code === 1) {
         setLocationDenied(true);
-        setError(t("dashboard.neighborhood.locationDenied", "No pudimos usar tu ubicación."));
-      },
-      GEOLOCATION_OPTIONS
-    );
+        setError(t("dashboard.neighborhood.locationDenied", "Necesitamos permisos de ubicación."));
+      } else {
+        setLocationDenied(false);
+        setError(t("dashboard.neighborhood.errorGeneric", "No pudimos obtener tu ubicación."));
+      }
+    };
+
+    requestWithHighAccuracy();
   }, [applyLocation, t]);
 
   const fetchSpots = useCallback(async () => {

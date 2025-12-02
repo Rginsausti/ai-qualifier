@@ -286,6 +286,7 @@
       "locationDenied": "Precisamos da permissão de localização para recomendar lugares por perto.",
       "loading": "Analisando lugares saudáveis perto de você…",
       "error": "Não consegui analisar essa área",
+      "errorGeneric": "Não conseguimos obter sua localização. Ative o GPS.",
       "refresh": "Atualizar",
       "empty": "Ainda não encontramos lugares saudáveis nesse raio.",
       "score": "{{score}}% mindful",
@@ -312,6 +313,7 @@
         "errorGeneric": "Não conseguimos salvar esta localização. Tente novamente.",
         "defaultLabel": "Casa"
       },
+      "lowAccuracy": "Localização imprecisa. Ative o GPS ou insira o endereço.",
       "greenMood": {
         "name": "Green Mood",
         "detail": "Bowls e smoothies orgânicos"

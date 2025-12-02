@@ -285,6 +285,7 @@
       "locationDenied": "We need location permissions to recommend nearby places.",
       "loading": "Analyzing healthy spots near you…",
       "error": "I couldn’t analyze this area",
+      "errorGeneric": "We couldn't get your location. Enable GPS.",
       "refresh": "Refresh",
       "empty": "We didn’t find healthy spots within this radius yet.",
       "score": "{{score}}% mindful",
@@ -311,6 +312,7 @@
         "errorGeneric": "We couldn't save this location. Try again.",
         "defaultLabel": "Home"
       },
+      "lowAccuracy": "Imprecise location. Enable GPS or enter address.",
       "greenMood": {
         "name": "Green Mood",
         "detail": "Organic bowls and smoothies"

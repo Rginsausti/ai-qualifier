@@ -44,12 +44,96 @@ export default function NearbyProductFinder() {
     const [error, setError] = useState<string | null>(null);
     const [locationDenied, setLocationDenied] = useState(false);
     const [searchMessageIndex, setSearchMessageIndex] = useState(0);
+    const [isManualOpen, setIsManualOpen] = useState(false);
+    const [manualLabel, setManualLabel] = useState("");
+    const [manualAddress, setManualAddress] = useState("");
+    const [manualLat, setManualLat] = useState("");
+    const [manualLon, setManualLon] = useState("");
+    const [manualSubmitting, setManualSubmitting] = useState(false);
+    const [manualError, setManualError] = useState<string | null>(null);
+    const dashboardLocale = t("dashboard.locale", "es-AR");
+
+    const openManualDialog = () => {
+        const defaultLabel = t("dashboard.neighborhood.manualDialog.defaultLabel", "Casa");
+        setManualLabel(defaultLabel);
+        setManualAddress("");
+        setManualLat("");
+        setManualLon("");
+        setManualError(null);
+        setIsManualOpen(true);
+    };
+
+    const handleManualSubmit = async (event: React.FormEvent) => {
+        event.preventDefault();
+        setManualError(null);
+        const trimmedAddress = manualAddress.trim();
+        const trimmedLat = manualLat.trim();
+        const trimmedLon = manualLon.trim();
+        const hasCoordinates = trimmedLat.length > 0 && trimmedLon.length > 0;
+
+        if (!hasCoordinates && !trimmedAddress) {
+            setManualError(t("dashboard.neighborhood.manualDialog.errorAddress", "Ingresá una dirección o coordenadas."));
+            return;
+        }
+
+        setManualSubmitting(true);
+
+        try {
+            let finalLat: number;
+            let finalLon: number;
+
+            if (hasCoordinates) {
+                const latValue = Number(trimmedLat);
+                const lonValue = Number(trimmedLon);
+
+                if (Number.isNaN(latValue) || Number.isNaN(lonValue)) {
+                    setManualError(t("dashboard.neighborhood.manualDialog.errorCoordinates", "Coordenadas inválidas."));
+                    setManualSubmitting(false);
+                    return;
+                }
+                finalLat = latValue;
+                finalLon = lonValue;
+            } else {
+                const response = await fetch("/api/location/geocode", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query: trimmedAddress, locale: dashboardLocale }),
+                });
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        setManualError(t("dashboard.neighborhood.manualDialog.errorGeocode", "No encontramos esa dirección."));
+                    } else {
+                        setManualError(t("dashboard.neighborhood.manualDialog.errorGeneric", "No pudimos guardar la ubicación."));
+                    }
+                    setManualSubmitting(false);
+                    return;
+                }
+
+                const data = await response.json();
+                if (typeof data.lat !== "number" || typeof data.lon !== "number") {
+                    setManualError(t("dashboard.neighborhood.manualDialog.errorGeneric", "No pudimos guardar la ubicación."));
+                    setManualSubmitting(false);
+                    return;
+                }
+                finalLat = data.lat;
+                finalLon = data.lon;
+            }
+
+            setLocation({ lat: finalLat, lon: finalLon });
+            setIsManualOpen(false);
+        } catch (err) {
+            console.error("handleManualSubmit", err);
+            setManualError(t("dashboard.neighborhood.manualDialog.errorGeneric", "No pudimos guardar la ubicación."));
+        } finally {
+            setManualSubmitting(false);
+        }
+    };
 
     // Request geolocation permission
     const requestLocation = () => {
         setError(null);
         setLocationDenied(false);
-        // Clear any previously stored bad location to force fresh detection
         clearStoredLocation();
 
         if (!navigator.geolocation) {
@@ -57,38 +141,56 @@ export default function NearbyProductFinder() {
             return;
         }
 
-        const watchId = navigator.geolocation.watchPosition(
-            (position) => {
-                // Update location with the latest fix
-                setLocation({
-                    lat: position.coords.latitude,
-                    lon: position.coords.longitude,
-                });
+        const GEOLOCATION_OPTIONS: PositionOptions = {
+            enableHighAccuracy: true,
+            timeout: 20000,
+            maximumAge: 0,
+        };
 
-                // Optional: If accuracy is good (e.g. < 100m), we could stop watching.
-                // For now, let's just keep updating to ensure we get the best possible fix.
-                // But we should probably stop after some time to save battery if this was a one-off request.
-                // Since this is a "finder" component, maybe we just let it run while the component is mounted?
-                // Actually, the user clicks "Activar ubicación" which implies a one-time action or enabling the feature.
-                // Let's store the watchId in a ref to clear it later if needed, but for simplicity in this functional component
-                // without a complex lifecycle, we might just let it update.
-                // However, to avoid infinite re-renders or loops if we were depending on location, we are safe as setLocation checks equality usually or React handles it.
-                // Better: stop watching if accuracy is good.
-                if (position.coords.accuracy < 100) {
-                    navigator.geolocation.clearWatch(watchId);
+        const handleSuccess = (position: GeolocationPosition) => {
+            const accuracy = position.coords.accuracy;
+            if (accuracy > 200) {
+                setManualError(t("dashboard.neighborhood.lowAccuracy", "Ubicación imprecisa. Activá tu GPS o ingresá tu dirección."));
+                setIsManualOpen(true);
+                return;
+            }
+
+            setLocation({
+                lat: position.coords.latitude,
+                lon: position.coords.longitude,
+            });
+        };
+
+        const handleError = (error: GeolocationPositionError) => {
+            if (error.code === 1) { // PERMISSION_DENIED
+                setLocationDenied(true);
+                setError(t("dashboard.neighborhood.locationDenied", "Necesitamos permisos de ubicación."));
+            } else {
+                // TIMEOUT or POSITION_UNAVAILABLE
+                setLocationDenied(false);
+                setError(t("dashboard.neighborhood.errorGeneric", "No pudimos obtener tu ubicación."));
+            }
+        };
+
+        const requestWithLowAccuracy = () => {
+            navigator.geolocation.getCurrentPosition(
+                handleSuccess,
+                handleError,
+                { ...GEOLOCATION_OPTIONS, enableHighAccuracy: false, timeout: 10000 }
+            );
+        };
+
+        // First try with High Accuracy
+        navigator.geolocation.getCurrentPosition(
+            handleSuccess,
+            (error) => {
+                if (error.code !== 1) { // If not denied, retry with low accuracy
+                    requestWithLowAccuracy();
+                } else {
+                    handleError(error);
                 }
             },
-            (error) => {
-                console.error('Geolocation error:', error);
-                // Only show error if we haven't got a location yet
-                setLocation((prev) => {
-                    if (!prev) {
-                        setLocationDenied(true);
-                        setError(t('errors.locationDenied'));
-                    }
-                    return prev;
-                });
-            }
+            GEOLOCATION_OPTIONS
         );
     };
 
@@ -148,8 +250,105 @@ export default function NearbyProductFinder() {
         return () => window.clearInterval(interval);
     }, [loading]);
 
+    const manualDialog = !isManualOpen ? null : (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4 py-6"
+            role="dialog"
+            aria-modal="true"
+            onClick={() => setIsManualOpen(false)}
+        >
+            <div
+                className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl"
+                onClick={(event) => event.stopPropagation()}
+            >
+                <form onSubmit={handleManualSubmit} className="space-y-4">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                            {t("dashboard.neighborhood.manualDialog.title", "Ajustar ubicación manual")}
+                        </p>
+                        <p className="mt-2 text-sm text-slate-500">
+                            {t(
+                                "dashboard.neighborhood.manualDialog.description",
+                                "Ingresá una dirección segura y la usaremos como punto de partida."
+                            )}
+                        </p>
+                    </div>
+                    <label className="block text-sm font-semibold text-slate-700">
+                        {t("dashboard.neighborhood.manualDialog.labelLabel", "Etiqueta")}
+                        <input
+                            type="text"
+                            value={manualLabel}
+                            onChange={(event) => setManualLabel(event.target.value)}
+                            className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-slate-900 focus:outline-none"
+                            placeholder={t("dashboard.neighborhood.customLabel", "Mi punto de partida")}
+                            required
+                        />
+                    </label>
+                    <label className="block text-sm font-semibold text-slate-700">
+                        {t("dashboard.neighborhood.manualDialog.addressLabel", "Dirección")}
+                        <textarea
+                            value={manualAddress}
+                            onChange={(event) => setManualAddress(event.target.value)}
+                            className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-slate-900 focus:outline-none"
+                            rows={3}
+                            placeholder={t("dashboard.neighborhood.manualDialog.addressPlaceholder", "Calle, número, ciudad")}
+                            autoComplete="street-address"
+                        />
+                    </label>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <label className="block text-sm font-semibold text-slate-700">
+                            {t("dashboard.neighborhood.manualDialog.latLabel", "Latitud (opcional)")}
+                            <input
+                                type="text"
+                                inputMode="decimal"
+                                value={manualLat}
+                                onChange={(event) => setManualLat(event.target.value)}
+                                className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-slate-900 focus:outline-none"
+                                placeholder="-32.954"
+                            />
+                        </label>
+                        <label className="block text-sm font-semibold text-slate-700">
+                            {t("dashboard.neighborhood.manualDialog.lonLabel", "Longitud (opcional)")}
+                            <input
+                                type="text"
+                                inputMode="decimal"
+                                value={manualLon}
+                                onChange={(event) => setManualLon(event.target.value)}
+                                className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-slate-900 focus:outline-none"
+                                placeholder="-60.639"
+                            />
+                        </label>
+                    </div>
+                    <p className="text-xs text-slate-400">
+                        {t("dashboard.neighborhood.manualDialog.helper", "Podés pegar coordenadas exactas o escribir una dirección. Lo guardamos localmente.")}
+                    </p>
+                    {manualError && <p className="text-sm text-rose-600">{manualError}</p>}
+                    <div className="flex flex-wrap justify-between gap-3 pt-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsManualOpen(false)}
+                            className="inline-flex flex-1 items-center justify-center rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600"
+                        >
+                            {t("dashboard.neighborhood.manualDialog.cancel", "Cancelar")}
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={manualSubmitting}
+                            className="inline-flex flex-1 items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white disabled:opacity-60"
+                        >
+                            {manualSubmitting
+                                ? t("dashboard.neighborhood.manualDialog.saving", "Guardando...")
+                                : t("dashboard.neighborhood.manualDialog.save", "Guardar dirección")}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+
     return (
         <div className="relative space-y-8 overflow-hidden">
+            {manualDialog}
             {/* Header */}
             <div className="space-y-2">
                 <p className="text-xs uppercase tracking-[0.4em] text-slate-500">

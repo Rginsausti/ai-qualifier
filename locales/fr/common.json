@@ -285,6 +285,8 @@
       "locationDenied": "Nous avons besoin de l'accès localisation pour recommander des lieux voisins.",
       "loading": "Analyse des lieux sains autour de toi…",
       "error": "Impossible d'analyser cette zone",
+      "errorGeneric": "Nous n'avons pas pu obtenir votre position. Activez le GPS.",
+      "lowAccuracy": "Position imprécise. Activez le GPS ou entrez votre adresse.",
       "refresh": "Actualiser",
       "empty": "Nous n'avons pas encore trouvé d'adresses saines dans ce rayon.",
       "score": "{{score}}% mindful",
