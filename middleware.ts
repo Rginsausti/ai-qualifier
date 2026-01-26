@@ -32,9 +32,11 @@ export async function middleware(request: NextRequest) {
   );
 
   // Refresh session if expired - required for Server Components
+  // Using getSession() instead of getUser() because getUser() hits the DB and can cause 504 timeouts in middleware
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
 
   const path = request.nextUrl.pathname;
 
