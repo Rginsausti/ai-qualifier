@@ -1,6 +1,8 @@
 import { LoginForm } from "@/components/login-form";
 import { LanguageSwitcher } from "@/components/language-switcher";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Ingresá a Alma",
   description: "Prototipo de login con Supabase Auth",
