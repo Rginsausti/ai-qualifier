@@ -8,11 +8,15 @@ import { generateText } from "ai";
 export const maxDuration = 60; // Allow longer timeout for batch processing
 
 export async function GET(req: Request) {
-  // 1. Security Check (Basic Bearer token or Vercel Cron header)
+  // 1. Security Check
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    return new Response("CRON_SECRET is not configured", { status: 503 });
+  }
+
   const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    // return new Response("Unauthorized", { status: 401 });
-    // For development/demo, we might skip this or use a simple secret
+  if (authHeader !== `Bearer ${cronSecret}`) {
+    return new Response("Unauthorized", { status: 401 });
   }
 
   // 2. Initialize Supabase Admin Client (to fetch all users)
@@ -78,12 +82,19 @@ export async function GET(req: Request) {
       // Parse JSON (simple attempt)
       const jsonContent = JSON.parse(text.replace(/```json|```/g, "").trim());
 
-      // Save to DB
-      await supabase.from("daily_plans").insert({
+      // Save to DB (idempotent under concurrent runs)
+      const { error: saveError } = await supabase.from("daily_plans").upsert({
         user_id: profile.user_id,
         date: today,
         content: jsonContent,
+      }, {
+        onConflict: "user_id,date",
+        ignoreDuplicates: true,
       });
+
+      if (saveError) {
+        throw saveError;
+      }
 
       results.push({ userId: profile.user_id, status: "generated" });
 

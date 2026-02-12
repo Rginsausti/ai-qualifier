@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchNearbyProducts } from '@/lib/scraping/orchestrator';
 import { createClient } from '@/lib/supabase/server';
+import { tryUpstashLimit } from '@/lib/upstash/ratelimit';
+
+const MAX_STORES_CAP = 5;
 
 /**
  * POST /api/products/search
@@ -17,6 +20,16 @@ import { createClient } from '@/lib/supabase/server';
  */
 export async function POST(request: NextRequest) {
     try {
+        const forwarded = request.headers.get('x-forwarded-for') || null;
+        const ip = forwarded ? forwarded.split(',')[0].trim() : request.headers.get('x-real-ip') || null;
+        const rateLimitResult = await tryUpstashLimit(`products_search:${ip ?? 'unknown'}`);
+        if (!rateLimitResult.success) {
+            return NextResponse.json(
+                { error: 'Rate limit exceeded' },
+                { status: 429 }
+            );
+        }
+
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
@@ -27,7 +40,7 @@ export async function POST(request: NextRequest) {
             const { data: profile } = await supabase
                 .from('user_profiles')
                 .select('intolerances')
-                .eq('id', user.id)
+                .eq('user_id', user.id)
                 .single();
             
             if (profile && profile.intolerances) {
@@ -37,9 +50,16 @@ export async function POST(request: NextRequest) {
 
         const body = await request.json();
         const { lat, lon, query, forceRefresh, maxStores } = body;
+        const parsedLat = Number(lat);
+        const parsedLon = Number(lon);
+        const parsedMaxStores = Number(maxStores);
+        const boundedMaxStores = Number.isFinite(parsedMaxStores)
+            ? Math.max(1, Math.min(MAX_STORES_CAP, Math.floor(parsedMaxStores)))
+            : MAX_STORES_CAP;
+        const allowForceRefresh = Boolean(forceRefresh) && Boolean(user);
 
         // Validate inputs
-        if (!lat || !lon || !query) {
+        if (!Number.isFinite(parsedLat) || !Number.isFinite(parsedLon) || !query) {
             return NextResponse.json(
                 { error: 'Missing required parameters: lat, lon, query' },
                 { status: 400 }
@@ -53,7 +73,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+        if (parsedLat < -90 || parsedLat > 90 || parsedLon < -180 || parsedLon > 180) {
             return NextResponse.json(
                 { error: 'Invalid coordinates' },
                 { status: 400 }
@@ -74,11 +94,11 @@ export async function POST(request: NextRequest) {
         // But we optimize it to prefer DB results if available.
         
         const results = await searchNearbyProducts(
-            parseFloat(lat),
-            parseFloat(lon),
+            parsedLat,
+            parsedLon,
             query.trim(),
-            forceRefresh ?? false,
-            maxStores ?? 5,
+            allowForceRefresh,
+            boundedMaxStores,
             intolerances
         );
 

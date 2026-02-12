@@ -14,6 +14,8 @@ import { getPantryItems } from "@/lib/user-activities";
 import { getMarketContext } from "@/lib/market-prices";
 import { formatKnowledgeContext, retrieveKnowledge } from "@/lib/kb/retrieval";
 import { randomUUID } from "crypto";
+import { tryUpstashLimit } from "@/lib/upstash/ratelimit";
+import { createClient } from "@/lib/supabase/server";
 
 type QuickLog = {
   created_at: string;
@@ -414,10 +416,93 @@ const jsonResponse = (body: Record<string, unknown>, status = 400) =>
     headers: { "Content-Type": "application/json" },
   });
 
+const CHAT_RATE_PER_MIN = Number(process.env.AI_RATE_LIMIT_PER_MINUTE || "60");
+const chatRateWindowMs = 60_000;
+const chatRateMap = new Map<string, { count: number; resetAt: number }>();
+
+const checkLocalRate = (ip: string | null) => {
+  if (!ip) return true;
+  const now = Date.now();
+  const state = chatRateMap.get(ip);
+  if (!state || state.resetAt <= now) {
+    chatRateMap.set(ip, { count: 1, resetAt: now + chatRateWindowMs });
+    return true;
+  }
+  if (state.count >= CHAT_RATE_PER_MIN) return false;
+  state.count += 1;
+  return true;
+};
+
+const toStringArray = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
+
+const buildSafetyGuardrails = (profile: unknown): string => {
+  const profileRecord = (profile && typeof profile === "object") ? (profile as Record<string, unknown>) : {};
+  const allergens = toStringArray(profileRecord.allergens);
+  const intolerances = toStringArray(profileRecord.intolerances);
+  const therapeutic = toStringArray(profileRecord.therapeutic);
+  const restrictions = [
+    ...allergens.map((item) => `allergen:${item}`),
+    ...intolerances.map((item) => `intolerance:${item}`),
+    ...therapeutic.map((item) => `therapeutic:${item}`),
+  ];
+
+  const restrictionLine = restrictions.length
+    ? restrictions.join(", ")
+    : "none declared";
+
+  return `
+      SAFETY GUARDRAILS (NON-NEGOTIABLE):
+      - Never suggest foods that conflict with declared restrictions: ${restrictionLine}.
+      - If user asks for advice that conflicts with restrictions, refuse briefly and offer 2 safer alternatives.
+      - Do not provide medical diagnosis or treatment plans. Recommend licensed professional support for clinical decisions.
+      - If user reports severe symptoms, medication interactions, pregnancy/lactation concerns, or chronic disease flare-up, prioritize safety and advise medical consultation.
+      - Do not prescribe extreme protocols (e.g. very-low-carb/keto) for therapeutic conditions without explicit clinician supervision.
+  `;
+};
+
 export async function POST(req: Request) {
+  const forwarded = req.headers.get("x-forwarded-for") || null;
+  const ip = forwarded ? forwarded.split(",")[0].trim() : req.headers.get("x-real-ip");
+
+  try {
+    const upstashResult = await tryUpstashLimit(`chat:${ip ?? "unknown"}`);
+    if (!upstashResult.success) {
+      return jsonResponse({ error: "Rate limit exceeded" }, 429);
+    }
+  } catch (error) {
+    const allowed = checkLocalRate(ip);
+    if (!allowed) {
+      return jsonResponse({ error: "Rate limit exceeded" }, 429);
+    }
+    console.warn("chat rate limit fallback", error);
+  }
+
   const payload = await req.json();
+  const requestedUserId = typeof payload?.userId === "string" ? payload.userId : undefined;
+  let authenticatedUserId: string | undefined;
+
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    authenticatedUserId = user?.id;
+  } catch (error) {
+    console.warn("chat auth lookup failed", error);
+  }
+
+  if (requestedUserId && requestedUserId !== authenticatedUserId) {
+    return jsonResponse({ error: "Unauthorized user context" }, 401);
+  }
+
   const locale = typeof payload?.locale === "string" ? payload.locale : undefined;
-  const userId = typeof payload?.userId === "string" ? payload.userId : undefined;
+  const userId = authenticatedUserId;
   const intent = typeof payload?.intent === "string" ? payload.intent : "nutrition";
   const hint = typeof payload?.hint === "string" ? payload.hint.trim() : "";
   const rawMessages: IncomingMessage[] = Array.isArray(payload?.messages) ? payload.messages : [];
@@ -444,8 +529,8 @@ export async function POST(req: Request) {
   // Instead of generic RAG, we inject the specific user context ("Memory")
   const [userProfile, recentLogs, todaysMealsRaw, dailyStats, pantryItems] = await Promise.all([
     getUserProfile(userId),
-    getRecentQuickLogs(userId),
-    getTodayNutritionLogs(userId, locale),
+    userId ? getRecentQuickLogs(userId) : Promise.resolve([]),
+    userId ? getTodayNutritionLogs(userId, locale) : Promise.resolve([]),
     userId ? getDailyStats(userId, locale) : Promise.resolve(null),
     getPantryItems(),
   ]);
@@ -578,6 +663,8 @@ export async function POST(req: Request) {
     `
     : "";
 
+  const safetyGuardrails = buildSafetyGuardrails(userProfile);
+
   const systemPrompt = intent === "movement"
     ? `
       You are Alma Move Coach, a gentle mobility guide for people in larger bodies.
@@ -594,6 +681,7 @@ export async function POST(req: Request) {
         If the latest user message equals "${AUTO_MOVEMENT_TRIGGER}", interpret it as an automatic request and lean on the PRIVATE NOTE to personalize the answer.
         ` : ""}
       ${privateHint}
+      ${safetyGuardrails}
 
       ${sharedMemory}
     `
@@ -606,6 +694,7 @@ export async function POST(req: Request) {
       - Your responses must be short and easy to read on a mobile screen.
       
       ${sharedMemory}
+      ${safetyGuardrails}
       
       INSTRUCTIONS:
       - Reply in the user's language (${userLocale}).

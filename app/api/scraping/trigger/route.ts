@@ -1,23 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { cotoAdapter } from '@/lib/scraping/adapters/coto';
-import { carrefourAdapter } from '@/lib/scraping/adapters/carrefour';
-import { jumboAdapter, veaAdapter, discoAdapter } from '@/lib/scraping/adapters/jumbo';
-import type { StoreAdapter } from '@/lib/scraping/types';
- 
-const brandAdapters: Record<string, StoreAdapter> = {
-    COTO: cotoAdapter,
-    CARREFOUR: carrefourAdapter,
-    JUMBO: jumboAdapter,
-    VEA: veaAdapter,
-    DISCO: discoAdapter,
-};
+import { getSupabaseServiceClient } from '@/lib/supabase/server-client';
 
-function pickAdapter(brand?: string | null): StoreAdapter | null {
-    if (!brand) return null;
-    const normalized = brand.toUpperCase();
-    return brandAdapters[normalized] ?? null;
-}
+const MAX_PRODUCTS_PER_JOB = 12;
 
 /**
  * POST /api/scraping/trigger
@@ -33,11 +17,16 @@ function pickAdapter(brand?: string | null): StoreAdapter | null {
  */
 export async function POST(request: NextRequest) {
     try {
-        const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const cronSecret = process.env.CRON_SECRET;
+        if (!cronSecret) {
+            return NextResponse.json(
+                { error: 'CRON_SECRET is not configured' },
+                { status: 503 }
+            );
+        }
 
-        // Require authentication (could also check for admin role)
-        if (!user) {
+        const authHeader = request.headers.get('authorization');
+        if (authHeader !== `Bearer ${cronSecret}`) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
                 { status: 401 }
@@ -45,19 +34,28 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { storeId, products, brand } = body;
+        const storeId = typeof body?.storeId === 'string' ? body.storeId : '';
+        const products = Array.isArray(body?.products)
+            ? body.products
+                .filter((entry: unknown): entry is string => typeof entry === 'string')
+                .map((entry: string) => entry.trim())
+                .filter(Boolean)
+                .slice(0, MAX_PRODUCTS_PER_JOB)
+            : [];
 
-        if (!storeId || !products || !Array.isArray(products)) {
+        if (!storeId || products.length === 0) {
             return NextResponse.json(
                 { error: 'Invalid request body' },
                 { status: 400 }
             );
         }
 
+        const serviceClient = getSupabaseServiceClient();
+
         // Fetch store details
-        const { data: store, error: storeError } = await supabase
+        const { data: store, error: storeError } = await serviceClient
             .from('nearby_stores')
-            .select('*')
+            .select('id, name, brand, scraping_enabled')
             .eq('id', storeId)
             .single();
 
@@ -75,100 +73,36 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const adapter = pickAdapter(brand || store.brand);
-        if (!adapter) {
-            return NextResponse.json(
-                { error: 'Unsupported store brand' },
-                { status: 400 }
-            );
-        }
-
-        // Create scraping job
-        const { data: job } = await supabase
+        // Create scraping job as pending. A cron/worker endpoint should process this queue.
+        const { data: job, error: jobError } = await serviceClient
             .from('scraping_jobs')
             .insert({
                 store_id: storeId,
                 search_query: products.join(', '),
-                status: 'running',
-                started_at: new Date().toISOString(),
+                status: 'pending',
             })
-            .select()
+            .select('id, store_id, search_query, status, created_at')
             .single();
 
-        // Execute scraping in background (non-blocking)
-        scrapeInBackground(store, products, adapter, job.id, supabase);
+        if (jobError || !job) {
+            console.error('[API /scraping/trigger] Failed to enqueue job:', jobError);
+            return NextResponse.json(
+                { error: 'Could not enqueue scraping job' },
+                { status: 500 }
+            );
+        }
 
         return NextResponse.json({
             success: true,
-            message: 'Scraping job started',
+            message: 'Scraping job queued',
             job_id: job.id,
-        });
+            status: job.status,
+        }, { status: 202 });
     } catch (error) {
         console.error('[API /scraping/trigger] Error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
             { status: 500 }
         );
-    }
-}
-
-/**
- * Background scraping execution
- */
-async function scrapeInBackground(
-    store: any,
-    products: string[],
-    adapter: StoreAdapter,
-    jobId: string,
-    supabase: any
-): Promise<void> {
-    let totalProducts = 0;
-
-    try {
-        for (const productQuery of products) {
-            const extractedProducts = await adapter.scrape(productQuery, {
-                storeBrand: store.brand,
-                storeId: store.id,
-                storeName: store.name,
-                storeWebsite: store.website_url,
-            });
-
-            // Persist products
-            const records = extractedProducts.map(p => ({
-                store_id: store.id,
-                product_name: p.product_name,
-                brand: p.brand,
-                price_current: p.price_current,
-                price_regular: p.price_regular,
-                unit: p.unit,
-                nutritional_claims: p.nutritional_claims,
-                nutrition_info: p.nutrition_info,
-                image_url: p.image_url,
-                product_url: p.product_url,
-            }));
-
-            await supabase.from('scraped_products').insert(records);
-            totalProducts += extractedProducts.length;
-        }
-
-        // Update job status
-        await supabase
-            .from('scraping_jobs')
-            .update({
-                status: 'completed',
-                completed_at: new Date().toISOString(),
-                products_found: totalProducts,
-            })
-            .eq('id', jobId);
-    } catch (error) {
-        console.error('[Background Scraper] Error:', error);
-        await supabase
-            .from('scraping_jobs')
-            .update({
-                status: 'failed',
-                completed_at: new Date().toISOString(),
-                error_message: error instanceof Error ? error.message : 'Unknown error',
-            })
-            .eq('id', jobId);
     }
 }

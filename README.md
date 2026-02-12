@@ -36,3 +36,11 @@ Toda la app está tokenizada con i18next. Podés cambiar entre español, inglés
 3. Desplegá las migraciones (`pnpm ts-node scripts/run-migration.js 010`) para crear `user_settings`, `push_subscriptions` y `notification_events`.
 4. Programá las llamadas a `POST /api/notifications/cron` con `type=water`, `type=meal`, `type=day_end` o `type=nearby_search` desde Vercel Cron o Upstash QStash, pasando `Authorization: Bearer ${CRON_SECRET}`.
 5. Para recibir avisos en iOS, instalá Alma como PWA (Agregar a pantalla de inicio) y luego activá las notificaciones desde el botón de campana.
+
+## Architecture and roadmap
+- `docs/architecture/README.md`
+- `docs/architecture/architecture-overview.md`
+- `docs/architecture/scalability-minimal-infra.md`
+- `docs/architecture/recommendation-quality.md`
+- `docs/architecture/personalization-loop.md`
+- `docs/architecture/implementation-roadmap.md`
