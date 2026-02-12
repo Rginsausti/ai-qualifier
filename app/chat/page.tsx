@@ -71,6 +71,7 @@ function ChatPageContent() {
     const prefillSentRef = useRef(false);
     const intent = searchParams.get("intent") || "nutrition";
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const historyLoadedRef = useRef(false);
 
     useEffect(() => {
         const supabase = getSupabaseClient();
@@ -109,22 +110,68 @@ function ChatPageContent() {
     }, []);
 
     useEffect(() => {
-        if (messages.length > 0) return;
-        const storageKey = buildHistoryStorageKey(userId, intent);
-        const storedMessages = parseStoredMessages(window.localStorage.getItem(storageKey));
-        if (storedMessages.length > 0) {
-            setMessages(storedMessages);
-        }
-    }, [intent, messages.length, userId]);
+        historyLoadedRef.current = false;
+    }, [intent, userId]);
+
+    useEffect(() => {
+        if (historyLoadedRef.current) return;
+        if (messages.length > 0 || isLoading) return;
+
+        const loadHistory = async () => {
+            if (userId) {
+                try {
+                    const response = await fetch(`/api/chat/history?intent=${encodeURIComponent(intent)}&locale=${encodeURIComponent(i18n.language)}`);
+                    if (response.ok) {
+                        const payload = await response.json();
+                        const persistedMessages = parseStoredMessages(JSON.stringify(payload?.messages || []));
+                        if (persistedMessages.length > 0) {
+                            setMessages(persistedMessages);
+                            historyLoadedRef.current = true;
+                            return;
+                        }
+                    }
+                } catch (error) {
+                    console.warn("Unable to load server chat history", error);
+                }
+            }
+
+            const storageKey = buildHistoryStorageKey(userId, intent);
+            const localMessages = parseStoredMessages(window.localStorage.getItem(storageKey));
+            if (localMessages.length > 0) {
+                setMessages(localMessages);
+            }
+            historyLoadedRef.current = true;
+        };
+
+        loadHistory();
+    }, [i18n.language, intent, isLoading, messages.length, userId]);
 
     useEffect(() => {
         const storageKey = buildHistoryStorageKey(userId, intent);
-        if (messages.length === 0) {
-            window.localStorage.removeItem(storageKey);
-            return;
-        }
+        if (messages.length === 0) return;
         window.localStorage.setItem(storageKey, JSON.stringify(messages));
     }, [intent, messages, userId]);
+
+    const persistMessages = useCallback(async (entries: Message[]) => {
+        if (!userId || entries.length === 0) return;
+
+        try {
+            await fetch("/api/chat/history", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    intent,
+                    messages: entries.map((entry) => ({
+                        role: entry.role,
+                        content: entry.content,
+                        hidden: Boolean(entry.hidden),
+                    })),
+                }),
+            });
+        } catch (persistError) {
+            console.warn("Unable to persist chat history", persistError);
+        }
+    }, [intent, userId]);
 
     const sendMessage = useCallback(async (content: string, options?: { hidden?: boolean; hint?: string; includeHiddenHistory?: boolean }) => {
         if (!content.trim() || isLoading) return;
@@ -168,6 +215,7 @@ function ChatPageContent() {
                 role: "assistant",
                 content: "",
             };
+            let assistantContent = "";
 
             setMessages((prev) => [...prev, assistantMessage]);
 
@@ -176,6 +224,7 @@ function ChatPageContent() {
                 const { done, value } = await reader.read();
                 if (done) break;
                 const text = decoder.decode(value, { stream: true });
+                assistantContent += text;
 
                 setMessages((prev) => {
                     const newMessages = [...prev];
@@ -191,6 +240,13 @@ function ChatPageContent() {
                     return newMessages;
                 });
             }
+
+            if (assistantContent.trim()) {
+                await persistMessages([
+                    userMessage,
+                    { ...assistantMessage, content: assistantContent },
+                ]);
+            }
         } catch (err) {
             console.error("Chat error:", err);
             setError(t("chat.connectionError"));
@@ -205,7 +261,7 @@ function ChatPageContent() {
         } finally {
             setIsLoading(false);
         }
-    }, [i18n.language, intent, isLoading, location, messages, t, userId]);
+    }, [i18n.language, intent, isLoading, location, messages, persistMessages, t, userId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

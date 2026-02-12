@@ -36,6 +36,52 @@ export const MARKET_PRICES_AR = {
   }
 };
 
+type PriceMatch = {
+  item: string;
+  range: string;
+  category: string;
+};
+
+const normalizeText = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9 ]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const tokenize = (value: string) =>
+  normalizeText(value)
+    .split(" ")
+    .filter((token) => token.length >= 3);
+
+export function findMarketPriceMatches(query: string, locale: string = "es"): PriceMatch[] {
+  if (!locale.startsWith("es")) return [];
+
+  const queryTokens = new Set(tokenize(query));
+  if (queryTokens.size === 0) return [];
+
+  const categories = MARKET_PRICES_AR.staples as Record<string, Record<string, string>>;
+  const matches: PriceMatch[] = [];
+
+  for (const [category, entries] of Object.entries(categories)) {
+    for (const [item, range] of Object.entries(entries)) {
+      const itemTokens = tokenize(item);
+      const overlap = itemTokens.filter((token) => queryTokens.has(token));
+      if (overlap.length === 0) continue;
+
+      matches.push({
+        item,
+        range,
+        category,
+      });
+    }
+  }
+
+  return matches.slice(0, 5);
+}
+
 export function getMarketContext(locale: string = 'es') {
   // Simple logic: if locale is Spanish, assume Argentina context for this MVP.
   // In a real app, we would check country code (es-AR, es-MX, etc).

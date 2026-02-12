@@ -13,7 +13,7 @@ import {
   deleteLatestTodayNutritionLog,
 } from "@/lib/actions";
 import { getPantryItems } from "@/lib/user-activities";
-import { getMarketContext } from "@/lib/market-prices";
+import { findMarketPriceMatches, getMarketContext } from "@/lib/market-prices";
 import { formatKnowledgeContext, retrieveKnowledge } from "@/lib/kb/retrieval";
 import { randomUUID } from "crypto";
 import { tryUpstashLimit } from "@/lib/upstash/ratelimit";
@@ -192,6 +192,29 @@ const detectIntakeCommand = (text?: string | null): IntakeCommand | null => {
 
   return null;
 };
+
+const PRICE_INTENT_KEYWORDS = [
+  "precio",
+  "precios",
+  "cuanto cuesta",
+  "cuesta",
+  "sale",
+  "presupuesto",
+  "barato",
+  "barata",
+  "econ",
+  "ars",
+  "$",
+];
+
+const hasPriceIntent = (text?: string | null) => {
+  if (!text) return false;
+  const normalized = normalizeText(text);
+  return PRICE_INTENT_KEYWORDS.some((keyword) => normalized.includes(keyword));
+};
+
+const buildNoVerifiedPriceMessage = () =>
+  "No tengo un precio verificado para ese producto en este momento. Si querés, te recomiendo opciones similares por perfil nutricional sin inventar precios, o podés pedirme precios solo de productos con referencia en mi lista actual.";
 
 const formatTimeForLocale = (dateIso?: string | null, locale = "es") => {
   if (!dateIso) return "";
@@ -650,6 +673,21 @@ export async function POST(req: Request) {
 
   const autoActionNote = ingestionResult.autoActionNote;
   const marketMemory = getMarketContext(userLocale);
+  const userAskedPrice = hasPriceIntent(lastUserMessage?.content);
+  const marketPriceMatches = lastUserMessage?.content
+    ? findMarketPriceMatches(lastUserMessage.content, userLocale)
+    : [];
+
+  if (userAskedPrice && marketPriceMatches.length === 0) {
+    return respondWithText(buildNoVerifiedPriceMessage());
+  }
+
+  const verifiedPriceContext = marketPriceMatches.length > 0
+    ? marketPriceMatches
+        .map((match) => `- ${match.item}: ${match.range} ARS (${match.category})`)
+        .join("\n")
+    : "No verified item-level price match for this user query.";
+
   const pantrySection = pantryItems.length
     ? pantryItems
         .slice(0, 15)
@@ -721,6 +759,9 @@ export async function POST(req: Request) {
     ${pantrySection}
     
     ${marketMemory}
+    VERIFIED PRICE MATCHES FOR THIS QUERY:
+    ${verifiedPriceContext}
+
     ${knowledgeContext}
     ${automationContext}
   `;
@@ -771,6 +812,10 @@ export async function POST(req: Request) {
       - Use the User Memory to personalize answers (e.g., respect lactose intolerance).
       - CRITICAL: Check the "RECENT CHECK-INS" for any health notes (e.g., "sick", "flu", "stomach pain") or cravings. If the user mentions being sick, prioritize comfort foods suitable for their condition.
       - Use the MARKET MEMORY to give realistic budget advice. NEVER hallucinate prices.
+      - HARD PRICE POLICY:
+        - If the user did NOT explicitly ask for price/budget, do NOT mention money, currency, ARS, "$", or estimated price ranges.
+        - If the user asked for prices, mention ONLY values listed under "VERIFIED PRICE MATCHES FOR THIS QUERY".
+        - If there are no verified matches, say you do not have a verified price and continue without inventing numbers.
       - Be extremely concise. Use bullet points for options.
       - Avoid long explanations unless explicitly asked.
       - Ask MAX ONE follow-up question, and ONLY if critical to give a recommendation. Otherwise, do not ask anything.
