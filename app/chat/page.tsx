@@ -18,6 +18,43 @@ type Message = {
     hidden?: boolean;
 };
 
+const CHAT_HISTORY_PREFIX = "alma-chat-history-v1";
+
+const getLocalDayKey = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+};
+
+const buildHistoryStorageKey = (userId: string | null, intent: string) =>
+    `${CHAT_HISTORY_PREFIX}:${userId || "guest"}:${intent}:${getLocalDayKey()}`;
+
+const parseStoredMessages = (raw: string | null): Message[] => {
+    if (!raw) return [];
+    try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+            .filter((item): item is Message =>
+                typeof item === "object"
+                && item !== null
+                && (item.role === "user" || item.role === "assistant")
+                && typeof item.content === "string"
+                && typeof item.id === "string"
+            )
+            .map((item) => ({
+                id: item.id,
+                role: item.role,
+                content: item.content,
+                hidden: Boolean(item.hidden),
+            }));
+    } catch {
+        return [];
+    }
+};
+
 function ChatPageContent() {
     const { t, i18n } = useTranslation();
     const searchParams = useSearchParams();
@@ -70,6 +107,24 @@ function ChatPageContent() {
             return () => navigator.geolocation.clearWatch(watchId);
         }
     }, []);
+
+    useEffect(() => {
+        if (messages.length > 0) return;
+        const storageKey = buildHistoryStorageKey(userId, intent);
+        const storedMessages = parseStoredMessages(window.localStorage.getItem(storageKey));
+        if (storedMessages.length > 0) {
+            setMessages(storedMessages);
+        }
+    }, [intent, messages.length, userId]);
+
+    useEffect(() => {
+        const storageKey = buildHistoryStorageKey(userId, intent);
+        if (messages.length === 0) {
+            window.localStorage.removeItem(storageKey);
+            return;
+        }
+        window.localStorage.setItem(storageKey, JSON.stringify(messages));
+    }, [intent, messages, userId]);
 
     const sendMessage = useCallback(async (content: string, options?: { hidden?: boolean; hint?: string; includeHiddenHistory?: boolean }) => {
         if (!content.trim() || isLoading) return;
@@ -150,7 +205,7 @@ function ChatPageContent() {
         } finally {
             setIsLoading(false);
         }
-    }, [i18n.language, intent, isLoading, location, messages, userId]);
+    }, [i18n.language, intent, isLoading, location, messages, t, userId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

@@ -9,6 +9,8 @@ import {
   logNutrition,
   logWater,
   analyzeFoodFromText,
+  resetTodayIntake,
+  deleteLatestTodayNutritionLog,
 } from "@/lib/actions";
 import { getPantryItems } from "@/lib/user-activities";
 import { getMarketContext } from "@/lib/market-prices";
@@ -166,6 +168,31 @@ const detectPendingDecision = (text?: string | null): "new" | "same" | null => {
   return null;
 };
 
+type IntakeCommand = "reset_day" | "delete_latest";
+
+const includesAny = (value: string, keywords: string[]) =>
+  keywords.some((keyword) => value.includes(keyword));
+
+const detectIntakeCommand = (text?: string | null): IntakeCommand | null => {
+  if (!text) return null;
+  const normalized = normalizeText(text);
+
+  const hasDeleteVerb = includesAny(normalized, ["borra", "borrar", "elimina", "eliminar", "quita", "quitar", "limpia", "limpiar", "reset", "reinicia", "reiniciar"]);
+  const mentionsDailyTotals = includesAny(normalized, ["tablero", "conteo", "macros", "macro", "calorias", "caloria", "registro", "registros", "ingesta", "ingestas", "hoy", "dia", "diario", "cero"]);
+  const isResetDay = hasDeleteVerb && mentionsDailyTotals && includesAny(normalized, ["todo", "todos", "cero", "reset", "reinicia", "tablero", "hoy", "dia"]);
+
+  if (isResetDay) {
+    return "reset_day";
+  }
+
+  const wantsLatest = hasDeleteVerb && includesAny(normalized, ["ultimo", "ultima", "reciente", "equivoque", "equivocado", "equivocada"]);
+  if (wantsLatest) {
+    return "delete_latest";
+  }
+
+  return null;
+};
+
 const formatTimeForLocale = (dateIso?: string | null, locale = "es") => {
   if (!dateIso) return "";
   try {
@@ -264,6 +291,48 @@ async function handleIngestionFlow(params: {
 }): Promise<HandleIngestionResult> {
   const { messages, todaysMeals, userLocale } = params;
   const lastUserMessage = [...messages].reverse().find((message) => message.role === "user");
+  const intakeCommand = detectIntakeCommand(lastUserMessage?.content);
+
+  if (intakeCommand === "reset_day") {
+    const resetResult = await resetTodayIntake(userLocale);
+    if (!resetResult.success) {
+      return {
+        type: "early-response",
+        response: respondWithText(`No pude reiniciar tu tablero de hoy (${resetResult.error ?? "motivo desconocido"}).`),
+      };
+    }
+
+    const deletedMeals = resetResult.deletedMeals ?? 0;
+    const deletedWaterLogs = resetResult.deletedWaterLogs ?? 0;
+    const resetMessage = deletedMeals + deletedWaterLogs > 0
+      ? `Listo, reinicié tu tablero de hoy. Eliminé ${deletedMeals} registro${deletedMeals === 1 ? "" : "s"} de comida y ${deletedWaterLogs} registro${deletedWaterLogs === 1 ? "" : "s"} de agua.`
+      : "Tu tablero de hoy ya estaba en cero.";
+    return { type: "early-response", response: respondWithText(resetMessage) };
+  }
+
+  if (intakeCommand === "delete_latest") {
+    const deleteResult = await deleteLatestTodayNutritionLog(userLocale);
+    if (!deleteResult.success) {
+      return {
+        type: "early-response",
+        response: respondWithText(`Intenté borrar el último registro, pero falló (${deleteResult.error ?? "motivo desconocido"}).`),
+      };
+    }
+
+    if (!deleteResult.deleted) {
+      return {
+        type: "early-response",
+        response: respondWithText("No encontré registros de comida de hoy para borrar."),
+      };
+    }
+
+    const deletedName = deleteResult.deletedName || "el último registro";
+    return {
+      type: "early-response",
+      response: respondWithText(`Listo, borré "${deletedName}" de tu registro de hoy.`),
+    };
+  }
+
   const pending = extractPendingIngestion(messages);
 
   if (pending) {
@@ -527,16 +596,17 @@ export async function POST(req: Request) {
 
   // 1. Memory System: Fetch User Profile & Recent Logs
   // Instead of generic RAG, we inject the specific user context ("Memory")
-  const [userProfile, recentLogs, todaysMealsRaw, dailyStats, pantryItems] = await Promise.all([
-    getUserProfile(userId),
+  const userProfile = await getUserProfile(userId);
+  const userLocale = userProfile?.locale || locale || "es";
+
+  const [recentLogs, todaysMealsRaw, dailyStats, pantryItems] = await Promise.all([
     userId ? getRecentQuickLogs(userId) : Promise.resolve([]),
-    userId ? getTodayNutritionLogs(userId, locale) : Promise.resolve([]),
-    userId ? getDailyStats(userId, locale) : Promise.resolve(null),
+    userId ? getTodayNutritionLogs(userId, userLocale) : Promise.resolve([]),
+    userId ? getDailyStats(userId, userLocale) : Promise.resolve(null),
     getPantryItems(),
   ]);
 
   // 2. Construct System Prompt with Memory
-  const userLocale = userProfile?.locale || locale || 'es';
   const todaysMeals: MealLog[] = todaysMealsRaw.map((meal) => ({
     id: typeof meal.id === "number" || typeof meal.id === "string" ? meal.id : undefined,
     created_at: meal.created_at,
@@ -612,8 +682,8 @@ export async function POST(req: Request) {
   }).join("\n");
 
   const mealsSection = todaysMeals.length
-    ? `${formattedMeals}\nTotal last 24h: ${totals.calories} kcal · P${totals.protein}g · C${totals.carbs}g · F${totals.fats}g`
-    : "No meals logged in the last 24 hours.";
+    ? `${formattedMeals}\nTotal de hoy: ${totals.calories} kcal · P${totals.protein}g · C${totals.carbs}g · F${totals.fats}g`
+    : "No hay comidas registradas hoy.";
 
   const waterDelta = ingestionResult.waterDelta ?? 0;
   const waterGoal = dailyStats?.goals.water ?? 2000;
@@ -641,10 +711,10 @@ export async function POST(req: Request) {
     RECENT CHECK-INS (Last 3):
     ${formattedLogs || "No recent logs."}
 
-    TODAY'S INTAKE (last 24h):
+    TODAY'S INTAKE:
     ${mealsSection}
 
-    HYDRATION (last 24h):
+    HYDRATION (today):
     ${hydrationSection}
 
     PANTRY SNAPSHOT:

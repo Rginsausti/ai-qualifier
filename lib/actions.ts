@@ -3,7 +3,7 @@
 import { getSupabaseServiceClient } from "@/lib/supabase/server-client";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { startOfDay } from "date-fns";
+import { addDays, startOfDay } from "date-fns";
 import { toZonedTime, fromZonedTime } from "date-fns-tz";
 import { createGroq } from '@ai-sdk/groq';
 import { createHuggingFace } from '@ai-sdk/huggingface';
@@ -33,18 +33,28 @@ function resolveTimezone(locale?: string) {
     return localeTimezoneMap[normalized] || localeTimezoneMap[base] || "UTC";
 }
 
-function getStartOfTodayIso(timezone: string) {
+function getTodayRangeIso(timezone: string) {
     try {
         const now = new Date();
         const zonedNow = toZonedTime(now, timezone);
         const zonedStart = startOfDay(zonedNow);
+        const zonedEnd = addDays(zonedStart, 1);
         const utcStart = fromZonedTime(zonedStart, timezone);
-        return utcStart.toISOString();
+        const utcEnd = fromZonedTime(zonedEnd, timezone);
+        return {
+            startIso: utcStart.toISOString(),
+            endIso: utcEnd.toISOString(),
+        };
     } catch (error) {
-        console.error("getStartOfTodayIso: fallback to UTC", error);
-        const fallback = new Date();
-        fallback.setUTCHours(0, 0, 0, 0);
-        return fallback.toISOString();
+        console.error("getTodayRangeIso: fallback to UTC", error);
+        const start = new Date();
+        start.setUTCHours(0, 0, 0, 0);
+        const end = new Date(start);
+        end.setUTCDate(end.getUTCDate() + 1);
+        return {
+            startIso: start.toISOString(),
+            endIso: end.toISOString(),
+        };
     }
 }
 
@@ -264,14 +274,15 @@ export async function logWater(amount: number) {
 export async function getDailyStats(userId: string, locale?: string) {
     const supabase = getSupabaseServiceClient();
     const timezone = resolveTimezone(locale);
-    const startTime = getStartOfTodayIso(timezone);
+    const { startIso, endIso } = getTodayRangeIso(timezone);
     
     // Get Nutrition
     const { data: nutritionData, error: nutritionError } = await supabase
         .from("nutrition_logs")
         .select("calories, protein, carbs, fats, created_at")
         .eq("user_id", userId)
-        .gte("created_at", startTime);
+        .gte("created_at", startIso)
+        .lt("created_at", endIso);
 
     if (nutritionError) console.error("getDailyStats: Nutrition Error", nutritionError);
 
@@ -280,7 +291,8 @@ export async function getDailyStats(userId: string, locale?: string) {
         .from("water_logs")
         .select("amount_ml, created_at")
         .eq("user_id", userId)
-        .gte("created_at", startTime);
+        .gte("created_at", startIso)
+        .lt("created_at", endIso);
 
     if (waterError) console.error("getDailyStats: Water Error", waterError);
     
@@ -316,13 +328,14 @@ export async function getDailyStats(userId: string, locale?: string) {
 export async function getTodayQuickLog(userId: string, locale?: string) {
     const supabase = getSupabaseServiceClient();
     const timezone = resolveTimezone(locale);
-    const since = getStartOfTodayIso(timezone);
+    const { startIso, endIso } = getTodayRangeIso(timezone);
 
     const { data, error } = await supabase
         .from("quick_logs")
         .select("energy,hunger,craving,created_at")
         .eq("user_id", userId)
-        .gte("created_at", since)
+        .gte("created_at", startIso)
+        .lt("created_at", endIso)
         .order("created_at", { ascending: false })
         .limit(1);
 
@@ -337,13 +350,14 @@ export async function getTodayQuickLog(userId: string, locale?: string) {
 export async function getTodayNutritionLogs(userId: string, locale?: string) {
     const supabase = getSupabaseServiceClient();
     const timezone = resolveTimezone(locale);
-    const since = getStartOfTodayIso(timezone);
+    const { startIso, endIso } = getTodayRangeIso(timezone);
 
     const { data, error } = await supabase
         .from("nutrition_logs")
         .select("id,name,calories,protein,carbs,fats,meal_type,created_at")
         .eq("user_id", userId)
-        .gte("created_at", since)
+        .gte("created_at", startIso)
+        .lt("created_at", endIso)
         .order("created_at", { ascending: true });
 
     if (error) {
@@ -352,6 +366,116 @@ export async function getTodayNutritionLogs(userId: string, locale?: string) {
     }
 
     return data || [];
+}
+
+async function resolveUserLocale(userId: string, locale?: string) {
+    const supabase = getSupabaseServiceClient();
+    const { data } = await supabase
+        .from("user_profiles")
+        .select("locale")
+        .eq("user_id", userId)
+        .single();
+
+    return (typeof data?.locale === "string" && data.locale.trim())
+        ? data.locale
+        : locale;
+}
+
+export async function resetTodayIntake(locale?: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { success: false, error: "Unauthorized" };
+    }
+
+    const effectiveLocale = await resolveUserLocale(user.id, locale);
+    const timezone = resolveTimezone(effectiveLocale);
+    const { startIso, endIso } = getTodayRangeIso(timezone);
+
+    const { data: deletedMeals, error: mealDeleteError } = await supabase
+        .from("nutrition_logs")
+        .delete()
+        .eq("user_id", user.id)
+        .gte("created_at", startIso)
+        .lt("created_at", endIso)
+        .select("id");
+
+    if (mealDeleteError) {
+        return { success: false, error: mealDeleteError.message };
+    }
+
+    const { data: deletedWaterLogs, error: waterDeleteError } = await supabase
+        .from("water_logs")
+        .delete()
+        .eq("user_id", user.id)
+        .gte("created_at", startIso)
+        .lt("created_at", endIso)
+        .select("id");
+
+    if (waterDeleteError) {
+        return { success: false, error: waterDeleteError.message };
+    }
+
+    return {
+        success: true,
+        deletedMeals: deletedMeals?.length || 0,
+        deletedWaterLogs: deletedWaterLogs?.length || 0,
+    };
+}
+
+export async function deleteLatestTodayNutritionLog(locale?: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { success: false, error: "Unauthorized" };
+    }
+
+    const effectiveLocale = await resolveUserLocale(user.id, locale);
+    const timezone = resolveTimezone(effectiveLocale);
+    const { startIso, endIso } = getTodayRangeIso(timezone);
+
+    const { data: latestLog, error: selectError } = await supabase
+        .from("nutrition_logs")
+        .select("id,name,created_at")
+        .eq("user_id", user.id)
+        .gte("created_at", startIso)
+        .lt("created_at", endIso)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (selectError) {
+        return { success: false, error: selectError.message };
+    }
+
+    if (!latestLog) {
+        return { success: true, deleted: false };
+    }
+
+    const { data: deletedRows, error: deleteError } = await supabase
+        .from("nutrition_logs")
+        .delete()
+        .eq("id", latestLog.id)
+        .eq("user_id", user.id)
+        .select("id")
+        .limit(1);
+
+    if (deleteError) {
+        return { success: false, error: deleteError.message };
+    }
+
+    if (!deletedRows || deletedRows.length === 0) {
+        return { success: false, error: "No se pudo confirmar el borrado del registro." };
+    }
+
+    return {
+        success: true,
+        deleted: true,
+        deletedName: latestLog.name,
+        deletedAt: latestLog.created_at,
+    };
 }
 
 export async function analyzeFoodFromText(text: string) {
