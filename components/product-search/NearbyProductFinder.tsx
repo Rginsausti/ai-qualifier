@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Image from 'next/image';
 import { MapPin, Search, AlertCircle, Loader2, ShoppingBag, Tag, Navigation } from 'lucide-react';
-import { loadStoredLocation, clearStoredLocation } from '@/lib/location-storage';
+import { clearStoredLocation } from '@/lib/location-storage';
 
 const LOADER_MESSAGES = [
     { key: 'productSearch.loader.step1', fallback: 'Estamos buscando en los comercios cercanos a tu casa' },
@@ -30,6 +30,17 @@ export type ProductResult = {
 type SearchResults = {
     products: ProductResult[];
     stores_searched: number;
+    stores_discovered?: Array<{
+        store_id: string;
+        store_name: string;
+        store_brand?: string;
+        store_type?: string;
+        distance_meters: number;
+        store_lat: number;
+        store_lon: number;
+        has_products: boolean;
+        scraping_enabled: boolean;
+    }>;
     cache_hit: boolean;
     search_latency_ms: number;
     filtered_out_count?: number;
@@ -52,16 +63,6 @@ export default function NearbyProductFinder() {
     const [manualSubmitting, setManualSubmitting] = useState(false);
     const [manualError, setManualError] = useState<string | null>(null);
     const dashboardLocale = t("dashboard.locale", "es-AR");
-
-    const openManualDialog = () => {
-        const defaultLabel = t("dashboard.neighborhood.manualDialog.defaultLabel", "Casa");
-        setManualLabel(defaultLabel);
-        setManualAddress("");
-        setManualLat("");
-        setManualLon("");
-        setManualError(null);
-        setIsManualOpen(true);
-    };
 
     const handleManualSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -480,6 +481,34 @@ export default function NearbyProductFinder() {
                             ))}
                         </div>
                     )}
+
+                    {results.stores_discovered && results.stores_discovered.length > 0 ? (
+                        <div className="space-y-3 rounded-3xl border border-slate-200 bg-white/70 p-5">
+                            <p className="text-sm font-semibold text-slate-700">
+                                {t('productSearch.discoveredStores', 'Locales cercanos detectados')}
+                            </p>
+                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                {results.stores_discovered.map((store) => (
+                                    <div key={store.store_id} className="rounded-2xl border border-slate-100 bg-white p-3">
+                                        <p className="text-sm font-semibold text-slate-900 line-clamp-1">
+                                            {store.store_brand || store.store_name}
+                                        </p>
+                                        <p className="mt-1 text-xs text-slate-500 line-clamp-1">
+                                            {store.store_name}
+                                        </p>
+                                        <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
+                                            <span>{Math.round(store.distance_meters)}m</span>
+                                            <span className={store.has_products ? 'text-emerald-700' : 'text-amber-700'}>
+                                                {store.has_products
+                                                    ? t('productSearch.storeHasCatalog', 'con resultados')
+                                                    : t('productSearch.storeNoCatalog', 'sin catálogo online')}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ) : null}
                 </div>
             )}
         </div>

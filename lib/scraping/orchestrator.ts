@@ -43,6 +43,17 @@ export type AggregatedProduct = Product & {
 export type AggregatedProductResults = {
     products: AggregatedProduct[];
     stores_searched: number;
+    stores_discovered: Array<{
+        store_id: string;
+        store_name: string;
+        store_brand?: string;
+        store_type?: string;
+        distance_meters: number;
+        store_lat: number;
+        store_lon: number;
+        has_products: boolean;
+        scraping_enabled: boolean;
+    }>;
     cache_hit: boolean;
     search_latency_ms: number;
     filtered_out_count?: number;
@@ -1297,6 +1308,26 @@ export async function searchNearbyProducts(
 
     const { products: llmGuardedProducts, removed: llmRemoved } = await guardProductsWithGroq(personalizedProducts, productQuery);
 
+    const storesWithProducts = new Set(
+        llmGuardedProducts
+            .map((product) => product.store_id)
+            .filter(Boolean)
+    );
+
+    const storesDiscovered = scrapableStores
+        .filter((store) => Boolean(store.id))
+        .map((store) => ({
+            store_id: store.id!,
+            store_name: store.name,
+            store_brand: store.brand,
+            store_type: store.store_type,
+            distance_meters: store.distance || 0,
+            store_lat: store.latitude,
+            store_lon: store.longitude,
+            has_products: storesWithProducts.has(store.id!),
+            scraping_enabled: store.scraping_enabled !== false,
+        }));
+
     const filteredOutCount = contentRemoved +
         Math.max(contentSafeProducts.length - relevantProducts.length, 0) +
         Math.max(relevantProducts.length - personalizedProducts.length, 0) +
@@ -1307,6 +1338,7 @@ export async function searchNearbyProducts(
     return {
         products: llmGuardedProducts,
         stores_searched: scrapableStores.length,
+        stores_discovered: storesDiscovered,
         cache_hit: false,
         search_latency_ms: Date.now() - startTime,
         filtered_out_count: filteredOutCount,
@@ -1337,6 +1369,7 @@ async function checkCache(
         return {
             products: filteredProducts,
             stores_searched: data.result_count || 0,
+            stores_discovered: [],
             filtered_out_count: removed,
         };
     } catch (error) {
