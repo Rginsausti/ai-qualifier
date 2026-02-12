@@ -3,7 +3,7 @@ import { searchNearbyProducts } from '@/lib/scraping/orchestrator';
 import { createClient } from '@/lib/supabase/server';
 import { tryUpstashLimit } from '@/lib/upstash/ratelimit';
 
-const MAX_STORES_CAP = 5;
+const MAX_STORES_CAP = 10;
 
 /**
  * POST /api/products/search

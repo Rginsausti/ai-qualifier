@@ -3,7 +3,22 @@ import { Product } from './types';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-export async function parseHtmlWithGroq(htmlContent: string): Promise<Product[]> {
+const normalizeQuery = (value: string) =>
+    value
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+
+const isProduceQuery = (query?: string) => {
+    if (!query) return false;
+    const normalized = normalizeQuery(query);
+    return ['fruta', 'frutas', 'verdura', 'verduras', 'vegetal', 'hortaliza', 'produce', 'fruit', 'vegetable'].some((term) =>
+        normalized.includes(term)
+    );
+};
+
+export async function parseHtmlWithGroq(htmlContent: string, query?: string): Promise<Product[]> {
     if (!htmlContent || htmlContent.length < 500) return [];
 
     const cleanedHtml = htmlContent
@@ -13,10 +28,15 @@ export async function parseHtmlWithGroq(htmlContent: string): Promise<Product[]>
         .replace(/<!--[\s\S]*?-->/g, '')
         .replace(/\s{2,}/g, ' ');
 
+    const produceGuard = isProduceQuery(query)
+        ? 'La consulta es de frutas/verduras frescas. Excluye tés, infusiones, golosinas, snacks, bebidas saborizadas y cualquier producto que no sea alimento fresco.'
+        : '';
+
     const systemPrompt = `
         Eres un motor de extracción de datos JSON para productos alimenticios.
         Salida: Array JSON válido de objetos Product.
         Campos: product_name, brand, price_current (number), price_regular (number), unit, quantity, image_url, product_url, nutritional_claims (string[]).
+        ${produceGuard}
         Sin markdown.
     `;
 
@@ -24,7 +44,7 @@ export async function parseHtmlWithGroq(htmlContent: string): Promise<Product[]>
         const chatCompletion = await groq.chat.completions.create({
             messages: [
                 { role: "system", content: systemPrompt },
-                { role: "user", content: `HTML: ${cleanedHtml.substring(0, 15000)}` } // Limit context to ~4k tokens to avoid Rate Limits
+                { role: "user", content: `QUERY: ${query || 'general'}\nHTML: ${cleanedHtml.substring(0, 15000)}` } // Limit context to avoid excessive tokens
             ],
             model: "llama-3.3-70b-versatile",
             temperature: 0,

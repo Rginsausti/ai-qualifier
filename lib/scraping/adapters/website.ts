@@ -15,7 +15,7 @@ async function fetchHtml(url: string): Promise<string> {
 
 export const websiteSourceAdapter: SourceAdapter = {
     type: "website",
-    async scrape(source: StoreSource, _query: string, context?: ScrapeContext): Promise<Product[]> {
+    async scrape(source: StoreSource, query: string, context?: ScrapeContext): Promise<Product[]> {
         const url = source.source_identifier || context?.storeWebsite;
         if (!url) {
             console.warn("[Website Adapter] Missing URL for store", source.store_id);
@@ -24,7 +24,7 @@ export const websiteSourceAdapter: SourceAdapter = {
 
         try {
             const html = await fetchHtml(url);
-            const products = await parseHtmlWithGroq(html);
+            const products = await parseHtmlWithGroq(html, query);
             return products;
         } catch (err) {
             console.error("[Website Adapter] Error fetching or parsing", err);

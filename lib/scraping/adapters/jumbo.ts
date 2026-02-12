@@ -11,7 +11,7 @@ const createCencosudAdapter = (brand: string, domain: string): StoreAdapter => (
             url,
             waitSelector: '.product-card, .shelf-item'
         });
-        return parseHtmlWithGroq(html);
+        return parseHtmlWithGroq(html, query);
     }
 });
 

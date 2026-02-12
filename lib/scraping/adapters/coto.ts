@@ -11,6 +11,6 @@ export const cotoAdapter: StoreAdapter = {
             url,
             waitSelector: '.product-item, .producto, table.products'
         });
-        return parseHtmlWithGroq(html);
+        return parseHtmlWithGroq(html, query);
     }
 };

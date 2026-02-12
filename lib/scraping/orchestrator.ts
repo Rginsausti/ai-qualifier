@@ -173,6 +173,8 @@ const filterProductsByIntolerances = (
 
 type KeywordGroups = Record<string, string[]>;
 
+type QueryIntent = 'produce' | 'generic';
+
 const mergeKeywordGroups = (groups: KeywordGroups) =>
     Array.from(
         new Set(
@@ -182,6 +184,46 @@ const mergeKeywordGroups = (groups: KeywordGroups) =>
                 .filter(Boolean)
         )
     );
+
+const PRODUCE_QUERY_KEYWORDS = mergeKeywordGroups({
+    es: ['fruta', 'frutas', 'verdura', 'verduras', 'vegetal', 'vegetales', 'hortaliza', 'hortalizas', 'fruteria', 'verduleria'],
+    en: ['fruit', 'fruits', 'vegetable', 'vegetables', 'produce', 'greens'],
+    pt: ['fruta', 'frutas', 'verdura', 'verduras', 'hortifruti'],
+    it: ['frutta', 'verdura', 'ortaggi'],
+    fr: ['fruit', 'fruits', 'legume', 'legumes', 'produit frais'],
+    de: ['obst', 'gemuse'],
+    ja: ['果物', '野菜']
+});
+
+const PRODUCE_ITEM_KEYWORDS = mergeKeywordGroups({
+    es: ['manzana', 'banana', 'naranja', 'pera', 'uva', 'frutilla', 'kiwi', 'limon', 'tomate', 'lechuga', 'zanahoria', 'cebolla', 'papa', 'brocoli', 'espinaca'],
+    en: ['apple', 'banana', 'orange', 'pear', 'grape', 'strawberry', 'kiwi', 'lemon', 'tomato', 'lettuce', 'carrot', 'onion', 'potato', 'broccoli', 'spinach'],
+    pt: ['maca', 'banana', 'laranja', 'pera', 'uva', 'morango', 'kiwi', 'limao', 'tomate', 'alface', 'cenoura', 'cebola', 'batata'],
+    it: ['mela', 'banana', 'arancia', 'pera', 'uva', 'fragola', 'kiwi', 'limone', 'pomodoro', 'lattuga', 'carota', 'cipolla', 'patata'],
+    fr: ['pomme', 'banane', 'orange', 'poire', 'raisin', 'fraise', 'kiwi', 'citron', 'tomate', 'laitue', 'carotte', 'oignon', 'pomme de terre'],
+    de: ['apfel', 'banane', 'orange', 'birne', 'traube', 'erdbeere', 'kiwi', 'zitrone', 'tomate', 'salat', 'karotte', 'zwiebel', 'kartoffel'],
+    ja: ['りんご', 'バナナ', 'オレンジ', 'ぶどう', 'いちご', 'キウイ', 'レモン', 'トマト', 'レタス', 'にんじん', 'たまねぎ', 'じゃがいも']
+});
+
+const PRODUCE_EXCLUDE_KEYWORDS = mergeKeywordGroups({
+    es: ['te', 'infusion', 'yerba', 'jugo en polvo', 'sabor fruta', 'frutas rojas sabor', 'caramelo', 'golosina', 'galletita'],
+    en: ['tea', 'infusion', 'powder drink', 'fruit flavor', 'candy', 'cookie'],
+    pt: ['cha', 'infusao', 'suco em po', 'sabor fruta', 'doce', 'biscoito'],
+    it: ['te', 'infuso', 'bevanda in polvere', 'gusto frutta', 'caramella', 'biscotto'],
+    fr: ['the', 'infusion', 'boisson en poudre', 'saveur fruit', 'bonbon', 'biscuit'],
+    de: ['tee', 'infusion', 'pulvergetrank', 'fruchtgeschmack', 'bonbon', 'keks'],
+    ja: ['お茶', 'ティー', '粉末ドリンク', 'フレーバー', 'キャンディ', 'クッキー']
+});
+
+const deriveQueryIntent = (query: string): QueryIntent => {
+    const normalized = normalizeText(query);
+    if (!normalized) return 'generic';
+
+    const isProduceIntent = PRODUCE_QUERY_KEYWORDS.some((keyword) => normalized.includes(normalizeText(keyword)))
+        || PRODUCE_ITEM_KEYWORDS.some((keyword) => normalized.includes(normalizeText(keyword)));
+
+    return isProduceIntent ? 'produce' : 'generic';
+};
 
 const NON_FOOD_KEYWORDS = mergeKeywordGroups({
     es: [
@@ -1036,7 +1078,8 @@ async function classifyProductBatchWithGroq(
 
 const filterProductsByRelevance = (
     products: AggregatedProduct[],
-    query: string
+    query: string,
+    intent: QueryIntent
 ) => {
     const normalizedQuery = normalizeText(query);
     if (!normalizedQuery) return products;
@@ -1054,8 +1097,75 @@ const filterProductsByRelevance = (
         const haystack = buildProductHaystack(product);
         if (!haystack) return false;
 
-        return tokens.some((token) => haystack.includes(token));
+        const tokenHits = tokens.filter((token) => haystack.includes(token)).length;
+        const producePositive = PRODUCE_ITEM_KEYWORDS.some((keyword) =>
+            haystack.includes(normalizeText(keyword))
+        );
+        const produceExcluded = PRODUCE_EXCLUDE_KEYWORDS.some((keyword) =>
+            haystack.includes(normalizeText(keyword))
+        );
+
+        if (intent === 'produce') {
+            if (produceExcluded) return false;
+            return tokenHits > 0 || producePositive;
+        }
+
+        return tokenHits > 0;
     });
+};
+
+const selectDiversifiedStores = (stores: NearbyStore[], maxStores: number, intent: QueryIntent) => {
+    if (maxStores <= 0) return [];
+
+    const sorted = [...stores].sort((a, b) => (a.distance || 0) - (b.distance || 0));
+    const picked: NearbyStore[] = [];
+    const usedIds = new Set<string>();
+    const usedBrands = new Set<string>();
+
+    const markPicked = (store: NearbyStore) => {
+        if (!store.id || usedIds.has(store.id)) return;
+        usedIds.add(store.id);
+        if (store.brand) usedBrands.add(store.brand);
+        picked.push(store);
+    };
+
+    if (intent === 'produce') {
+        sorted
+            .filter((store) => store.store_type === 'produce' || store.store_type === 'health_food')
+            .forEach((store) => {
+                if (picked.length < maxStores) {
+                    markPicked(store);
+                }
+            });
+    }
+
+    for (const store of sorted) {
+        if (picked.length >= maxStores) break;
+        if (!store.id || usedIds.has(store.id)) continue;
+
+        if (store.brand && usedBrands.has(store.brand)) {
+            continue;
+        }
+
+        markPicked(store);
+    }
+
+    for (const store of sorted) {
+        if (picked.length >= maxStores) break;
+        markPicked(store);
+    }
+
+    return picked;
+};
+
+const loadNearbyStoresWithFallback = async (lat: number, lon: number, minCount: number) => {
+    const near = await findNearbyStores(lat, lon, 2200);
+    if (near.length >= minCount) {
+        return near;
+    }
+
+    const extended = await findNearbyStores(lat, lon, 4500);
+    return extended;
 };
 
 // --- Main Logic ---
@@ -1132,6 +1242,7 @@ export async function searchNearbyProducts(
     intolerances: string[] = []
 ): Promise<AggregatedProductResults> {
     const startTime = Date.now();
+    const intent = deriveQueryIntent(productQuery);
 
     if (!forceRefresh) {
         const cachedResult = await checkCache(userLat, userLon, productQuery);
@@ -1144,14 +1255,17 @@ export async function searchNearbyProducts(
         }
     }
 
-    const nearbyStores = await findNearbyStores(userLat, userLon, 2000);
+    const nearbyStores = await loadNearbyStoresWithFallback(userLat, userLon, Math.max(3, maxStores));
 
     // Antes de scrapear, aseguramos fuentes por defecto (website) para los comercios con website_url
     await ensureDefaultSourcesForStores(nearbyStores);
 
-    const scrapableStores = nearbyStores
+    const scrapableStores = selectDiversifiedStores(
+        nearbyStores
         .filter(store => store.scraping_enabled !== false)
-        .slice(0, maxStores);
+        , maxStores,
+        intent
+    );
 
     // Cargamos fuentes configuradas automáticamente para todos los stores candidatos
     const storeIds = scrapableStores.map((s) => s.id!).filter(Boolean);
@@ -1176,7 +1290,7 @@ export async function searchNearbyProducts(
     }
 
     const { products: contentSafeProducts, removed: contentRemoved } = applyContentFilters(allProducts);
-    const relevantProducts = filterProductsByRelevance(contentSafeProducts, productQuery);
+    const relevantProducts = filterProductsByRelevance(contentSafeProducts, productQuery, intent);
     const personalizedProducts = intolerances.length
         ? filterProductsByIntolerances(relevantProducts, intolerances)
         : relevantProducts;

@@ -203,14 +203,28 @@ export async function findNearbyStores(
             let storeType: NearbyStore['store_type'] = 'supermarket';
             if (tags.shop === 'convenience') storeType = 'convenience';
             if (tags.shop === 'health_food') storeType = 'health_food';
+            if (tags.shop === 'greengrocer') storeType = 'produce';
+            if (tags.shop === 'butcher') storeType = 'butcher';
+            if (tags.shop === 'seafood') storeType = 'fishmonger';
+            if (tags.shop === 'bakery') storeType = 'bakery';
+            if (tags.shop === 'deli') storeType = 'deli';
+            if (tags.amenity === 'restaurant') storeType = 'restaurant';
+            if (tags.amenity === 'cafe') storeType = 'cafe';
 
             // Normalize brand
-            const brand = normalizeBrand(tags.brand || tags.name);
+            const brand = normalizeBrand(tags.brand || tags.operator || tags.name);
+
+            const rawWebsite = typeof tags.website === 'string'
+                ? tags.website
+                : typeof tags['contact:website'] === 'string'
+                    ? tags['contact:website']
+                    : undefined;
+            const websiteUrl = rawWebsite || (brand ? BRAND_URLS[brand] : undefined);
 
             // Calculate distance from user
             const distance = calculateDistance(lat, lon, storeLat, storeLon);
 
-            const scrapingEnabled = Boolean(brand && SUPPORTED_BRANDS.has(brand));
+            const scrapingEnabled = Boolean((brand && SUPPORTED_BRANDS.has(brand)) || websiteUrl);
 
             const store: NearbyStore = {
                 osm_id: element.id,
@@ -222,7 +236,7 @@ export async function findNearbyStores(
                 address: tags['addr:street'] ?
                     `${tags['addr:street']} ${tags['addr:housenumber'] || ''}`.trim() :
                     undefined,
-                website_url: brand ? BRAND_URLS[brand] : tags.website,
+                website_url: websiteUrl,
                 distance,
                 scraping_enabled: scrapingEnabled,
             };
@@ -362,7 +376,6 @@ async function mergeWithDatabaseStores(
     const { data, error } = await supabase
         .from('nearby_stores')
         .select('id, osm_id, name, brand, store_type, latitude, longitude, address, website_url, scraping_enabled')
-        .eq('scraping_enabled', true)
         .gte('latitude', lat - latDelta)
         .lte('latitude', lat + latDelta)
         .gte('longitude', lon - lonDelta)
