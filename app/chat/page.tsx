@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Send, Sparkles } from "lucide-react";
+import { ArrowLeft, Send, Sparkles, ThumbsDown, ThumbsUp } from "lucide-react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
@@ -16,6 +16,13 @@ type Message = {
     role: "user" | "assistant";
     content: string;
     hidden?: boolean;
+};
+
+type FeedbackValue = "up" | "down";
+
+type FeedbackState = {
+    value: FeedbackValue;
+    status: "saving" | "saved" | "error";
 };
 
 const CHAT_HISTORY_PREFIX = "alma-chat-history-v1";
@@ -67,6 +74,7 @@ function ChatPageContent() {
     const hintParam = searchParams.get("hint");
     const prefillParam = searchParams.get("prefill");
     const [prefillToSend, setPrefillToSend] = useState<string | null>(null);
+    const [feedbackByMessageId, setFeedbackByMessageId] = useState<Record<string, FeedbackState>>({});
     const hintSentRef = useRef(false);
     const prefillSentRef = useRef(false);
     const intent = searchParams.get("intent") || "nutrition";
@@ -172,6 +180,47 @@ function ChatPageContent() {
             console.warn("Unable to persist chat history", persistError);
         }
     }, [intent, userId]);
+
+    const submitFeedback = useCallback(async (message: Message, value: FeedbackValue) => {
+        if (message.role !== "assistant" || !userId) return;
+
+        setFeedbackByMessageId((prev) => ({
+            ...prev,
+            [message.id]: { value, status: "saving" },
+        }));
+
+        try {
+            const response = await fetch("/api/chat/feedback", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    intent,
+                    clientMessageId: message.id,
+                    assistantExcerpt: message.content.replace(/<!--[\s\S]*?-->/g, "").slice(0, 1000),
+                    feedback: value,
+                    reason: value === "down" ? "not_helpful" : "helpful",
+                    metadata: {
+                        locale: i18n.language,
+                    },
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Feedback request failed");
+            }
+
+            setFeedbackByMessageId((prev) => ({
+                ...prev,
+                [message.id]: { value, status: "saved" },
+            }));
+        } catch (error) {
+            console.error("Unable to submit feedback", error);
+            setFeedbackByMessageId((prev) => ({
+                ...prev,
+                [message.id]: { value, status: "error" },
+            }));
+        }
+    }, [i18n.language, intent, userId]);
 
     const sendMessage = useCallback(async (content: string, options?: { hidden?: boolean; hint?: string; includeHiddenHistory?: boolean }) => {
         if (!content.trim() || isLoading) return;
@@ -342,22 +391,53 @@ function ChatPageContent() {
                         </div>
                     )}
 
-                    {messages.filter((m) => !m.hidden).map((m) => (
-                        <div
-                            key={m.id}
-                            className={`flex ${m.role === "user" ? "justify-end" : "justify-start"
-                                }`}
-                        >
+                    {messages.filter((m) => !m.hidden).map((m) => {
+                        const feedback = feedbackByMessageId[m.id];
+                        return (
                             <div
-                                className={`relative max-w-[85%] rounded-2xl px-5 py-3 text-sm leading-relaxed shadow-sm ${m.role === "user"
-                                    ? "bg-slate-900 text-white"
-                                    : "bg-white text-slate-800 border border-slate-100"
+                                key={m.id}
+                                className={`flex ${m.role === "user" ? "justify-end" : "justify-start"
                                     }`}
                             >
-                                <ReactMarkdown>{m.content.replace(/<!--[\s\S]*?-->/g, "")}</ReactMarkdown>
+                                <div className="max-w-[85%]">
+                                    <div
+                                        className={`relative rounded-2xl px-5 py-3 text-sm leading-relaxed shadow-sm ${m.role === "user"
+                                            ? "bg-slate-900 text-white"
+                                            : "bg-white text-slate-800 border border-slate-100"
+                                            }`}
+                                    >
+                                        <ReactMarkdown>{m.content.replace(/<!--[\s\S]*?-->/g, "")}</ReactMarkdown>
+                                    </div>
+                                    {m.role === "assistant" && userId ? (
+                                        <div className="mt-2 flex items-center gap-2 px-1 text-xs text-slate-500">
+                                            <button
+                                                type="button"
+                                                onClick={() => submitFeedback(m, "up")}
+                                                className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 transition ${feedback?.value === "up" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-white hover:bg-slate-50"}`}
+                                            >
+                                                <ThumbsUp className="h-3.5 w-3.5" />
+                                                {t("chat.feedback.helpful", "Útil")}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => submitFeedback(m, "down")}
+                                                className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 transition ${feedback?.value === "down" ? "border-rose-500 bg-rose-50 text-rose-700" : "border-slate-200 bg-white hover:bg-slate-50"}`}
+                                            >
+                                                <ThumbsDown className="h-3.5 w-3.5" />
+                                                {t("chat.feedback.notHelpful", "No útil")}
+                                            </button>
+                                            {feedback?.status === "saved" ? (
+                                                <span>{t("chat.feedback.saved", "Gracias por tu feedback")}</span>
+                                            ) : null}
+                                            {feedback?.status === "error" ? (
+                                                <span className="text-rose-600">{t("chat.feedback.error", "No pudimos guardar tu feedback")}</span>
+                                            ) : null}
+                                        </div>
+                                    ) : null}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
 
                     {isLoading && (
                         <div className="flex justify-start">

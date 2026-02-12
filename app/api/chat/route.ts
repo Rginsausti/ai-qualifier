@@ -502,6 +502,12 @@ type IncomingMessage = {
   content?: string;
 };
 
+type FeedbackEvent = {
+  feedback: "up" | "down";
+  reason: string | null;
+  created_at: string;
+};
+
 const jsonResponse = (body: Record<string, unknown>, status = 400) =>
   new Response(JSON.stringify(body), {
     status,
@@ -531,6 +537,33 @@ const toStringArray = (value: unknown): string[] => {
     .filter((item): item is string => typeof item === "string")
     .map((item) => item.trim())
     .filter(Boolean);
+};
+
+const buildFeedbackMemory = (events: FeedbackEvent[]) => {
+  if (!events.length) {
+    return "No prior feedback signals for this user in this intent.";
+  }
+
+  const positive = events.filter((event) => event.feedback === "up").length;
+  const negativeEvents = events.filter((event) => event.feedback === "down");
+  const negative = negativeEvents.length;
+  const total = events.length;
+  const helpfulRate = total > 0 ? Math.round((positive / total) * 100) : 0;
+
+  const reasonCounts = new Map<string, number>();
+  negativeEvents.forEach((event) => {
+    const normalized = (event.reason || "not_helpful").toLowerCase().trim();
+    const current = reasonCounts.get(normalized) || 0;
+    reasonCounts.set(normalized, current + 1);
+  });
+
+  const topReasons = Array.from(reasonCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([reason, count]) => `${reason} (${count})`)
+    .join(", ");
+
+  return `Helpful rate: ${helpfulRate}% (${positive}/${total}). Negative feedback events: ${negative}. Top issues: ${topReasons || "none"}.`;
 };
 
 const buildSafetyGuardrails = (profile: unknown): string => {
@@ -628,6 +661,30 @@ export async function POST(req: Request) {
     userId ? getDailyStats(userId, userLocale) : Promise.resolve(null),
     getPantryItems(),
   ]);
+
+  const feedbackMemory = userId
+    ? await (async () => {
+        try {
+          const supabase = await createClient();
+          const { data, error } = await supabase
+            .from("chat_feedback_events")
+            .select("feedback,reason,created_at")
+            .eq("user_id", userId)
+            .eq("intent", intent)
+            .order("created_at", { ascending: false })
+            .limit(25);
+
+          if (error || !data) {
+            return "No feedback memory available (query error).";
+          }
+
+          return buildFeedbackMemory(data as FeedbackEvent[]);
+        } catch (error) {
+          console.warn("chat feedback memory load failed", error);
+          return "No feedback memory available (runtime error).";
+        }
+      })()
+    : "No feedback memory available for anonymous user.";
 
   // 2. Construct System Prompt with Memory
   const todaysMeals: MealLog[] = todaysMealsRaw.map((meal) => ({
@@ -762,6 +819,9 @@ export async function POST(req: Request) {
     VERIFIED PRICE MATCHES FOR THIS QUERY:
     ${verifiedPriceContext}
 
+    QUALITY FEEDBACK MEMORY:
+    ${feedbackMemory}
+
     ${knowledgeContext}
     ${automationContext}
   `;
@@ -816,6 +876,10 @@ export async function POST(req: Request) {
         - If the user did NOT explicitly ask for price/budget, do NOT mention money, currency, ARS, "$", or estimated price ranges.
         - If the user asked for prices, mention ONLY values listed under "VERIFIED PRICE MATCHES FOR THIS QUERY".
         - If there are no verified matches, say you do not have a verified price and continue without inventing numbers.
+      - QUALITY ADAPTATION POLICY:
+        - Use "QUALITY FEEDBACK MEMORY" to avoid repeating patterns that previously got negative feedback.
+        - If top issues include "not_helpful" or "too_generic", be more concrete and action-oriented.
+        - If top issues include "false_info" or "invented_data", be conservative and explicit about uncertainty.
       - Be extremely concise. Use bullet points for options.
       - Avoid long explanations unless explicitly asked.
       - Ask MAX ONE follow-up question, and ONLY if critical to give a recommendation. Otherwise, do not ask anything.
