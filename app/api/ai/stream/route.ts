@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { generateWithHuggingFace, generateMock } from "@/lib/ai/client";
+import { generateWithHuggingFace } from "@/lib/ai/client";
 import { hasUpstashConfig, tryUpstashLimit } from "@/lib/upstash/ratelimit";
 
 export async function POST(request: Request) {

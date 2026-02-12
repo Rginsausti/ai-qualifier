@@ -30,6 +30,11 @@ export type ProductResult = {
 type SearchResults = {
     products: ProductResult[];
     stores_searched: number;
+    query_intent?: 'produce' | 'generic';
+    stores_with_products_count?: number;
+    stores_without_catalog_count?: number;
+    catalog_coverage_rate?: number;
+    product_coverage_rate?: number;
     stores_discovered?: Array<{
         store_id: string;
         store_name: string;
@@ -62,6 +67,7 @@ export default function NearbyProductFinder() {
     const [manualLon, setManualLon] = useState("");
     const [manualSubmitting, setManualSubmitting] = useState(false);
     const [manualError, setManualError] = useState<string | null>(null);
+    const [showOnlyCatalogStores, setShowOnlyCatalogStores] = useState(false);
     const dashboardLocale = t("dashboard.locale", "es-AR");
 
     const handleManualSubmit = async (event: React.FormEvent) => {
@@ -237,6 +243,10 @@ export default function NearbyProductFinder() {
     };
 
     const loadingMessages = LOADER_MESSAGES.map(message => t(message.key, message.fallback));
+
+    const visibleDiscoveredStores = (results?.stores_discovered || []).filter((store) =>
+        showOnlyCatalogStores ? store.scraping_enabled : true
+    );
 
     useEffect(() => {
         if (!loading) {
@@ -448,6 +458,31 @@ export default function NearbyProductFinder() {
                             <span className="rounded-full bg-slate-100 px-2 py-1">
                                 {results.stores_searched} {t('productSearch.storesSearched', 'tiendas')}
                             </span>
+                            {typeof results.stores_with_products_count === 'number' ? (
+                                <span className="rounded-full bg-emerald-50 px-2 py-1 text-emerald-700">
+                                    {results.stores_with_products_count} {t('productSearch.storesWithResults', 'con resultados')}
+                                </span>
+                            ) : null}
+                            {typeof results.stores_without_catalog_count === 'number' && results.stores_without_catalog_count > 0 ? (
+                                <span className="rounded-full bg-amber-50 px-2 py-1 text-amber-700">
+                                    {results.stores_without_catalog_count} {t('productSearch.storesWithoutCatalog', 'sin catálogo online')}
+                                </span>
+                            ) : null}
+                            {typeof results.catalog_coverage_rate === 'number' ? (
+                                <span className="rounded-full bg-indigo-50 px-2 py-1 text-indigo-700">
+                                    {t('productSearch.catalogCoverage', { defaultValue: 'cobertura catálogo' })}: {(results.catalog_coverage_rate * 100).toFixed(0)}%
+                                </span>
+                            ) : null}
+                            {typeof results.product_coverage_rate === 'number' ? (
+                                <span className="rounded-full bg-cyan-50 px-2 py-1 text-cyan-700">
+                                    {t('productSearch.productCoverage', { defaultValue: 'cobertura con productos' })}: {(results.product_coverage_rate * 100).toFixed(0)}%
+                                </span>
+                            ) : null}
+                            {results.query_intent === 'produce' ? (
+                                <span className="rounded-full bg-blue-50 px-2 py-1 text-blue-700">
+                                    {t('productSearch.intentProduce', 'intención: frescos')}
+                                </span>
+                            ) : null}
                             {results.filtered_out_count ? (
                                 <span className="rounded-full bg-rose-50 px-2 py-1 text-rose-600">
                                     {t('productSearch.filteredOut', {
@@ -484,11 +519,29 @@ export default function NearbyProductFinder() {
 
                     {results.stores_discovered && results.stores_discovered.length > 0 ? (
                         <div className="space-y-3 rounded-3xl border border-slate-200 bg-white/70 p-5">
-                            <p className="text-sm font-semibold text-slate-700">
-                                {t('productSearch.discoveredStores', 'Locales cercanos detectados')}
-                            </p>
+                            <div className="flex items-center justify-between gap-3">
+                                <p className="text-sm font-semibold text-slate-700">
+                                    {t('productSearch.discoveredStores', 'Locales cercanos detectados')}
+                                </p>
+                                <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 text-xs">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowOnlyCatalogStores(false)}
+                                        className={`rounded-full px-3 py-1 ${!showOnlyCatalogStores ? 'bg-slate-900 text-white' : 'text-slate-600'}`}
+                                    >
+                                        {t('productSearch.showAllStores', 'Ver todos')}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowOnlyCatalogStores(true)}
+                                        className={`rounded-full px-3 py-1 ${showOnlyCatalogStores ? 'bg-slate-900 text-white' : 'text-slate-600'}`}
+                                    >
+                                        {t('productSearch.showCatalogStores', 'Solo con catálogo')}
+                                    </button>
+                                </div>
+                            </div>
                             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                {results.stores_discovered.map((store) => (
+                                {visibleDiscoveredStores.map((store) => (
                                     <div key={store.store_id} className="rounded-2xl border border-slate-100 bg-white p-3">
                                         <p className="text-sm font-semibold text-slate-900 line-clamp-1">
                                             {store.store_brand || store.store_name}
@@ -507,6 +560,11 @@ export default function NearbyProductFinder() {
                                     </div>
                                 ))}
                             </div>
+                            {visibleDiscoveredStores.length === 0 ? (
+                                <p className="text-xs text-slate-500">
+                                    {t('productSearch.noCatalogStoresVisible', 'No hay locales con catálogo en esta búsqueda.')}
+                                </p>
+                            ) : null}
                         </div>
                     ) : null}
                 </div>

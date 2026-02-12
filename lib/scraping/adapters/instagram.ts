@@ -19,6 +19,12 @@ const CLAIM_KEYWORDS = [
     { match: /alto\s+en\s+prote(í|i)na/gi, label: "Alto en proteínas" },
 ];
 
+type InstagramPost = {
+    caption?: string;
+    media_url?: string;
+    permalink?: string;
+};
+
 function resolveAccessToken(source: StoreSource): string | undefined {
     const token = typeof source.config?.accessToken === "string"
         ? (source.config.accessToken as string)
@@ -108,8 +114,8 @@ export const instagramSourceAdapter: SourceAdapter = {
                 }
             });
 
-            const posts: Array<Record<string, any>> = Array.isArray(response.data?.data)
-                ? response.data.data
+            const posts: InstagramPost[] = Array.isArray(response.data?.data)
+                ? response.data.data as InstagramPost[]
                 : [];
 
             const products: Product[] = [];

@@ -8,6 +8,7 @@ Make Alma progressively more helpful for each user.
 - daily logs (energy, hunger, cravings, hydration, meal events),
 - recommendation outcomes (accepted, skipped, replaced),
 - time/context patterns (morning/evening, weekdays/weekends).
+- local search behavior (queries, clicked stores, ignored results, no-result reports).
 
 ## Learning loop
 1. Collect behavior signals from interactions.
@@ -26,6 +27,7 @@ Make Alma progressively more helpful for each user.
 - Add recommendation event log (request, candidates, selected, result).
 - Add user feature snapshot table (updated daily/weekly).
 - Keep raw logs and derived features separate.
+- Add search-quality feedback events (false positive, not available nearby, price mismatch).
 
 ## KPIs
 - repeat-use retention,

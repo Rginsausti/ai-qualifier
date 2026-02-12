@@ -9,6 +9,7 @@
     "header": {
       "badge": "毎日のパネル",
       "title": "こんにちは Alma",
+      "chat": "チャット",
       "alerts": {
         "label": "やさしい通知",
         "loading": "同期中…",

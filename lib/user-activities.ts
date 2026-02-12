@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { toZonedTime } from "date-fns-tz";
 
 // ============================================================================
 // Type Definitions
@@ -109,7 +110,6 @@ export async function getTodayRituals(): Promise<DailyRitual[]> {
         const timezone = cookieStore.get("user_timezone")?.value || "UTC";
 
         const now = new Date();
-        const { toZonedTime } = require('date-fns-tz');
 
         const zonedNow = toZonedTime(now, timezone);
         const startOfDay = new Date(zonedNow);
@@ -278,7 +278,6 @@ export async function getTodayMindfulMoments(): Promise<MindfulMoment[]> {
         const cookieStore = await cookies();
         const timezone = cookieStore.get("user_timezone")?.value || "UTC";
         const now = new Date();
-        const { toZonedTime } = require('date-fns-tz');
         const zonedNow = toZonedTime(now, timezone);
         const startOfDay = new Date(zonedNow);
         startOfDay.setHours(0, 0, 0, 0);

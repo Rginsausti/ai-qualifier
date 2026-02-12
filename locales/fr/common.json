@@ -43,6 +43,7 @@
     "header": {
       "badge": "Tableau quotidien",
       "title": "Bonjour Alma",
+      "chat": "Chat",
       "alerts": {
         "label": "Notifications douces",
         "loading": "Synchronisation…",

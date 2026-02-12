@@ -12,6 +12,7 @@ Support growth without adding heavy infrastructure.
 - API routes should validate input quickly and return fast.
 - No long-running fire-and-forget inside request handlers.
 - Expensive tasks must be enqueued and processed by worker cron endpoints.
+- Keep store discovery and product scraping separable so discovery can succeed even when catalog scraping fails.
 
 ## Job pattern
 1. Client/API enqueues job in `scraping_jobs` as `pending`.
@@ -29,3 +30,11 @@ Support growth without adding heavy infrastructure.
 - failure rate by route and provider.
 - queued vs completed jobs per day.
 - token usage and cost per successful response.
+- nearby stores discovered vs stores with usable catalog.
+- produce query precision (fresh items vs packaged false positives).
+
+## Local commerce scaling notes
+- Discover nearby stores from OSM/geo sources first, persist regardless of catalog availability.
+- Run scraping only for stores with supported brand adapters or valid website sources.
+- Surface "no online catalog" stores in the UX to avoid silent coverage gaps.
+- Use shorter cache TTL for volatile produce queries than for stable packaged-goods searches.

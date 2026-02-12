@@ -43,6 +43,7 @@
     "header": {
       "badge": "Daily panel",
       "title": "Hello, I'm Alma",
+      "chat": "Chat",
       "alerts": {
         "label": "Gentle notifications",
         "loading": "Syncing…",

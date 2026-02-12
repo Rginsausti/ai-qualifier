@@ -9,6 +9,7 @@
     "header": {
       "badge": "Tägliches Panel",
       "title": "Hallo Alma",
+      "chat": "Chat",
       "alerts": {
         "label": "Sanfte Benachrichtigungen",
         "loading": "Synchronisieren…",

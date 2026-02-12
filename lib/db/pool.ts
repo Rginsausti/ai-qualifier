@@ -3,7 +3,6 @@ import { Pool } from "pg";
 const connectionString = process.env.DATABASE_URL ?? process.env.POSTGRES_URL;
 
 declare global {
-  // eslint-disable-next-line no-var
   var __eatappDbPool: Pool | undefined;
 }
 

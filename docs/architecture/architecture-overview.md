@@ -22,12 +22,15 @@ Build a nutrition coach that:
 - Reliability gaps for background work in serverless context.
 - Data model drift risk across migrations/routes.
 - Recommendation safety relies heavily on prompt behavior.
+- Local commerce coverage is uneven (chain-heavy bias, sparse small-store catalogs).
+- Search relevance for fresh produce can drift toward packaged false positives.
 
 ## Target architecture
 - Keep request path fast and predictable.
 - Move heavy/slow operations to queued jobs.
 - Centralize recommendation safety and ranking rules.
 - Persist behavior signals and use them for adaptive guidance.
+- Split local-commerce retrieval into clear layers: store discovery, catalog ingestion, semantic ranking, trust labels.
 
 ## Core principles
 - Safety before creativity in nutrition guidance.

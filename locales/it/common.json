@@ -9,6 +9,7 @@
     "header": {
       "badge": "Pannello giornaliero",
       "title": "Ciao, sono Alma",
+      "chat": "Chat",
       "alerts": {
         "label": "Notifiche gentili",
         "loading": "Sincronizzazione…",

@@ -8,7 +8,7 @@ export interface Product {
     image_url: string | null;
     product_url: string | null;
     nutritional_claims?: string[] | null;
-    nutrition_info?: Record<string, any> | null;
+    nutrition_info?: Record<string, unknown> | null;
 }
 
 export interface StoreAdapter {

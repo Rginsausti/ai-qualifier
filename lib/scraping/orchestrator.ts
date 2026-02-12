@@ -43,6 +43,11 @@ export type AggregatedProduct = Product & {
 export type AggregatedProductResults = {
     products: AggregatedProduct[];
     stores_searched: number;
+    query_intent: QueryIntent;
+    stores_with_products_count: number;
+    stores_without_catalog_count: number;
+    catalog_coverage_rate: number;
+    product_coverage_rate: number;
     stores_discovered: Array<{
         store_id: string;
         store_name: string;
@@ -1288,6 +1293,11 @@ export async function searchNearbyProducts(
             return {
                 ...cachedResult,
                 products: cachedPersonalizedProducts,
+                query_intent: intent,
+                stores_with_products_count: new Set(cachedPersonalizedProducts.map((product) => product.store_id)).size,
+                stores_without_catalog_count: Math.max(cachedResult.stores_searched - new Set(cachedPersonalizedProducts.map((product) => product.store_id)).size, 0),
+                catalog_coverage_rate: cachedResult.catalog_coverage_rate,
+                product_coverage_rate: cachedResult.product_coverage_rate,
                 cache_hit: true,
                 search_latency_ms: Date.now() - startTime,
                 filtered_out_count: cachedFilteredOutCount,
@@ -1343,7 +1353,7 @@ export async function searchNearbyProducts(
             .filter(Boolean)
     );
 
-    const storesDiscovered = scrapableStores
+    const storesDiscovered = nearbyStores
         .filter((store) => Boolean(store.id))
         .map((store) => ({
             store_id: store.id!,
@@ -1357,6 +1367,17 @@ export async function searchNearbyProducts(
             scraping_enabled: store.scraping_enabled !== false,
         }));
 
+    const storesWithProductsCount = storesDiscovered.filter((store) => store.has_products).length;
+    const storesWithoutCatalogCount = storesDiscovered.filter((store) => !store.scraping_enabled).length;
+    const discoveredCount = storesDiscovered.length;
+    const catalogEnabledCount = storesDiscovered.filter((store) => store.scraping_enabled).length;
+    const catalogCoverageRate = discoveredCount > 0
+        ? Number((catalogEnabledCount / discoveredCount).toFixed(3))
+        : 0;
+    const productCoverageRate = discoveredCount > 0
+        ? Number((storesWithProductsCount / discoveredCount).toFixed(3))
+        : 0;
+
     const filteredOutCount = contentRemoved +
         Math.max(contentSafeProducts.length - relevantProducts.length, 0) +
         Math.max(relevantProducts.length - personalizedProducts.length, 0) +
@@ -1367,6 +1388,11 @@ export async function searchNearbyProducts(
     return {
         products: llmGuardedProducts,
         stores_searched: scrapableStores.length,
+        query_intent: intent,
+        stores_with_products_count: storesWithProductsCount,
+        stores_without_catalog_count: storesWithoutCatalogCount,
+        catalog_coverage_rate: catalogCoverageRate,
+        product_coverage_rate: productCoverageRate,
         stores_discovered: storesDiscovered,
         cache_hit: false,
         search_latency_ms: Date.now() - startTime,
@@ -1398,6 +1424,11 @@ async function checkCache(
         return {
             products: filteredProducts,
             stores_searched: data.result_count || 0,
+            query_intent: 'generic',
+            stores_with_products_count: new Set(filteredProducts.map((product) => product.store_id)).size,
+            stores_without_catalog_count: 0,
+            catalog_coverage_rate: 0,
+            product_coverage_rate: 0,
             stores_discovered: [],
             filtered_out_count: removed,
         };

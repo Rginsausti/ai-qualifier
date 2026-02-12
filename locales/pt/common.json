@@ -44,6 +44,7 @@
     "header": {
       "badge": "Painel diário",
       "title": "Olá, sou a Alma",
+      "chat": "Chat",
       "alerts": {
         "label": "Notificações suaves",
         "loading": "Sincronizando…",

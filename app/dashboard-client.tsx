@@ -4,15 +4,14 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { QuickLogPanel } from "@/components/quick-log";
 import { CoachSection } from "@/components/coach-section";
 import { MultimodalInput } from "@/components/logging/MultimodalInput";
-import NearbyProductFinder from "@/components/product-search/NearbyProductFinder";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useMemo, useRef, useCallback, useTransition } from "react";
 import type { KeyboardEvent } from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { logWater, logNutrition, analyzeFoodFromText } from "@/lib/actions";
 import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
-import HealthyNeighborhoodPanel from "@/components/neighborhood/HealthySpotList";
 import { signOut } from "@/lib/auth-actions";
 import { PantryModal } from "@/components/modals/PantryModal";
 import {
@@ -36,6 +35,18 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
+
+const NearbyProductFinder = dynamic(() => import("@/components/product-search/NearbyProductFinder"), {
+  loading: () => (
+    <div className="flex h-32 items-center justify-center text-sm text-slate-500">Loading…</div>
+  ),
+});
+
+const HealthyNeighborhoodPanel = dynamic(() => import("@/components/neighborhood/HealthySpotList"), {
+  loading: () => (
+    <div className="flex h-24 items-center justify-center text-sm text-slate-500">Loading…</div>
+  ),
+});
 
 type DailyStats = {
   nutrition: {
@@ -745,7 +756,7 @@ export default function DashboardClient({
               className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-slate-900/20 transition hover:bg-slate-800"
             >
               <MessageCircle className="h-4 w-4" />
-              Chat
+              {getCopy("dashboard.header.chat", "Chat")}
             </button>
             <button
               onClick={handleNotificationsToggle}
