@@ -217,13 +217,27 @@ const PRODUCE_ITEM_KEYWORDS = mergeKeywordGroups({
 });
 
 const PRODUCE_EXCLUDE_KEYWORDS = mergeKeywordGroups({
-    es: ['te', 'infusion', 'yerba', 'jugo en polvo', 'sabor fruta', 'frutas rojas sabor', 'caramelo', 'golosina', 'galletita'],
-    en: ['tea', 'infusion', 'powder drink', 'fruit flavor', 'candy', 'cookie'],
-    pt: ['cha', 'infusao', 'suco em po', 'sabor fruta', 'doce', 'biscoito'],
-    it: ['te', 'infuso', 'bevanda in polvere', 'gusto frutta', 'caramella', 'biscotto'],
-    fr: ['the', 'infusion', 'boisson en poudre', 'saveur fruit', 'bonbon', 'biscuit'],
-    de: ['tee', 'infusion', 'pulvergetrank', 'fruchtgeschmack', 'bonbon', 'keks'],
-    ja: ['お茶', 'ティー', '粉末ドリンク', 'フレーバー', 'キャンディ', 'クッキー']
+    es: [
+        'te', 'infusion', 'yerba', 'jugo en polvo', 'sabor fruta', 'frutas rojas sabor', 'caramelo', 'golosina', 'galletita',
+        'fruta seca', 'frutas secas', 'fruto seco', 'frutos secos', 'mix', 'mix frutos', 'trail mix', 'snack',
+        'canasta', 'juguete', 'plastico', 'deshidratada', 'deshidratado', 'desecada', 'te frutal'
+    ],
+    en: ['tea', 'infusion', 'powder drink', 'fruit flavor', 'candy', 'cookie', 'dried fruit', 'nuts mix', 'trail mix', 'snack basket', 'toy', 'plastic'],
+    pt: ['cha', 'infusao', 'suco em po', 'sabor fruta', 'doce', 'biscoito', 'fruta seca', 'mix', 'cesta', 'brinquedo', 'plastico'],
+    it: ['te', 'infuso', 'bevanda in polvere', 'gusto frutta', 'caramella', 'biscotto', 'frutta secca', 'mix', 'cestino', 'giocattolo', 'plastica'],
+    fr: ['the', 'infusion', 'boisson en poudre', 'saveur fruit', 'bonbon', 'biscuit', 'fruit sec', 'melange', 'panier', 'jouet', 'plastique'],
+    de: ['tee', 'infusion', 'pulvergetrank', 'fruchtgeschmack', 'bonbon', 'keks', 'trockenfrucht', 'mix', 'korb', 'spielzeug', 'plastik'],
+    ja: ['お茶', 'ティー', '粉末ドリンク', 'フレーバー', 'キャンディ', 'クッキー', 'ドライフルーツ', 'ミックス', 'かご', 'おもちゃ', 'プラスチック']
+});
+
+const PRODUCE_FRESH_CUES = mergeKeywordGroups({
+    es: ['fruta', 'frutas', 'verdura', 'verduras', 'vegetal', 'vegetales', 'hortaliza', 'fresco', 'fresca', 'granel', 'unidad', 'kilo', 'kg'],
+    en: ['fruit', 'fruits', 'vegetable', 'vegetables', 'fresh', 'bulk', 'unit', 'kg', 'kilo'],
+    pt: ['fruta', 'frutas', 'verdura', 'verduras', 'fresco', 'fresca', 'granel', 'unidade', 'kg'],
+    it: ['frutta', 'verdura', 'fresco', 'fresca', 'sfuso', 'unita', 'kg'],
+    fr: ['fruit', 'fruits', 'legume', 'legumes', 'frais', 'frais', 'vrac', 'unite', 'kg'],
+    de: ['obst', 'gemuse', 'frisch', 'lose', 'stuck', 'kg'],
+    ja: ['果物', '野菜', '新鮮', 'ばら売り', '個', 'kg']
 });
 
 const deriveQueryIntent = (query: string): QueryIntent => {
@@ -1115,10 +1129,14 @@ const filterProductsByRelevance = (
         const produceExcluded = PRODUCE_EXCLUDE_KEYWORDS.some((keyword) =>
             haystack.includes(normalizeText(keyword))
         );
+        const produceFreshCue = PRODUCE_FRESH_CUES.some((keyword) =>
+            haystack.includes(normalizeText(keyword))
+        );
 
         if (intent === 'produce') {
             if (produceExcluded) return false;
-            return tokenHits > 0 || producePositive;
+            if (producePositive) return true;
+            return tokenHits > 0 && produceFreshCue;
         }
 
         return tokenHits > 0;
