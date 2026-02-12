@@ -1258,10 +1258,21 @@ export async function searchNearbyProducts(
     if (!forceRefresh) {
         const cachedResult = await checkCache(userLat, userLon, productQuery);
         if (cachedResult) {
+            const cachedRelevantProducts = filterProductsByRelevance(cachedResult.products, productQuery, intent);
+            const cachedPersonalizedProducts = intolerances.length
+                ? filterProductsByIntolerances(cachedRelevantProducts, intolerances)
+                : cachedRelevantProducts;
+
+            const cachedFilteredOutCount = (cachedResult.filtered_out_count || 0) +
+                Math.max(cachedResult.products.length - cachedRelevantProducts.length, 0) +
+                Math.max(cachedRelevantProducts.length - cachedPersonalizedProducts.length, 0);
+
             return {
                 ...cachedResult,
+                products: cachedPersonalizedProducts,
                 cache_hit: true,
                 search_latency_ms: Date.now() - startTime,
+                filtered_out_count: cachedFilteredOutCount,
             };
         }
     }
@@ -1391,9 +1402,10 @@ async function cacheResults(
         
         // Si encontramos productos, cacheamos por 24 horas.
         // Si no encontramos nada, solo por 5 minutos para evitar persistir fallos temporales.
-        const durationMs = products.length > 0 
-            ? 24 * 60 * 60 * 1000 // 24 horas
-            : 5 * 60 * 1000;      // 5 minutos
+        const queryIntent = deriveQueryIntent(query);
+        const durationMs = products.length > 0
+            ? (queryIntent === 'produce' ? 30 * 60 * 1000 : 24 * 60 * 60 * 1000)
+            : 5 * 60 * 1000;
 
         const expiresAt = new Date(Date.now() + durationMs);
 
