@@ -14,12 +14,13 @@ Exit criteria:
 - critical safety rules enforced in chat prompt contract.
 
 ## Phase 2 - Recommendation Quality (P1)
+- Status: in progress (2026-02-13)
 - Expand deterministic pre-LLM policy checks.
 - Add candidate scoring by pantry fit, prep time, and budget realism.
-- Standardize fallback behavior when providers fail.
-- Add quality telemetry for suggestion outcomes.
-- Enforce commerce-truthfulness guardrails (no unverified prices, explicit fallback messaging).
-- Add semantic intent filters for local search (fresh produce vs packaged lookalikes).
+- Standardize fallback behavior when providers fail. (done)
+- Add quality telemetry for suggestion outcomes. (in progress: LLM usage + latency telemetry persisted)
+- Enforce commerce-truthfulness guardrails (no unverified prices, explicit fallback messaging). (done)
+- Add semantic intent filters for local search (fresh produce vs packaged lookalikes). (done)
 
 Exit criteria:
 - measurable increase in recommendation acceptance,

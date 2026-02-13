@@ -508,6 +508,22 @@ type FeedbackEvent = {
   created_at: string;
 };
 
+type ChatQualityEventInput = {
+  userId: string;
+  intent: string;
+  locale: string;
+  provider: string;
+  model: string;
+  finishReason?: string;
+  success: boolean;
+  failureKind?: ProviderFailureKind;
+  promptTokens?: number;
+  completionTokens?: number;
+  totalTokens?: number;
+  latencyMs: number;
+  fallbackCount: number;
+};
+
 const jsonResponse = (body: Record<string, unknown>, status = 400) =>
   new Response(JSON.stringify(body), {
     status,
@@ -697,6 +713,35 @@ const buildSafetyGuardrails = (profile: unknown): string => {
       - If user reports severe symptoms, medication interactions, pregnancy/lactation concerns, or chronic disease flare-up, prioritize safety and advise medical consultation.
       - Do not prescribe extreme protocols (e.g. very-low-carb/keto) for therapeutic conditions without explicit clinician supervision.
   `;
+};
+
+const persistChatQualityEvent = async (event: ChatQualityEventInput) => {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("chat_quality_events")
+      .insert({
+        user_id: event.userId,
+        intent: event.intent,
+        locale: event.locale,
+        provider: event.provider,
+        model: event.model,
+        finish_reason: event.finishReason ?? null,
+        success: event.success,
+        failure_kind: event.failureKind ?? null,
+        prompt_tokens: event.promptTokens ?? null,
+        completion_tokens: event.completionTokens ?? null,
+        total_tokens: event.totalTokens ?? null,
+        latency_ms: event.latencyMs,
+        fallback_count: event.fallbackCount,
+      });
+
+    if (error) {
+      console.warn("chat quality telemetry insert failed", error.message);
+    }
+  } catch (error) {
+    console.warn("chat quality telemetry runtime error", error);
+  }
 };
 
 const isComplexChatRequest = (text?: string | null, intent?: string) => {
@@ -1093,6 +1138,7 @@ export async function POST(req: Request) {
                   const promptTokens = extractUsageCounter(usage, ["promptTokens", "inputTokens"]);
                   const completionTokens = extractUsageCounter(usage, ["completionTokens", "outputTokens"]);
                   const totalTokens = extractUsageCounter(usage, ["totalTokens"]);
+                  const latencyMs = Date.now() - llmStartedAt;
 
                   console.info("[chat/llm] usage", {
                     provider: candidate.provider,
@@ -1102,6 +1148,23 @@ export async function POST(req: Request) {
                     completion_tokens: completionTokens ?? null,
                     total_tokens: totalTokens ?? null,
                   });
+
+                  if (userId) {
+                    void persistChatQualityEvent({
+                      userId,
+                      intent,
+                      locale: userLocale,
+                      provider: candidate.provider,
+                      model: candidate.name,
+                      finishReason,
+                      success: true,
+                      promptTokens,
+                      completionTokens,
+                      totalTokens,
+                      latencyMs,
+                      fallbackCount: failureSummary.length,
+                    });
+                  }
                 },
             });
 
@@ -1147,6 +1210,19 @@ export async function POST(req: Request) {
       && failureSummary.every((failure) => failure.kind === "rate_limit" || failure.kind === "quota");
 
     if (hasOnlyRateOrQuota) {
+      if (userId && failureSummary[0]) {
+        void persistChatQualityEvent({
+          userId,
+          intent,
+          locale: userLocale,
+          provider: failureSummary[0].provider,
+          model: failureSummary[0].model,
+          success: false,
+          failureKind: "rate_limit",
+          latencyMs: Date.now() - llmStartedAt,
+          fallbackCount: failureSummary.length,
+        });
+      }
       return jsonResponse({ error: "Service busy, please try again." }, 429);
     }
 
@@ -1155,6 +1231,19 @@ export async function POST(req: Request) {
     );
 
     if (hasUpstreamUnavailable) {
+      if (userId && failureSummary[0]) {
+        void persistChatQualityEvent({
+          userId,
+          intent,
+          locale: userLocale,
+          provider: failureSummary[0].provider,
+          model: failureSummary[0].model,
+          success: false,
+          failureKind: "upstream",
+          latencyMs: Date.now() - llmStartedAt,
+          fallbackCount: failureSummary.length,
+        });
+      }
       return jsonResponse({ error: "AI providers temporarily unavailable, please retry shortly." }, 503);
     }
 
@@ -1163,7 +1252,34 @@ export async function POST(req: Request) {
       && failureSummary.every((failure) => failure.kind === "auth");
 
     if (hasOnlyAuthFailures) {
+      if (userId && failureSummary[0]) {
+        void persistChatQualityEvent({
+          userId,
+          intent,
+          locale: userLocale,
+          provider: failureSummary[0].provider,
+          model: failureSummary[0].model,
+          success: false,
+          failureKind: "auth",
+          latencyMs: Date.now() - llmStartedAt,
+          fallbackCount: failureSummary.length,
+        });
+      }
       return jsonResponse({ error: "AI provider configuration error." }, 500);
+    }
+
+    if (userId && failureSummary[0]) {
+      void persistChatQualityEvent({
+        userId,
+        intent,
+        locale: userLocale,
+        provider: failureSummary[0].provider,
+        model: failureSummary[0].model,
+        success: false,
+        failureKind: "unknown",
+        latencyMs: Date.now() - llmStartedAt,
+        fallbackCount: failureSummary.length,
+      });
     }
 
     return jsonResponse({ error: "Service busy, please try again." }, 500);
