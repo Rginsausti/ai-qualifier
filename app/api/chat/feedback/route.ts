@@ -19,6 +19,46 @@ const sanitizeText = (value: unknown, maxLen: number) => {
   return value.trim().slice(0, maxLen);
 };
 
+export async function GET(request: NextRequest) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ feedback: {} }, { status: 200 });
+  }
+
+  const intent = normalizeIntent(request.nextUrl.searchParams.get("intent"));
+  const idsParam = request.nextUrl.searchParams.get("ids") || "";
+  const ids = idsParam
+    .split(",")
+    .map((id) => sanitizeText(id, 128))
+    .filter(Boolean)
+    .slice(0, 200);
+
+  if (ids.length === 0) {
+    return NextResponse.json({ feedback: {} }, { status: 200 });
+  }
+
+  const { data, error } = await supabase
+    .from("chat_feedback_events")
+    .select("client_message_id,feedback")
+    .eq("user_id", user.id)
+    .eq("intent", intent)
+    .in("client_message_id", ids);
+
+  if (error) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+
+  const feedbackMap = Object.fromEntries(
+    (data || []).map((row) => [row.client_message_id, row.feedback])
+  );
+
+  return NextResponse.json({ feedback: feedbackMap });
+}
+
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const {

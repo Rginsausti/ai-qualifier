@@ -514,9 +514,117 @@ const jsonResponse = (body: Record<string, unknown>, status = 400) =>
     headers: { "Content-Type": "application/json" },
   });
 
+type ProviderFailureKind = "rate_limit" | "quota" | "auth" | "timeout" | "upstream" | "unknown";
+
+const readErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  if (error && typeof error === "object") {
+    const record = error as Record<string, unknown>;
+    const direct = typeof record.message === "string" ? record.message : "";
+    if (direct) return direct;
+
+    const cause = record.cause;
+    if (cause) return readErrorMessage(cause);
+  }
+  return "unknown provider error";
+};
+
+const classifyProviderFailure = (error: unknown): ProviderFailureKind => {
+  const message = readErrorMessage(error).toLowerCase();
+  if (!message) return "unknown";
+
+  if (
+    message.includes("quota") ||
+    message.includes("insufficient") ||
+    message.includes("credit") ||
+    message.includes("billing")
+  ) {
+    return "quota";
+  }
+
+  if (
+    message.includes("rate limit") ||
+    message.includes("too many requests") ||
+    message.includes("status: 429") ||
+    message.includes("status 429") ||
+    message.includes(" 429 ")
+  ) {
+    return "rate_limit";
+  }
+
+  if (
+    message.includes("unauthorized") ||
+    message.includes("forbidden") ||
+    message.includes("invalid api key") ||
+    message.includes("status: 401") ||
+    message.includes("status 401") ||
+    message.includes("status: 403") ||
+    message.includes("status 403")
+  ) {
+    return "auth";
+  }
+
+  if (
+    message.includes("timeout") ||
+    message.includes("timed out") ||
+    message.includes("aborted") ||
+    message.includes("deadline")
+  ) {
+    return "timeout";
+  }
+
+  if (
+    message.includes("service unavailable") ||
+    message.includes("bad gateway") ||
+    message.includes("gateway") ||
+    message.includes("status: 502") ||
+    message.includes("status 502") ||
+    message.includes("status: 503") ||
+    message.includes("status 503")
+  ) {
+    return "upstream";
+  }
+
+  return "unknown";
+};
+
+const extractUsageCounter = (usage: unknown, keys: string[]) => {
+  if (!usage || typeof usage !== "object") return undefined;
+  const record = usage as Record<string, unknown>;
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return value;
+    }
+  }
+  return undefined;
+};
+
 const CHAT_RATE_PER_MIN = Number(process.env.AI_RATE_LIMIT_PER_MINUTE || "60");
 const chatRateWindowMs = 60_000;
 const chatRateMap = new Map<string, { count: number; resetAt: number }>();
+const MAX_HISTORY_MESSAGES = Number(process.env.CHAT_MAX_HISTORY_MESSAGES || "10");
+const MAX_KB_CONTEXT_CHARS = Number(process.env.CHAT_KB_MAX_CHARS || "1800");
+const MAX_PANTRY_ITEMS_IN_PROMPT = Number(process.env.CHAT_MAX_PANTRY_ITEMS || "10");
+const MAX_RECENT_MEALS_IN_PROMPT = Number(process.env.CHAT_MAX_RECENT_MEALS || "6");
+const MAX_RECENT_LOGS_IN_PROMPT = Number(process.env.CHAT_MAX_RECENT_LOGS || "3");
+
+const COMPLEX_QUERY_HINTS = [
+  "plan",
+  "semana",
+  "menu",
+  "objetivo",
+  "objetivos",
+  "sintoma",
+  "alerg",
+  "intoler",
+  "presupuesto",
+  "macro",
+  "rutina",
+  "estrategia",
+  "protocolo",
+];
 
 const checkLocalRate = (ip: string | null) => {
   if (!ip) return true;
@@ -591,9 +699,48 @@ const buildSafetyGuardrails = (profile: unknown): string => {
   `;
 };
 
+const isComplexChatRequest = (text?: string | null, intent?: string) => {
+  if (intent === "movement") return true;
+  if (!text) return false;
+  const normalized = normalizeText(text);
+  if (normalized.length > 220) return true;
+  return COMPLEX_QUERY_HINTS.some((hint) => normalized.includes(hint));
+};
+
+const trimMessagesForModel = (messages: Required<IncomingMessage>[]) => {
+  if (messages.length <= MAX_HISTORY_MESSAGES) {
+    return messages;
+  }
+
+  const lastUserIndex = [...messages].reverse().findIndex((message) => message.role === "user");
+  const realLastUserIndex = lastUserIndex >= 0 ? messages.length - 1 - lastUserIndex : messages.length - 1;
+  const start = Math.max(0, realLastUserIndex - (MAX_HISTORY_MESSAGES - 1));
+  return messages.slice(start);
+};
+
+const buildCompactProfile = (profile: unknown) => {
+  if (!profile || typeof profile !== "object") {
+    return "No specific profile found.";
+  }
+
+  const record = profile as Record<string, unknown>;
+  const compact = {
+    locale: record.locale ?? null,
+    goal: record.goal ?? null,
+    conditions: toStringArray(record.conditions),
+    allergens: toStringArray(record.allergens),
+    intolerances: toStringArray(record.intolerances),
+    therapeutic: toStringArray(record.therapeutic),
+    dietary_style: record.dietary_style ?? null,
+  };
+
+  return JSON.stringify(compact, null, 2);
+};
+
 export async function POST(req: Request) {
   const forwarded = req.headers.get("x-forwarded-for") || null;
   const ip = forwarded ? forwarded.split(",")[0].trim() : req.headers.get("x-real-ip");
+  const llmStartedAt = Date.now();
 
   try {
     const upstashResult = await tryUpstashLimit(`chat:${ip ?? "unknown"}`);
@@ -645,6 +792,8 @@ export async function POST(req: Request) {
     }));
 
   const lastUserMessage = [...sanitizedMessages].reverse().find((message) => message.role === "user");
+  const trimmedMessages = trimMessagesForModel(sanitizedMessages);
+  const complexRequest = isComplexChatRequest(lastUserMessage?.content, intent);
 
   if (sanitizedMessages.length === 0) {
     return jsonResponse({ error: "Missing chat messages" });
@@ -716,12 +865,13 @@ export async function POST(req: Request) {
 
   if (lastUserMessage?.content) {
     try {
+      const kbLimit = complexRequest ? 6 : 3;
       const snippets = await retrieveKnowledge({
         query: lastUserMessage.content,
         language: userLocale,
-        limit: 4,
+        limit: kbLimit,
       });
-      knowledgeContext = formatKnowledgeContext(snippets);
+      knowledgeContext = formatKnowledgeContext(snippets, { maxChars: MAX_KB_CONTEXT_CHARS });
     } catch (error) {
       console.error("KB retrieval failed", error);
       knowledgeContext = "Knowledge Base: no disponible (error).";
@@ -747,7 +897,7 @@ export async function POST(req: Request) {
 
   const pantrySection = pantryItems.length
     ? pantryItems
-        .slice(0, 15)
+        .slice(0, MAX_PANTRY_ITEMS_IN_PROMPT)
         .map((item) => {
           const quantity = item.quantity ? `${item.quantity} ${item.unit || ""}`.trim() : "";
           const expiry = item.expiry_date
@@ -760,9 +910,12 @@ export async function POST(req: Request) {
     : "Sin registros de despensa activos.";
 
   // Format logs for better LLM readability
-  const formattedLogs = recentLogs.map((log: QuickLog) => 
+  const formattedLogs = recentLogs
+    .slice(0, MAX_RECENT_LOGS_IN_PROMPT)
+    .map((log: QuickLog) =>
     `- [${new Date(log.created_at).toLocaleDateString(userLocale)}] Energy: ${log.energy}, Hunger: ${log.hunger}/5, Craving: ${log.craving}, Note: "${log.notes}"`
-  ).join("\n");
+    )
+    .join("\n");
 
   const totals = todaysMeals.reduce((acc: Record<string, number>, meal: MealLog) => ({
     calories: acc.calories + (meal.calories || 0),
@@ -771,14 +924,18 @@ export async function POST(req: Request) {
     fats: acc.fats + (meal.fats || 0),
   }), { calories: 0, protein: 0, carbs: 0, fats: 0 });
 
-  const formattedMeals = todaysMeals.map((meal: MealLog) => {
+  const mealsForPrompt = todaysMeals.slice(-MAX_RECENT_MEALS_IN_PROMPT);
+  const formattedMeals = mealsForPrompt.map((meal: MealLog) => {
     const time = new Date(meal.created_at).toLocaleTimeString(userLocale, { hour: "2-digit", minute: "2-digit" });
     return `- ${time} · ${meal.name || "Registro"} (${meal.calories || 0} kcal | P${meal.protein || 0}g, C${meal.carbs || 0}g, G${meal.fats || 0}g)`;
   }).join("\n");
+  const omittedMeals = Math.max(0, todaysMeals.length - mealsForPrompt.length);
 
   const mealsSection = todaysMeals.length
-    ? `${formattedMeals}\nTotal de hoy: ${totals.calories} kcal · P${totals.protein}g · C${totals.carbs}g · F${totals.fats}g`
+    ? `${formattedMeals}${omittedMeals > 0 ? `\n(+${omittedMeals} registros más)` : ""}\nTotal de hoy: ${totals.calories} kcal · P${totals.protein}g · C${totals.carbs}g · F${totals.fats}g`
     : "No hay comidas registradas hoy.";
+
+  const profileSummary = buildCompactProfile(userProfile);
 
   const waterDelta = ingestionResult.waterDelta ?? 0;
   const waterGoal = dailyStats?.goals.water ?? 2000;
@@ -801,7 +958,7 @@ export async function POST(req: Request) {
 
   const sharedMemory = `
     USER MEMORY (CONTEXT):
-    Profile: ${userProfile ? JSON.stringify(userProfile, null, 2) : "No specific profile found."}
+    Profile: ${profileSummary}
     
     RECENT CHECK-INS (Last 3):
     ${formattedLogs || "No recent logs."}
@@ -880,6 +1037,9 @@ export async function POST(req: Request) {
         - Use "QUALITY FEEDBACK MEMORY" to avoid repeating patterns that previously got negative feedback.
         - If top issues include "not_helpful" or "too_generic", be more concrete and action-oriented.
         - If top issues include "false_info" or "invented_data", be conservative and explicit about uncertainty.
+      - EVIDENCE CONTRACT:
+        - Every recommendation must include a short "por qué" grounded in memory or Knowledge Base context.
+        - If evidence is weak or missing, say it explicitly and provide a safer fallback option.
       - Be extremely concise. Use bullet points for options.
       - Avoid long explanations unless explicitly asked.
       - Ask MAX ONE follow-up question, and ONLY if critical to give a recommendation. Otherwise, do not ask anything.
@@ -890,8 +1050,13 @@ export async function POST(req: Request) {
   const modelCandidates = [];
 
   if (process.env.GROQ_API_KEY) {
-    modelCandidates.push({ provider: "groq", model: groq("llama-3.3-70b-versatile"), name: "llama-3.3-70b-versatile" });
-    modelCandidates.push({ provider: "groq", model: groq("llama-3.1-8b-instant"), name: "llama-3.1-8b-instant" });
+    if (complexRequest) {
+      modelCandidates.push({ provider: "groq", model: groq("llama-3.3-70b-versatile"), name: "llama-3.3-70b-versatile" });
+      modelCandidates.push({ provider: "groq", model: groq("llama-3.1-8b-instant"), name: "llama-3.1-8b-instant" });
+    } else {
+      modelCandidates.push({ provider: "groq", model: groq("llama-3.1-8b-instant"), name: "llama-3.1-8b-instant" });
+      modelCandidates.push({ provider: "groq", model: groq("llama-3.3-70b-versatile"), name: "llama-3.3-70b-versatile" });
+    }
   }
 
   if (process.env.HUGGINGFACE_API_KEY) {
@@ -906,25 +1071,101 @@ export async function POST(req: Request) {
   }
 
     let lastError;
+    const blockedProviders = new Set<string>();
+    const failureSummary: Array<{
+      provider: string;
+      model: string;
+      kind: ProviderFailureKind;
+      message: string;
+    }> = [];
 
-    for (const candidate of modelCandidates) {
+    for (const [attemptIndex, candidate] of modelCandidates.entries()) {
+        if (blockedProviders.has(candidate.provider)) {
+            continue;
+        }
+
         try {
             const result = await streamText({
                 model: candidate.model,
                 system: systemPrompt,
-                messages: sanitizedMessages,
+                messages: trimmedMessages,
+                onFinish: ({ usage, finishReason }) => {
+                  const promptTokens = extractUsageCounter(usage, ["promptTokens", "inputTokens"]);
+                  const completionTokens = extractUsageCounter(usage, ["completionTokens", "outputTokens"]);
+                  const totalTokens = extractUsageCounter(usage, ["totalTokens"]);
+
+                  console.info("[chat/llm] usage", {
+                    provider: candidate.provider,
+                    model: candidate.name,
+                    finish_reason: finishReason,
+                    prompt_tokens: promptTokens ?? null,
+                    completion_tokens: completionTokens ?? null,
+                    total_tokens: totalTokens ?? null,
+                  });
+                },
+            });
+
+            console.info("[chat/llm] success", {
+              provider: candidate.provider,
+              model: candidate.name,
+              attempt: attemptIndex + 1,
+              fallback_count: failureSummary.length,
+              latency_ms: Date.now() - llmStartedAt,
             });
 
             return result.toTextStreamResponse();
         } catch (error) {
+            const kind = classifyProviderFailure(error);
+            const message = readErrorMessage(error);
             console.error(`Error calling ${candidate.provider} with model ${candidate.name}:`, error);
             lastError = error;
+
+            failureSummary.push({
+              provider: candidate.provider,
+              model: candidate.name,
+              kind,
+              message,
+            });
+
+            if (kind === "auth" || kind === "quota" || kind === "rate_limit") {
+              blockedProviders.add(candidate.provider);
+            }
+
             continue;
         }
     }
     
     // If all failed
-    console.error("All models failed:", lastError);
-    return jsonResponse({ error: "Service busy, please try again." }, 429);
+    console.error("All models failed:", {
+      lastError,
+      failures: failureSummary,
+      latency_ms: Date.now() - llmStartedAt,
+    });
+
+    const hasOnlyRateOrQuota =
+      failureSummary.length > 0
+      && failureSummary.every((failure) => failure.kind === "rate_limit" || failure.kind === "quota");
+
+    if (hasOnlyRateOrQuota) {
+      return jsonResponse({ error: "Service busy, please try again." }, 429);
+    }
+
+    const hasUpstreamUnavailable = failureSummary.some(
+      (failure) => failure.kind === "timeout" || failure.kind === "upstream"
+    );
+
+    if (hasUpstreamUnavailable) {
+      return jsonResponse({ error: "AI providers temporarily unavailable, please retry shortly." }, 503);
+    }
+
+    const hasOnlyAuthFailures =
+      failureSummary.length > 0
+      && failureSummary.every((failure) => failure.kind === "auth");
+
+    if (hasOnlyAuthFailures) {
+      return jsonResponse({ error: "AI provider configuration error." }, 500);
+    }
+
+    return jsonResponse({ error: "Service busy, please try again." }, 500);
 }
 // Force rebuild

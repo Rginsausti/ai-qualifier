@@ -16,6 +16,7 @@ type Message = {
     role: "user" | "assistant";
     content: string;
     hidden?: boolean;
+    created_at?: string;
 };
 
 type FeedbackValue = "up" | "down";
@@ -56,10 +57,31 @@ const parseStoredMessages = (raw: string | null): Message[] => {
                 role: item.role,
                 content: item.content,
                 hidden: Boolean(item.hidden),
+                created_at: typeof item.created_at === "string" ? item.created_at : undefined,
             }));
     } catch {
         return [];
     }
+};
+
+const sortMessagesChronologically = (items: Message[]) => {
+    if (items.length <= 1) return items;
+
+    return [...items].sort((a, b) => {
+        const aTime = a.created_at ? Date.parse(a.created_at) : Number.NaN;
+        const bTime = b.created_at ? Date.parse(b.created_at) : Number.NaN;
+        const aHasTime = Number.isFinite(aTime);
+        const bHasTime = Number.isFinite(bTime);
+
+        if (aHasTime && bHasTime && aTime !== bTime) {
+            return aTime - bTime;
+        }
+
+        if (aHasTime && !bHasTime) return -1;
+        if (!aHasTime && bHasTime) return 1;
+
+        return a.id.localeCompare(b.id);
+    });
 };
 
 function ChatPageContent() {
@@ -131,9 +153,12 @@ function ChatPageContent() {
                     const response = await fetch(`/api/chat/history?intent=${encodeURIComponent(intent)}&locale=${encodeURIComponent(i18n.language)}`);
                     if (response.ok) {
                         const payload = await response.json();
-                        const persistedMessages = parseStoredMessages(JSON.stringify(payload?.messages || []));
+                        const persistedMessages = sortMessagesChronologically(
+                            parseStoredMessages(JSON.stringify(payload?.messages || []))
+                        );
                         if (persistedMessages.length > 0) {
                             setMessages(persistedMessages);
+                            await loadFeedbackForMessages(persistedMessages);
                             historyLoadedRef.current = true;
                             return;
                         }
@@ -147,6 +172,7 @@ function ChatPageContent() {
             const localMessages = parseStoredMessages(window.localStorage.getItem(storageKey));
             if (localMessages.length > 0) {
                 setMessages(localMessages);
+                await loadFeedbackForMessages(localMessages);
             }
             historyLoadedRef.current = true;
         };
@@ -170,6 +196,7 @@ function ChatPageContent() {
                 body: JSON.stringify({
                     intent,
                     messages: entries.map((entry) => ({
+                        id: entry.id,
                         role: entry.role,
                         content: entry.content,
                         hidden: Boolean(entry.hidden),
@@ -180,6 +207,41 @@ function ChatPageContent() {
             console.warn("Unable to persist chat history", persistError);
         }
     }, [intent, userId]);
+
+    async function loadFeedbackForMessages(messagesToMap: Message[]) {
+        if (!userId) return;
+        const ids = messagesToMap
+            .filter((message) => message.role === "assistant")
+            .map((message) => message.id)
+            .filter(Boolean);
+
+        if (ids.length === 0) return;
+
+        try {
+            const params = new URLSearchParams({
+                intent,
+                ids: ids.join(","),
+            });
+            const response = await fetch(`/api/chat/feedback?${params.toString()}`);
+            if (!response.ok) return;
+            const payload = await response.json();
+            const feedbackMap = payload?.feedback && typeof payload.feedback === "object"
+                ? payload.feedback as Record<string, FeedbackValue>
+                : {};
+
+            setFeedbackByMessageId((prev) => {
+                const next = { ...prev };
+                Object.entries(feedbackMap).forEach(([id, value]) => {
+                    if (value === "up" || value === "down") {
+                        next[id] = { value, status: "saved" };
+                    }
+                });
+                return next;
+            });
+        } catch (error) {
+            console.warn("Unable to load chat feedback", error);
+        }
+    }
 
     const submitFeedback = useCallback(async (message: Message, value: FeedbackValue) => {
         if (message.role !== "assistant" || !userId) return;
@@ -288,6 +350,19 @@ function ChatPageContent() {
                     }
                     return newMessages;
                 });
+            }
+
+            const visibleAssistantContent = assistantContent.replace(/<!--[\s\S]*?-->/g, "").trim();
+            if (!visibleAssistantContent) {
+                setMessages((prev) => {
+                    const last = prev[prev.length - 1];
+                    if (last && last.role === "assistant") {
+                        return prev.slice(0, -1);
+                    }
+                    return prev;
+                });
+                setError(t("chat.connectionError"));
+                return;
             }
 
             if (assistantContent.trim()) {
@@ -416,7 +491,7 @@ function ChatPageContent() {
                                                 className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 transition ${feedback?.value === "up" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-white hover:bg-slate-50"}`}
                                             >
                                                 <ThumbsUp className="h-3.5 w-3.5" />
-                                                {t("chat.feedback.helpful", "Útil")}
+                                                {t("chat.feedback.helpful")}
                                             </button>
                                             <button
                                                 type="button"
@@ -424,13 +499,13 @@ function ChatPageContent() {
                                                 className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 transition ${feedback?.value === "down" ? "border-rose-500 bg-rose-50 text-rose-700" : "border-slate-200 bg-white hover:bg-slate-50"}`}
                                             >
                                                 <ThumbsDown className="h-3.5 w-3.5" />
-                                                {t("chat.feedback.notHelpful", "No útil")}
+                                                {t("chat.feedback.notHelpful")}
                                             </button>
                                             {feedback?.status === "saved" ? (
-                                                <span>{t("chat.feedback.saved", "Gracias por tu feedback")}</span>
+                                                <span>{t("chat.feedback.saved")}</span>
                                             ) : null}
                                             {feedback?.status === "error" ? (
-                                                <span className="text-rose-600">{t("chat.feedback.error", "No pudimos guardar tu feedback")}</span>
+                                                <span className="text-rose-600">{t("chat.feedback.error")}</span>
                                             ) : null}
                                         </div>
                                     ) : null}

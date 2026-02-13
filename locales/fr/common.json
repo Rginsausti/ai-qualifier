@@ -748,7 +748,13 @@
       "description": "Je connais tes objectifs et préférences. Demande-moi quoi manger, comment remplacer un ingrédient ou dis-moi comment tu te sens."
     },
     "inputPlaceholder": "Écris ton message...",
-    "connectionError": "Erreur de connexion au chat."
+    "connectionError": "Erreur de connexion au chat.",
+    "feedback": {
+      "helpful": "Utile",
+      "notHelpful": "Pas utile",
+      "saved": "Merci pour votre retour",
+      "error": "Nous n'avons pas pu enregistrer votre retour"
+    }
   },
   "productSearch": {
     "badge": "Explorateur local",

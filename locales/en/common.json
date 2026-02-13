@@ -760,7 +760,13 @@
       "description": "I know your goals and preferences. Ask me what to eat, how to replace an ingredient, or tell me how you feel."
     },
     "inputPlaceholder": "Type your message...",
-    "connectionError": "Error connecting to chat."
+    "connectionError": "Error connecting to chat.",
+    "feedback": {
+      "helpful": "Helpful",
+      "notHelpful": "Not helpful",
+      "saved": "Thanks for your feedback",
+      "error": "We could not save your feedback"
+    }
   },
   "productSearch": {
     "badge": "Local explorer",

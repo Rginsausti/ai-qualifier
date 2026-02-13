@@ -714,7 +714,13 @@
       "description": "あなたの目標と好みを知っています。何を食べるか、材料をどう置き換えるか、または気分を教えてください。"
     },
     "inputPlaceholder": "メッセージを入力...",
-    "connectionError": "チャットへの接続エラー。"
+    "connectionError": "チャットへの接続エラー。",
+    "feedback": {
+      "helpful": "役に立った",
+      "notHelpful": "役に立たない",
+      "saved": "フィードバックありがとうございます",
+      "error": "フィードバックを保存できませんでした"
+    }
   },
   "auth": {
     "login": {

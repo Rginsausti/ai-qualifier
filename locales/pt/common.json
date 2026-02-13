@@ -749,7 +749,13 @@
       "description": "Conheço os teus objetivos e preferências. Pergunta-me o que comer, como substituir um ingrediente ou diz-me como te sentes."
     },
     "inputPlaceholder": "Escreve a tua mensagem...",
-    "connectionError": "Erro ao conectar com o chat."
+    "connectionError": "Erro ao conectar com o chat.",
+    "feedback": {
+      "helpful": "Útil",
+      "notHelpful": "Não útil",
+      "saved": "Obrigado pelo teu feedback",
+      "error": "Não foi possível guardar o teu feedback"
+    }
   },
   "productSearch": {
     "title": "Procurar produtos perto de ti",

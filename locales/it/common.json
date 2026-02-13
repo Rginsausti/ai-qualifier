@@ -714,7 +714,13 @@
       "description": "Conosco i tuoi obiettivi e preferenze. Chiedimi cosa mangiare, come sostituire un ingrediente o dimmi come ti senti."
     },
     "inputPlaceholder": "Scrivi il tuo messaggio...",
-    "connectionError": "Errore di connessione alla chat."
+    "connectionError": "Errore di connessione alla chat.",
+    "feedback": {
+      "helpful": "Utile",
+      "notHelpful": "Non utile",
+      "saved": "Grazie per il tuo feedback",
+      "error": "Non siamo riusciti a salvare il tuo feedback"
+    }
   },
   "auth": {
     "login": {

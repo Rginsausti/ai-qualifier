@@ -22,6 +22,25 @@ const localeTimezoneMap: Record<string, string> = {
 
 type ChatRole = "user" | "assistant";
 
+type ChatMessageRow = {
+  id: string;
+  client_message_id: string | null;
+  role: ChatRole;
+  content: string;
+  hidden: boolean;
+  created_at: string;
+};
+
+type PersistChatRow = {
+  user_id: string;
+  intent: string;
+  client_message_id: string | null;
+  role: ChatRole;
+  content: string;
+  hidden: boolean;
+  created_at: string;
+};
+
 const resolveTimezone = (locale?: string | null) => {
   if (!locale) return "UTC";
   const normalized = locale.toLowerCase();
@@ -67,6 +86,11 @@ const sanitizeContent = (value: unknown) => {
   return value.trim().slice(0, 5000);
 };
 
+const sanitizeClientMessageId = (value: unknown) => {
+  if (typeof value !== "string") return "";
+  return value.trim().slice(0, 128);
+};
+
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const {
@@ -84,19 +108,29 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabase
     .from("chat_messages")
-    .select("id,role,content,hidden,created_at")
+    .select("id,client_message_id,role,content,hidden,created_at")
     .eq("user_id", user.id)
     .eq("intent", intent)
     .gte("created_at", startIso)
     .lt("created_at", endIso)
     .order("created_at", { ascending: true })
+    .order("client_message_id", { ascending: true, nullsFirst: false })
+    .order("id", { ascending: true })
     .limit(300);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ messages: data ?? [] });
+  const mappedMessages = ((data ?? []) as ChatMessageRow[]).map((row) => ({
+    id: row.client_message_id || row.id,
+    role: row.role,
+    content: row.content,
+    hidden: row.hidden,
+    created_at: row.created_at,
+  }));
+
+  return NextResponse.json({ messages: mappedMessages });
 }
 
 export async function POST(request: NextRequest) {
@@ -113,21 +147,26 @@ export async function POST(request: NextRequest) {
   const intent = normalizeIntent(typeof payload.intent === "string" ? payload.intent : undefined);
   const rawMessages: unknown[] = Array.isArray(payload.messages) ? payload.messages : [];
 
+  const baseTimestamp = Date.now();
+
   const rows = rawMessages
-    .map((item: unknown) => {
+    .map((item: unknown, index) => {
       const record = (item && typeof item === "object") ? (item as Record<string, unknown>) : null;
       const role = sanitizeRole(record?.role);
       const content = sanitizeContent(record?.content);
+      const clientMessageId = sanitizeClientMessageId(record?.id);
       if (!role || !content) return null;
       return {
         user_id: user.id,
         intent,
+        client_message_id: clientMessageId || null,
         role,
         content,
         hidden: Boolean(record?.hidden),
+        created_at: new Date(baseTimestamp + index).toISOString(),
       };
     })
-    .filter((row: { user_id: string; intent: string; role: ChatRole; content: string; hidden: boolean } | null): row is { user_id: string; intent: string; role: ChatRole; content: string; hidden: boolean } => Boolean(row));
+    .filter((row: PersistChatRow | null): row is PersistChatRow => Boolean(row));
 
   if (rows.length === 0) {
     return NextResponse.json({ success: false, error: "No valid messages to persist" }, { status: 400 });

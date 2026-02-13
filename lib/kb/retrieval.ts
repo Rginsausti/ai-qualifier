@@ -17,6 +17,10 @@ export type KnowledgeQueryInput = {
   modules?: string[];
 };
 
+type FormatKnowledgeOptions = {
+  maxChars?: number;
+};
+
 const huggingFaceApiKey = process.env.HUGGINGFACE_API_KEY
   ?? process.env.HUGGINFACE_API_KEY
   ?? "";
@@ -136,41 +140,58 @@ function buildModuleClause(paramIndex: number, modules?: string[]) {
   };
 }
 
+type RetrievalCandidate = KnowledgeSnippet & {
+  similarity: number | null;
+  lexicalScore: number;
+  semanticRank: number;
+  lexicalRank: number;
+  hybridScore: number;
+};
+
+const normalizeChunkKey = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+
+const reciprocalRankScore = (rank: number, k = 60) => 1 / (k + rank);
+
+function dedupeAndSortCandidates(candidates: RetrievalCandidate[], limit: number): KnowledgeSnippet[] {
+  const unique = new Map<string, RetrievalCandidate>();
+
+  for (const candidate of candidates) {
+    const key = normalizeChunkKey(candidate.chunk);
+    const previous = unique.get(key);
+    if (!previous || candidate.hybridScore > previous.hybridScore) {
+      unique.set(key, candidate);
+    }
+  }
+
+  return Array.from(unique.values())
+    .sort((a, b) => b.hybridScore - a.hybridScore)
+    .slice(0, limit)
+    .map((candidate) => ({
+      id: candidate.id,
+      moduleTag: candidate.moduleTag,
+      language: candidate.language,
+      title: candidate.title,
+      chunk: candidate.chunk,
+      metadata: candidate.metadata,
+      similarity: candidate.similarity,
+    }));
+}
+
 export async function retrieveKnowledge(options: KnowledgeQueryInput): Promise<KnowledgeSnippet[]> {
   const { query, language = DEFAULT_LANGUAGE, limit = 4, modules } = options;
   const pool = getDbPool();
   const vector = await embedText(query);
+  const candidateLimit = Math.max(limit * 3, 12);
 
-  if (vector) {
-    const params: unknown[] = [vectorLiteral(vector), language, limit];
-    const { clause, params: moduleParams } = buildModuleClause(params.length + 1, modules);
-    params.push(...moduleParams);
+  const lexicalParams: unknown[] = [query, language, candidateLimit];
+  const lexicalModule = buildModuleClause(lexicalParams.length + 1, modules);
+  lexicalParams.push(...lexicalModule.params);
 
-    const rows = await pool.query<KnowledgeSnippet & { similarity: number }>(
-      `select
-         id,
-         module_tag as "moduleTag",
-         language,
-         title,
-         chunk,
-         metadata,
-         (1 - (embedding <=> ($1)::vector)) as similarity
-       from kb_chunks
-       where embedding is not null
-         and language = $2${clause}
-       order by embedding <=> ($1)::vector
-       limit $3`,
-      params,
-    );
-
-    return rows.rows.map((row) => ({ ...row, similarity: row.similarity ?? null }));
-  }
-
-  const params: unknown[] = [language, limit];
-  const { clause, params: moduleParams } = buildModuleClause(params.length + 1, modules);
-  params.push(...moduleParams);
-
-  const rows = await pool.query<KnowledgeSnippet>(
+  const lexicalPromise = pool.query<KnowledgeSnippet & { lexicalScore: number }>(
     `select
        id,
        module_tag as "moduleTag",
@@ -178,26 +199,134 @@ export async function retrieveKnowledge(options: KnowledgeQueryInput): Promise<K
        title,
        chunk,
        metadata,
-       null as similarity
+       null as similarity,
+       ts_rank_cd(to_tsvector('simple', chunk), websearch_to_tsquery('simple', $1)) as "lexicalScore"
      from kb_chunks
-     where language = $1${clause}
-     order by updated_at desc
-     limit $2`,
-    params,
+     where language = $2${lexicalModule.clause}
+       and to_tsvector('simple', chunk) @@ websearch_to_tsquery('simple', $1)
+     order by "lexicalScore" desc, updated_at desc
+     limit $3`,
+    lexicalParams,
   );
 
-  return rows.rows;
+  const semanticPromise = vector
+    ? (() => {
+        const semanticParams: unknown[] = [vectorLiteral(vector), language, candidateLimit];
+        const semanticModule = buildModuleClause(semanticParams.length + 1, modules);
+        semanticParams.push(...semanticModule.params);
+
+        return pool.query<KnowledgeSnippet & { similarity: number }>(
+          `select
+             id,
+             module_tag as "moduleTag",
+             language,
+             title,
+             chunk,
+             metadata,
+             (1 - (embedding <=> ($1)::vector)) as similarity
+           from kb_chunks
+           where embedding is not null
+             and language = $2${semanticModule.clause}
+           order by embedding <=> ($1)::vector
+           limit $3`,
+          semanticParams,
+        );
+      })()
+    : Promise.resolve({ rows: [] as Array<KnowledgeSnippet & { similarity: number }> });
+
+  const [semanticRows, lexicalRows] = await Promise.all([semanticPromise, lexicalPromise]);
+
+  if (!semanticRows.rows.length && !lexicalRows.rows.length) {
+    const params: unknown[] = [language, limit];
+    const { clause, params: moduleParams } = buildModuleClause(params.length + 1, modules);
+    params.push(...moduleParams);
+
+    const rows = await pool.query<KnowledgeSnippet>(
+      `select
+         id,
+         module_tag as "moduleTag",
+         language,
+         title,
+         chunk,
+         metadata,
+         null as similarity
+       from kb_chunks
+       where language = $1${clause}
+       order by updated_at desc
+       limit $2`,
+      params,
+    );
+
+    return rows.rows;
+  }
+
+  const candidates = new Map<string, RetrievalCandidate>();
+
+  semanticRows.rows.forEach((row, index) => {
+    candidates.set(row.id, {
+      ...row,
+      lexicalScore: 0,
+      semanticRank: index + 1,
+      lexicalRank: 0,
+      hybridScore: reciprocalRankScore(index + 1),
+    });
+  });
+
+  lexicalRows.rows.forEach((row, index) => {
+    const existing = candidates.get(row.id);
+    const lexicalComponent = reciprocalRankScore(index + 1);
+    if (existing) {
+      existing.lexicalRank = index + 1;
+      existing.lexicalScore = row.lexicalScore || 0;
+      existing.hybridScore += lexicalComponent;
+      return;
+    }
+
+    candidates.set(row.id, {
+      ...row,
+      similarity: null,
+      lexicalScore: row.lexicalScore || 0,
+      semanticRank: 0,
+      lexicalRank: index + 1,
+      hybridScore: lexicalComponent,
+    });
+  });
+
+  return dedupeAndSortCandidates(Array.from(candidates.values()), limit);
 }
 
-export function formatKnowledgeContext(snippets: KnowledgeSnippet[]): string {
+export function formatKnowledgeContext(snippets: KnowledgeSnippet[], options: FormatKnowledgeOptions = {}): string {
   if (!snippets.length) {
     return "Knowledge Base: No hay resultados relevantes.";
   }
 
-  const formatted = snippets.map((snippet) => {
-    const title = snippet.title ? `**${snippet.title}**\n` : "";
-    return `${title}${snippet.chunk}`;
-  });
+  const maxChars = options.maxChars ?? 1800;
+  let usedChars = 0;
+  const selected: string[] = [];
 
-  return `Knowledge Base:\n${formatted.join("\n\n---\n\n")}`;
+  for (const snippet of snippets) {
+    const title = snippet.title ? `**${snippet.title}**\n` : "";
+    const chunk = `${title}${snippet.chunk}`.trim();
+    if (!chunk) continue;
+
+    const remaining = maxChars - usedChars;
+    if (remaining <= 0) break;
+
+    if (chunk.length <= remaining) {
+      selected.push(chunk);
+      usedChars += chunk.length;
+      continue;
+    }
+
+    if (remaining > 120) {
+      selected.push(`${chunk.slice(0, remaining - 3).trimEnd()}...`);
+    }
+    break;
+  }
+
+  if (!selected.length) {
+    return "Knowledge Base: No hay resultados relevantes.";
+  }
+
+  return `Knowledge Base:\n${selected.join("\n\n---\n\n")}`;
 }
