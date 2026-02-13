@@ -102,6 +102,7 @@ function ChatPageContent() {
     const intent = searchParams.get("intent") || "nutrition";
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const historyLoadedRef = useRef(false);
+    const feedbackHydratedRef = useRef(false);
 
     useEffect(() => {
         const supabase = getSupabaseClient();
@@ -141,6 +142,42 @@ function ChatPageContent() {
 
     useEffect(() => {
         historyLoadedRef.current = false;
+        feedbackHydratedRef.current = false;
+    }, [intent, userId]);
+
+    const loadFeedbackForMessages = useCallback(async (messagesToMap: Message[]) => {
+        if (!userId) return;
+        const ids = messagesToMap
+            .filter((message) => message.role === "assistant")
+            .map((message) => message.id)
+            .filter(Boolean);
+
+        if (ids.length === 0) return;
+
+        try {
+            const params = new URLSearchParams({
+                intent,
+                ids: ids.join(","),
+            });
+            const response = await fetch(`/api/chat/feedback?${params.toString()}`);
+            if (!response.ok) return;
+            const payload = await response.json();
+            const feedbackMap = payload?.feedback && typeof payload.feedback === "object"
+                ? payload.feedback as Record<string, FeedbackValue>
+                : {};
+
+            setFeedbackByMessageId((prev) => {
+                const next = { ...prev };
+                Object.entries(feedbackMap).forEach(([id, value]) => {
+                    if (value === "up" || value === "down") {
+                        next[id] = { value, status: "saved" };
+                    }
+                });
+                return next;
+            });
+        } catch (error) {
+            console.warn("Unable to load chat feedback", error);
+        }
     }, [intent, userId]);
 
     useEffect(() => {
@@ -178,7 +215,20 @@ function ChatPageContent() {
         };
 
         loadHistory();
-    }, [i18n.language, intent, isLoading, messages.length, userId]);
+    }, [i18n.language, intent, isLoading, loadFeedbackForMessages, messages.length, userId]);
+
+    useEffect(() => {
+        if (!userId) return;
+        if (messages.length === 0) return;
+        if (feedbackHydratedRef.current) return;
+
+        const hydrateFeedback = async () => {
+            await loadFeedbackForMessages(messages);
+            feedbackHydratedRef.current = true;
+        };
+
+        hydrateFeedback();
+    }, [loadFeedbackForMessages, messages, userId]);
 
     useEffect(() => {
         const storageKey = buildHistoryStorageKey(userId, intent);
@@ -207,41 +257,6 @@ function ChatPageContent() {
             console.warn("Unable to persist chat history", persistError);
         }
     }, [intent, userId]);
-
-    async function loadFeedbackForMessages(messagesToMap: Message[]) {
-        if (!userId) return;
-        const ids = messagesToMap
-            .filter((message) => message.role === "assistant")
-            .map((message) => message.id)
-            .filter(Boolean);
-
-        if (ids.length === 0) return;
-
-        try {
-            const params = new URLSearchParams({
-                intent,
-                ids: ids.join(","),
-            });
-            const response = await fetch(`/api/chat/feedback?${params.toString()}`);
-            if (!response.ok) return;
-            const payload = await response.json();
-            const feedbackMap = payload?.feedback && typeof payload.feedback === "object"
-                ? payload.feedback as Record<string, FeedbackValue>
-                : {};
-
-            setFeedbackByMessageId((prev) => {
-                const next = { ...prev };
-                Object.entries(feedbackMap).forEach(([id, value]) => {
-                    if (value === "up" || value === "down") {
-                        next[id] = { value, status: "saved" };
-                    }
-                });
-                return next;
-            });
-        } catch (error) {
-            console.warn("Unable to load chat feedback", error);
-        }
-    }
 
     const submitFeedback = useCallback(async (message: Message, value: FeedbackValue) => {
         if (message.role !== "assistant" || !userId) return;

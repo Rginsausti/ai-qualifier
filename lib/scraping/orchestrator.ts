@@ -1286,22 +1286,31 @@ export async function searchNearbyProducts(
                 ? filterProductsByIntolerances(cachedRelevantProducts, intolerances)
                 : cachedRelevantProducts;
 
-            const cachedFilteredOutCount = (cachedResult.filtered_out_count || 0) +
-                Math.max(cachedResult.products.length - cachedRelevantProducts.length, 0) +
-                Math.max(cachedRelevantProducts.length - cachedPersonalizedProducts.length, 0);
+            const shouldBypassEmptyProduceCache = intent === 'produce'
+                && cachedPersonalizedProducts.length === 0
+                && cachedResult.stores_searched === 0;
 
-            return {
-                ...cachedResult,
-                products: cachedPersonalizedProducts,
-                query_intent: intent,
-                stores_with_products_count: new Set(cachedPersonalizedProducts.map((product) => product.store_id)).size,
-                stores_without_catalog_count: Math.max(cachedResult.stores_searched - new Set(cachedPersonalizedProducts.map((product) => product.store_id)).size, 0),
-                catalog_coverage_rate: cachedResult.catalog_coverage_rate,
-                product_coverage_rate: cachedResult.product_coverage_rate,
-                cache_hit: true,
-                search_latency_ms: Date.now() - startTime,
-                filtered_out_count: cachedFilteredOutCount,
-            };
+            if (shouldBypassEmptyProduceCache) {
+                // Ignore stale/empty produce cache and attempt live discovery.
+            } else {
+
+                const cachedFilteredOutCount = (cachedResult.filtered_out_count || 0) +
+                    Math.max(cachedResult.products.length - cachedRelevantProducts.length, 0) +
+                    Math.max(cachedRelevantProducts.length - cachedPersonalizedProducts.length, 0);
+
+                return {
+                    ...cachedResult,
+                    products: cachedPersonalizedProducts,
+                    query_intent: intent,
+                    stores_with_products_count: new Set(cachedPersonalizedProducts.map((product) => product.store_id)).size,
+                    stores_without_catalog_count: Math.max(cachedResult.stores_searched - new Set(cachedPersonalizedProducts.map((product) => product.store_id)).size, 0),
+                    catalog_coverage_rate: cachedResult.catalog_coverage_rate,
+                    product_coverage_rate: cachedResult.product_coverage_rate,
+                    cache_hit: true,
+                    search_latency_ms: Date.now() - startTime,
+                    filtered_out_count: cachedFilteredOutCount,
+                };
+            }
         }
     }
 
@@ -1454,7 +1463,7 @@ async function cacheResults(
         const queryIntent = deriveQueryIntent(query);
         const durationMs = products.length > 0
             ? (queryIntent === 'produce' ? 30 * 60 * 1000 : 24 * 60 * 60 * 1000)
-            : 5 * 60 * 1000;
+            : (queryIntent === 'produce' ? 60 * 1000 : 5 * 60 * 1000);
 
         const expiresAt = new Date(Date.now() + durationMs);
 
