@@ -630,11 +630,12 @@ const extractUsageCounter = (usage: unknown, keys: string[]) => {
 const CHAT_RATE_PER_MIN = Number(process.env.AI_RATE_LIMIT_PER_MINUTE || "60");
 const chatRateWindowMs = 60_000;
 const chatRateMap = new Map<string, { count: number; resetAt: number }>();
-const MAX_HISTORY_MESSAGES = Number(process.env.CHAT_MAX_HISTORY_MESSAGES || "10");
-const MAX_KB_CONTEXT_CHARS = Number(process.env.CHAT_KB_MAX_CHARS || "1800");
-const MAX_PANTRY_ITEMS_IN_PROMPT = Number(process.env.CHAT_MAX_PANTRY_ITEMS || "10");
-const MAX_RECENT_MEALS_IN_PROMPT = Number(process.env.CHAT_MAX_RECENT_MEALS || "6");
+const MAX_HISTORY_MESSAGES = Number(process.env.CHAT_MAX_HISTORY_MESSAGES || "8");
+const MAX_KB_CONTEXT_CHARS = Number(process.env.CHAT_KB_MAX_CHARS || "1400");
+const MAX_PANTRY_ITEMS_IN_PROMPT = Number(process.env.CHAT_MAX_PANTRY_ITEMS || "6");
+const MAX_RECENT_MEALS_IN_PROMPT = Number(process.env.CHAT_MAX_RECENT_MEALS || "4");
 const MAX_RECENT_LOGS_IN_PROMPT = Number(process.env.CHAT_MAX_RECENT_LOGS || "3");
+const CHAT_MAX_OUTPUT_TOKENS = Number(process.env.CHAT_MAX_OUTPUT_TOKENS || "450");
 
 const COMPLEX_QUERY_HINTS = [
   "plan",
@@ -789,7 +790,7 @@ const buildCompactProfile = (profile: unknown) => {
     dietary_style: record.dietary_style ?? null,
   };
 
-  return JSON.stringify(compact, null, 2);
+  return JSON.stringify(compact);
 };
 
 export async function POST(req: Request) {
@@ -1144,6 +1145,7 @@ export async function POST(req: Request) {
                 model: candidate.model,
                 system: systemPrompt,
                 messages: trimmedMessages,
+                maxOutputTokens: CHAT_MAX_OUTPUT_TOKENS,
                 onFinish: ({ usage, finishReason }) => {
                   const promptTokens = extractUsageCounter(usage, ["promptTokens", "inputTokens"]);
                   const completionTokens = extractUsageCounter(usage, ["completionTokens", "outputTokens"]);

@@ -10,6 +10,8 @@ import { useState, useEffect, useMemo, useRef, useCallback, useTransition } from
 import type { KeyboardEvent } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import { LazyMotion, MotionConfig, domAnimation, useReducedMotion } from "motion/react";
+import * as m from "motion/react-m";
 import { logWater, logNutrition, analyzeFoodFromText } from "@/lib/actions";
 import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
 import { signOut } from "@/lib/auth-actions";
@@ -144,6 +146,25 @@ const quickWins = [
     icon: MapPin,
   },
 ];
+
+const springButton = { type: "spring", stiffness: 360, damping: 24, mass: 0.6 } as const;
+const springLift = { type: "spring", stiffness: 210, damping: 20, mass: 0.8 } as const;
+
+const getSectionReveal = (reducedMotion: boolean, delay = 0) => {
+  if (reducedMotion) {
+    return {
+      initial: { opacity: 1, y: 0 },
+      whileInView: { opacity: 1, y: 0 },
+      transition: { duration: 0.01 },
+    };
+  }
+
+  return {
+    initial: { opacity: 0, y: 14 },
+    whileInView: { opacity: 1, y: 0 },
+    transition: { duration: 0.34, ease: [0, 0, 0.2, 1] as const, delay },
+  };
+};
 
 type RewardLevel = {
   id: string;
@@ -301,6 +322,8 @@ export default function DashboardClient({
   dailyStats?: DailyStats | null;
   initialQuickLog?: { energy: string | null; hunger: number | null; craving: string | null } | null;
 }) {
+  const prefersReducedMotion = useReducedMotion();
+  const reducedMotion = Boolean(prefersReducedMotion);
   const hydratedEnergy = normalizeEnergy(initialQuickLog?.energy ?? null);
   const hydratedCraving = normalizeCraving(initialQuickLog?.craving ?? null);
   const hydratedHunger = normalizeHunger(initialQuickLog?.hunger ?? null);
@@ -723,13 +746,28 @@ export default function DashboardClient({
   ] : actionPlan;
 
   return (
-    <div className="relative min-h-screen bg-[#f6f3ec] text-slate-900">
+    <MotionConfig reducedMotion="user">
+      <LazyMotion features={domAnimation} strict>
+    <m.div className="relative min-h-screen bg-[#f6f3ec] text-slate-900">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-32 left-16 h-72 w-72 rounded-full bg-emerald-200/40 blur-[140px]" />
-        <div className="absolute bottom-0 right-0 h-[420px] w-[420px] rounded-full bg-amber-100/40 blur-[160px]" />
+        <m.div
+          className="absolute -top-32 left-16 h-72 w-72 rounded-full bg-emerald-200/40 blur-[140px]"
+          animate={prefersReducedMotion ? undefined : { y: [0, -10, 0], x: [0, 8, 0], scale: [1, 1.04, 1] }}
+          transition={prefersReducedMotion ? undefined : { duration: 12, ease: "easeInOut", repeat: Infinity }}
+        />
+        <m.div
+          className="absolute bottom-0 right-0 h-[420px] w-[420px] rounded-full bg-amber-100/40 blur-[160px]"
+          animate={prefersReducedMotion ? undefined : { y: [0, 12, 0], x: [0, -10, 0], scale: [1, 1.05, 1] }}
+          transition={prefersReducedMotion ? undefined : { duration: 14, ease: "easeInOut", repeat: Infinity }}
+        />
       </div>
 
-      <main className="relative z-10 mx-auto max-w-6xl px-6 py-12 sm:px-10">
+      <m.main
+        initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.28, ease: "easeOut" }}
+        className="relative z-10 mx-auto max-w-6xl px-6 py-12 sm:px-10"
+      >
         <header className="mb-10 flex flex-wrap items-center justify-between gap-6">
           <div className="flex items-start gap-4">
             <Image
@@ -751,13 +789,23 @@ export default function DashboardClient({
             </div>
           </div>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
-            <button 
+            <m.button 
               onClick={() => router.push("/chat")}
-              className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-slate-900/20 transition hover:bg-slate-800"
+              whileHover={reducedMotion ? undefined : { scale: 1.03, y: -1 }}
+              whileTap={reducedMotion ? undefined : { scale: 0.97 }}
+              transition={springButton}
+              className="relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-slate-900/20 transition hover:bg-slate-800"
             >
+              <m.span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
+                initial={{ x: "-120%", opacity: 0 }}
+                animate={reducedMotion ? { opacity: 0 } : { x: ["-120%", "130%"], opacity: [0, 0.85, 0] }}
+                transition={{ repeat: Infinity, duration: 3.2, ease: "easeInOut", repeatDelay: 1.2 }}
+              />
               <MessageCircle className="h-4 w-4" />
               {getCopy("dashboard.header.chat", "Chat")}
-            </button>
+            </m.button>
             <button
               onClick={handleNotificationsToggle}
               disabled={pushLoading}
@@ -814,9 +862,11 @@ export default function DashboardClient({
         </header>
 
         <div className="mb-8">
-          <button
+          <m.button
             type="button"
             onClick={() => setIsRewardsModalOpen(true)}
+            whileHover={reducedMotion ? undefined : { y: -2, scale: 1.005 }}
+            transition={springLift}
             className="flex w-full flex-wrap items-center gap-4 rounded-3xl border border-white/60 bg-white/90 px-5 py-4 text-left shadow-lg shadow-emerald-100 transition hover:-translate-y-0.5 hover:border-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
           >
             <div className="relative">
@@ -844,7 +894,7 @@ export default function DashboardClient({
                 {rewardsCtaLabel}
               </span>
             </div>
-          </button>
+          </m.button>
         </div>
 
         <section
@@ -852,7 +902,12 @@ export default function DashboardClient({
           tabIndex={-1}
           className="grid gap-6 lg:grid-cols-[minmax(0,_3fr)_minmax(0,_2fr)]"
         >
-          <article className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-8 shadow-xl shadow-emerald-100">
+          <m.article
+            initial={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.38, ease: "easeOut" }}
+            className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-8 shadow-xl shadow-emerald-100"
+          >
             <div className="flex flex-col gap-8 lg:flex-row lg:items-center">
               <div className="space-y-5">
                 <span className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-white">
@@ -880,33 +935,39 @@ export default function DashboardClient({
                 </div>
                 <div className="flex flex-wrap gap-3">
                   <div className="flex flex-col gap-2">
-                    <button
+                    <m.button
                       type="button"
                       onClick={() => {
                         setIsFoodNoteDialogOpen(true);
                         setFoodNoteError(null);
                       }}
+                      whileHover={reducedMotion ? undefined : { y: -1, scale: 1.02 }}
+                      whileTap={reducedMotion ? undefined : { scale: 0.98 }}
+                      transition={springButton}
                       className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/30 transition hover:-translate-y-0.5"
                     >
                       {getCopy("dashboard.hero.note.label", "Registrar ingesta por nota")}
                       <ArrowRight className="h-4 w-4" />
-                    </button>
+                    </m.button>
                     {foodNoteStatus === "success" && (
                       <span className="text-xs font-semibold text-emerald-600" aria-live="polite">
                         {getCopy("dashboard.hero.note.success", "Guardado")}
                       </span>
                     )}
                   </div>
-                  <button 
+                  <m.button 
                     type="button"
                     onClick={() => {
                       setMultimodalMode("voice");
                       setIsMultimodalOpen(true);
                     }}
+                    whileHover={reducedMotion ? undefined : { y: -1, scale: 1.015 }}
+                    whileTap={reducedMotion ? undefined : { scale: 0.985 }}
+                    transition={springButton}
                     className="inline-flex min-h-[48px] items-center gap-2 self-start rounded-full border border-slate-300/80 bg-white/60 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-900"
                   >
                     {getCopy("dashboard.hero.secondaryCta", "Registrar audio")}
-                  </button>
+                  </m.button>
                 </div>
               </div>
               <div className="flex flex-1 flex-col items-center gap-8">
@@ -1010,17 +1071,20 @@ export default function DashboardClient({
                         ))}
                       </div>
                     </div>
-                    <button 
+                    <m.button 
                       onClick={handleAddWater}
+                      whileHover={reducedMotion ? undefined : { scale: 1.02 }}
+                      whileTap={reducedMotion ? undefined : { scale: 0.97 }}
+                      transition={springButton}
                       className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
                     >
                       {getCopy("dashboard.water.cta", "Sumar un vaso")}
-                    </button>
+                    </m.button>
                   </article>
                 </div>
               </div>
             </div>
-          </article>
+          </m.article>
 
           <div className="space-y-6">
             {currentPlan.map((item) => (
@@ -1048,7 +1112,13 @@ export default function DashboardClient({
 
         <SectionSeparator src="/images/separador_trimmed_1.png" height={200} className="mt-12" />
 
-        <section ref={quickLogSectionRef} className="mt-10 focus:outline-none" tabIndex={-1}>
+        <m.section
+          {...getSectionReveal(reducedMotion, 0.04)}
+          viewport={{ once: true, amount: 0.2 }}
+          ref={quickLogSectionRef}
+          className="mt-10 focus:outline-none"
+          tabIndex={-1}
+        >
           <QuickLogPanel 
             notes={notes}
             onNotesChange={setNotes}
@@ -1063,7 +1133,7 @@ export default function DashboardClient({
             craving={cravingType}
             onCravingChange={setCravingType}
           />
-        </section>
+        </m.section>
 
         <SectionSeparator src="/images/separador_trimmed_2.png" height={200} className="mt-12" />
 
@@ -1184,19 +1254,33 @@ export default function DashboardClient({
           }}
         />
 
-        <section className="mt-12">
+        <m.section
+          {...getSectionReveal(reducedMotion, 0.08)}
+          viewport={{ once: true, amount: 0.25 }}
+          className="mt-12"
+        >
           <CoachSection />
-        </section>
+        </m.section>
 
         <SectionSeparator src="/images/separador_trimmed_4.png" height={200} className="mt-12" />
 
-        <section className="mt-10">
+        <m.section
+          {...getSectionReveal(reducedMotion, 0.12)}
+          viewport={{ once: true, amount: 0.25 }}
+          className="mt-10"
+        >
           <div className="rounded-3xl border border-white/60 bg-white/80 p-8 shadow-lg shadow-emerald-100">
             <NearbyProductFinder />
           </div>
-        </section>
+        </m.section>
         <section className="mt-10">
-          <article className="rounded-3xl border border-white/60 bg-white/80 p-6 shadow-lg shadow-emerald-100">
+          <m.article
+            initial={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 10 }}
+            whileInView={reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="rounded-3xl border border-white/60 bg-white/80 p-6 shadow-lg shadow-emerald-100"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
@@ -1234,14 +1318,17 @@ export default function DashboardClient({
                 </div>
               </div>
             </div>
-            <button
+            <m.button
               type="button"
               onClick={() => setIsRewardsModalOpen(true)}
+              whileHover={reducedMotion ? undefined : { y: -1, scale: 1.015 }}
+              whileTap={reducedMotion ? undefined : { scale: 0.985 }}
+              transition={springButton}
               className="mt-6 inline-flex items-center gap-2 rounded-full border border-slate-300/80 px-5 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-900"
             >
               {getCopy("dashboard.streak.cta", "Abrir medalla mindful")}
-            </button>
-          </article>
+            </m.button>
+          </m.article>
         </section>
 
         <SectionSeparator
@@ -1252,8 +1339,18 @@ export default function DashboardClient({
           maxHeight={220}
         />
 
-        <section className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,_3fr)_minmax(0,_2fr)]">
-          <article className="rounded-3xl border border-white/60 bg-white/80 p-6 shadow-lg shadow-emerald-100">
+        <m.section
+          {...getSectionReveal(reducedMotion, 0.16)}
+          viewport={{ once: true, amount: 0.2 }}
+          className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,_3fr)_minmax(0,_2fr)]"
+        >
+          <m.article
+            initial={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 10 }}
+            whileInView={reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="rounded-3xl border border-white/60 bg-white/80 p-6 shadow-lg shadow-emerald-100"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
@@ -1274,10 +1371,13 @@ export default function DashboardClient({
                 };
                 const onClick = actionMap[item.id] || (() => undefined);
                 return (
-                  <button
+                  <m.button
                     type="button"
                     key={item.labelKey}
                     onClick={onClick}
+                    whileHover={reducedMotion ? undefined : { y: -2, scale: 1.02 }}
+                    whileTap={reducedMotion ? undefined : { scale: 0.98 }}
+                    transition={springButton}
                     className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 text-left transition hover:border-emerald-400 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
                   >
                     <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-900 shadow">
@@ -1289,11 +1389,11 @@ export default function DashboardClient({
                     <p className="text-xs text-slate-500">
                       {getCopy(item.detailKey, "Detalle breve")}
                     </p>
-                  </button>
+                  </m.button>
                 );
               })}
             </div>
-          </article>
+          </m.article>
 
           <article className="rounded-3xl border border-white/60 bg-white/80 p-6 shadow-lg shadow-emerald-100">
             <div className="flex items-center justify-between">
@@ -1315,21 +1415,24 @@ export default function DashboardClient({
             </p>
             <HealthyNeighborhoodPanel />
           </article>
-        </section>
+        </m.section>
         <div className="mt-16 flex justify-center">
-          <button
+          <m.button
             type="button"
             onClick={handleLogout}
             disabled={isLoggingOut}
+            whileHover={reducedMotion ? undefined : { y: -1, scale: 1.015 }}
+            whileTap={reducedMotion ? undefined : { scale: 0.985 }}
+            transition={springButton}
             className="inline-flex items-center gap-2 rounded-full border border-slate-300/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-900 disabled:opacity-60"
           >
             <LogOut className="h-4 w-4" />
             {isLoggingOut
               ? getCopy("dashboard.footer.loggingOut", "Cerrando sesión…")
               : getCopy("dashboard.footer.logout", "Cerrar sesión")}
-          </button>
+          </m.button>
         </div>
-      </main>
+      </m.main>
       {isRewardsModalOpen && (
         <div
           className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/70 px-4 py-10"
@@ -1466,6 +1569,8 @@ export default function DashboardClient({
         onClose={() => setIsPantryModalOpen(false)}
         onUpdate={() => router.refresh()}
       />
-    </div>
+    </m.div>
+      </LazyMotion>
+    </MotionConfig>
   );
 }

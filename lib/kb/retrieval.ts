@@ -26,7 +26,13 @@ const huggingFaceApiKey = process.env.HUGGINGFACE_API_KEY
   ?? "";
 const huggingFaceModel = process.env.KB_EMBEDDING_MODEL ?? "intfloat/multilingual-e5-large";
 const huggingFaceBaseEndpoint = (process.env.HUGGINGFACE_API_URL ?? "https://router.huggingface.co").replace(/\/$/, "");
+const EMBEDDING_TIMEOUT_MS = Number(process.env.KB_EMBEDDING_TIMEOUT_MS ?? "10000");
+const EMBEDDING_INPUT_MAX_CHARS = Number(process.env.KB_EMBEDDING_INPUT_MAX_CHARS ?? "1200");
+const EMBEDDING_CACHE_TTL_MS = Number(process.env.KB_EMBEDDING_CACHE_TTL_MS ?? "600000");
+const MIN_SIMILARITY_SCORE = Number(process.env.KB_MIN_SIMILARITY_SCORE ?? "0.22");
 const DEFAULT_LANGUAGE = "es";
+
+const embeddingCache = new Map<string, { vector: number[]; expiresAt: number }>();
 
 function vectorLiteral(values: number[]): string {
   return `[${values.map((value) => Number(value).toString()).join(",")}]`;
@@ -91,19 +97,52 @@ async function embedText(text: string): Promise<number[] | null> {
     return null;
   }
 
-  const requestConfig = getHuggingFaceRequest(text);
-  const response = await fetch(requestConfig.url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${huggingFaceApiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(requestConfig.body),
-    next: { revalidate: 0 },
-  });
+  const normalizedInput = text
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, EMBEDDING_INPUT_MAX_CHARS);
+
+  if (!normalizedInput) {
+    return null;
+  }
+
+  const now = Date.now();
+  const cached = embeddingCache.get(normalizedInput);
+  if (cached && cached.expiresAt > now) {
+    return cached.vector;
+  }
+
+  if (cached && cached.expiresAt <= now) {
+    embeddingCache.delete(normalizedInput);
+  }
+
+  const requestConfig = getHuggingFaceRequest(normalizedInput);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), EMBEDDING_TIMEOUT_MS);
+
+  let response: Response;
+  try {
+    response = await fetch(requestConfig.url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${huggingFaceApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestConfig.body),
+      next: { revalidate: 0 },
+      signal: controller.signal,
+    });
+  } catch (error) {
+    console.error("HF embedding request failed", {
+      reason: error instanceof Error ? error.message : "unknown",
+    });
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!response.ok) {
-    console.error("HF embedding error", response.status, await response.text().catch(() => ""));
+    console.error("HF embedding error", { status: response.status });
     return null;
   }
 
@@ -114,17 +153,29 @@ async function embedText(text: string): Promise<number[] | null> {
 
   if (Array.isArray(data)) {
     if (typeof data[0] === "number") {
-      return data as number[];
+      const vector = data as number[];
+      embeddingCache.set(normalizedInput, { vector, expiresAt: now + EMBEDDING_CACHE_TTL_MS });
+      return vector;
     }
-    return (data[0] as number[] | undefined) ?? null;
+    const vector = (data[0] as number[] | undefined) ?? null;
+    if (vector) {
+      embeddingCache.set(normalizedInput, { vector, expiresAt: now + EMBEDDING_CACHE_TTL_MS });
+    }
+    return vector;
   }
 
   if (Array.isArray(data.data)) {
-    return data.data[0]?.embedding ?? null;
+    const vector = data.data[0]?.embedding ?? null;
+    if (vector) {
+      embeddingCache.set(normalizedInput, { vector, expiresAt: now + EMBEDDING_CACHE_TTL_MS });
+    }
+    return vector;
   }
 
   if (Array.isArray(data.embeddings)) {
-    return data.embeddings;
+    const vector = data.embeddings;
+    embeddingCache.set(normalizedInput, { vector, expiresAt: now + EMBEDDING_CACHE_TTL_MS });
+    return vector;
   }
 
   return null;
@@ -234,7 +285,10 @@ export async function retrieveKnowledge(options: KnowledgeQueryInput): Promise<K
       })()
     : Promise.resolve({ rows: [] as Array<KnowledgeSnippet & { similarity: number }> });
 
-  const [semanticRows, lexicalRows] = await Promise.all([semanticPromise, lexicalPromise]);
+  const [semanticRowsRaw, lexicalRows] = await Promise.all([semanticPromise, lexicalPromise]);
+  const semanticRows = {
+    rows: semanticRowsRaw.rows.filter((row) => row.similarity == null || row.similarity >= MIN_SIMILARITY_SCORE),
+  };
 
   if (!semanticRows.rows.length && !lexicalRows.rows.length) {
     const params: unknown[] = [language, limit];

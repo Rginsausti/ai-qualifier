@@ -1009,7 +1009,10 @@ const applyContentFilters = (products: AggregatedProduct[]) => {
     };
 };
 
-const LLM_BATCH_SIZE = 24;
+const LLM_BATCH_SIZE = Number(process.env.GROQ_GUARD_BATCH_SIZE ?? "20");
+const GROQ_GUARD_MODEL = process.env.GROQ_GUARD_MODEL ?? "llama-3.1-8b-instant";
+const GROQ_GUARD_TIMEOUT_MS = Number(process.env.GROQ_GUARD_TIMEOUT_MS ?? "12000");
+const GROQ_GUARD_HINT_MAX_CHARS = Number(process.env.GROQ_GUARD_HINT_MAX_CHARS ?? "120");
 
 type GroqDecision = {
     id: string;
@@ -1060,11 +1063,14 @@ async function classifyProductBatchWithGroq(
             name: product.product_name,
             brand: product.brand,
             store: product.store_brand ?? product.store_name ?? null,
-            claims: product.nutritional_claims?.slice(0, 5) ?? [],
+            claims: product.nutritional_claims?.slice(0, 3) ?? [],
             unit: product.unit,
             price: product.price_current,
-            hints: buildProductHaystack(product).slice(0, 220),
+            hints: buildProductHaystack(product).slice(0, GROQ_GUARD_HINT_MAX_CHARS),
         }));
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), GROQ_GUARD_TIMEOUT_MS);
 
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: 'POST',
@@ -1073,15 +1079,17 @@ async function classifyProductBatchWithGroq(
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
+                model: GROQ_GUARD_MODEL,
                 temperature: 0,
+                max_tokens: 500,
                 response_format: { type: "json_object" },
                 messages: [
                     { role: 'system', content: GROQ_PRODUCT_SYSTEM_PROMPT },
                     { role: 'user', content: JSON.stringify({ query, items }) },
                 ],
             }),
-        });
+            signal: controller.signal,
+        }).finally(() => clearTimeout(timeout));
 
         if (!response.ok) {
             throw new Error(`Groq guard request failed: ${response.status}`);
