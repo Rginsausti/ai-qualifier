@@ -179,7 +179,17 @@ const detectIntakeCommand = (text?: string | null): IntakeCommand | null => {
 
   const hasDeleteVerb = includesAny(normalized, ["borra", "borrar", "elimina", "eliminar", "quita", "quitar", "limpia", "limpiar", "reset", "reinicia", "reiniciar"]);
   const mentionsDailyTotals = includesAny(normalized, ["tablero", "conteo", "macros", "macro", "calorias", "caloria", "registro", "registros", "ingesta", "ingestas", "hoy", "dia", "diario", "cero"]);
-  const isResetDay = hasDeleteVerb && mentionsDailyTotals && includesAny(normalized, ["todo", "todos", "cero", "reset", "reinicia", "tablero", "hoy", "dia"]);
+  const hasStrongResetPhrase =
+    normalized.includes("reset dia")
+    || normalized.includes("reinicia el dia")
+    || normalized.includes("reiniciar el dia")
+    || normalized.includes("borra todo")
+    || normalized.includes("borrar todo")
+    || normalized.includes("elimina todo")
+    || normalized.includes("eliminar todo")
+    || normalized.includes("limpia todo")
+    || normalized.includes("limpiar todo");
+  const isResetDay = hasStrongResetPhrase && hasDeleteVerb && mentionsDailyTotals;
 
   if (isResetDay) {
     return "reset_day";

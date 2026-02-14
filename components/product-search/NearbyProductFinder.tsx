@@ -40,12 +40,17 @@ type SearchResults = {
         store_name: string;
         store_brand?: string;
         store_type?: string;
+        store_address?: string;
+        store_website_url?: string;
         distance_meters: number;
         store_lat: number;
         store_lon: number;
         has_products: boolean;
         scraping_enabled: boolean;
+        confidence_label: 'verified' | 'estimated' | 'no_catalog';
     }>;
+    fallback_mode?: 'none' | 'relaxed_relevance' | 'relaxed_personalization';
+    fallback_reason?: string;
     cache_hit: boolean;
     search_latency_ms: number;
     filtered_out_count?: number;
@@ -247,6 +252,28 @@ export default function NearbyProductFinder() {
     const visibleDiscoveredStores = (results?.stores_discovered || []).filter((store) =>
         showOnlyCatalogStores ? store.scraping_enabled : true
     );
+
+    const buildStoreDirectionsUrl = (store: NonNullable<SearchResults['stores_discovered']>[number]) => {
+        const params = new URLSearchParams({
+            api: '1',
+            destination: `${store.store_lat},${store.store_lon}`,
+            travelmode: 'walking',
+        });
+        if (location) {
+            params.set('origin', `${location.lat},${location.lon}`);
+        }
+        return `https://www.google.com/maps/dir/?${params.toString()}`;
+    };
+
+    const getStoreStatusLabel = (store: NonNullable<SearchResults['stores_discovered']>[number]) => {
+        if (store.confidence_label === 'verified') {
+            return t('productSearch.storeConfidenceVerified', 'catálogo verificado');
+        }
+        if (store.confidence_label === 'estimated') {
+            return t('productSearch.storeConfidenceEstimated', 'catálogo estimado');
+        }
+        return t('productSearch.storeNoCatalog', 'sin catálogo online');
+    };
 
     useEffect(() => {
         if (!loading) {
@@ -508,6 +535,11 @@ export default function NearbyProductFinder() {
                                     })}
                                 </p>
                             ) : null}
+                            {results.fallback_mode && results.fallback_mode !== 'none' ? (
+                                <p className="mt-2 text-sm text-amber-600">
+                                    {results.fallback_reason || t('productSearch.fallbackHint', 'Probamos una búsqueda más amplia para evitar resultados vacíos.')}
+                                </p>
+                            ) : null}
                         </div>
                     ) : (
                         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -549,13 +581,37 @@ export default function NearbyProductFinder() {
                                         <p className="mt-1 text-xs text-slate-500 line-clamp-1">
                                             {store.store_name}
                                         </p>
+                                        {store.store_address ? (
+                                            <p className="mt-1 text-xs text-slate-500 line-clamp-2">
+                                                {store.store_address}
+                                            </p>
+                                        ) : null}
                                         <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
                                             <span>{Math.round(store.distance_meters)}m</span>
-                                            <span className={store.has_products ? 'text-emerald-700' : 'text-amber-700'}>
-                                                {store.has_products
-                                                    ? t('productSearch.storeHasCatalog', 'con resultados')
-                                                    : t('productSearch.storeNoCatalog', 'sin catálogo online')}
+                                            <span className={store.confidence_label === 'verified' ? 'text-emerald-700' : store.confidence_label === 'estimated' ? 'text-blue-700' : 'text-amber-700'}>
+                                                {getStoreStatusLabel(store)}
                                             </span>
+                                        </div>
+                                        <div className="mt-3 flex items-center gap-2">
+                                            <a
+                                                href={buildStoreDirectionsUrl(store)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-700 hover:border-emerald-300 hover:text-emerald-700"
+                                            >
+                                                <Navigation className="h-3.5 w-3.5" />
+                                                {t('productSearch.storeDirections', 'Cómo llegar')}
+                                            </a>
+                                            {store.store_website_url ? (
+                                                <a
+                                                    href={store.store_website_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-700 hover:border-sky-300 hover:text-sky-700"
+                                                >
+                                                    {t('productSearch.storeWebsite', 'Sitio')}
+                                                </a>
+                                            ) : null}
                                         </div>
                                     </div>
                                 ))}

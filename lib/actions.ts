@@ -11,7 +11,7 @@ import { generateText } from 'ai';
 
 const localeTimezoneMap: Record<string, string> = {
     "es-ar": "America/Argentina/Buenos_Aires",
-    "es": "Europe/Madrid",
+    "es": "America/Argentina/Buenos_Aires",
     "pt-br": "America/Sao_Paulo",
     "pt": "America/Sao_Paulo",
     "en-us": "America/New_York",

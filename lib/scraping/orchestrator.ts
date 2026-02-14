@@ -53,12 +53,17 @@ export type AggregatedProductResults = {
         store_name: string;
         store_brand?: string;
         store_type?: string;
+        store_address?: string;
+        store_website_url?: string;
         distance_meters: number;
         store_lat: number;
         store_lon: number;
         has_products: boolean;
         scraping_enabled: boolean;
+        confidence_label: 'verified' | 'estimated' | 'no_catalog';
     }>;
+    fallback_mode?: 'none' | 'relaxed_relevance' | 'relaxed_personalization';
+    fallback_reason?: string;
     cache_hit: boolean;
     search_latency_ms: number;
     filtered_out_count?: number;
@@ -1109,15 +1114,17 @@ async function classifyProductBatchWithGroq(
 const filterProductsByRelevance = (
     products: AggregatedProduct[],
     query: string,
-    intent: QueryIntent
+    intent: QueryIntent,
+    options: { relaxed?: boolean } = {}
 ) => {
+    const relaxed = Boolean(options.relaxed);
     const normalizedQuery = normalizeText(query);
     if (!normalizedQuery) return products;
 
     const tokens = normalizedQuery
         .split(' ')
         .map((token) => token.trim())
-        .filter((token) => token.length >= 3);
+        .filter((token) => token.length >= (relaxed ? 2 : 3));
 
     if (tokens.length === 0) {
         tokens.push(normalizedQuery);
@@ -1141,11 +1148,84 @@ const filterProductsByRelevance = (
         if (intent === 'produce') {
             if (produceExcluded) return false;
             if (producePositive) return true;
+            if (relaxed) {
+                return tokenHits > 0 || produceFreshCue;
+            }
             return tokenHits > 0 && produceFreshCue;
         }
 
         return tokenHits > 0;
     });
+};
+
+const formatStoreAddress = (address: NearbyStore['address']) => {
+    if (!address) return '';
+    if (typeof address === 'string') return address.trim();
+    if (typeof address !== 'object') return '';
+
+    const record = address as Record<string, unknown>;
+    const street = typeof record.street === 'string' ? record.street : '';
+    const number = typeof record.housenumber === 'string' ? record.housenumber : '';
+    const city = typeof record.city === 'string' ? record.city : '';
+    const area = typeof record.suburb === 'string' ? record.suburb : '';
+    const joined = [
+        [street, number].filter(Boolean).join(' ').trim(),
+        area,
+        city,
+    ].filter(Boolean).join(', ');
+    return joined.trim();
+};
+
+type FallbackSelection = {
+    relevantProducts: AggregatedProduct[];
+    personalizedProducts: AggregatedProduct[];
+    fallbackMode: AggregatedProductResults['fallback_mode'];
+    fallbackReason?: string;
+};
+
+const applyFallbackSelection = (
+    products: AggregatedProduct[],
+    query: string,
+    intent: QueryIntent,
+    intolerances: string[]
+): FallbackSelection => {
+    const strictRelevantProducts = filterProductsByRelevance(products, query, intent);
+    const relaxedRelevantProducts = strictRelevantProducts.length === 0
+        ? filterProductsByRelevance(products, query, intent, { relaxed: true })
+        : strictRelevantProducts;
+
+    const strictPersonalizedProducts = intolerances.length
+        ? filterProductsByIntolerances(relaxedRelevantProducts, intolerances)
+        : relaxedRelevantProducts;
+
+    if (strictPersonalizedProducts.length > 0) {
+        return {
+            relevantProducts: relaxedRelevantProducts,
+            personalizedProducts: strictPersonalizedProducts,
+            fallbackMode: strictRelevantProducts.length === 0 ? 'relaxed_relevance' : 'none',
+            fallbackReason: strictRelevantProducts.length === 0
+                ? 'No strict lexical matches found; showing closest produce/category matches.'
+                : undefined,
+        };
+    }
+
+    if (intolerances.length > 0 && relaxedRelevantProducts.length > 0) {
+        return {
+            relevantProducts: relaxedRelevantProducts,
+            personalizedProducts: relaxedRelevantProducts,
+            fallbackMode: 'relaxed_personalization',
+            fallbackReason: 'No fully compatible items found. Showing closest matches so you can choose manually.',
+        };
+    }
+
+    return {
+        relevantProducts: relaxedRelevantProducts,
+        personalizedProducts: strictPersonalizedProducts,
+        fallbackMode: strictRelevantProducts.length === 0 ? 'relaxed_relevance' : 'none',
+        fallbackReason: strictRelevantProducts.length === 0
+            ? 'No strict lexical matches found; showing closest produce/category matches.'
+            : undefined,
+    };
 };
 
 const selectDiversifiedStores = (stores: NearbyStore[], maxStores: number, intent: QueryIntent) => {
@@ -1281,10 +1361,9 @@ export async function searchNearbyProducts(
     if (!forceRefresh) {
         const cachedResult = await checkCache(userLat, userLon, productQuery);
         if (cachedResult) {
-            const cachedRelevantProducts = filterProductsByRelevance(cachedResult.products, productQuery, intent);
-            const cachedPersonalizedProducts = intolerances.length
-                ? filterProductsByIntolerances(cachedRelevantProducts, intolerances)
-                : cachedRelevantProducts;
+            const cachedSelection = applyFallbackSelection(cachedResult.products, productQuery, intent, intolerances);
+            const cachedRelevantProducts = cachedSelection.relevantProducts;
+            const cachedPersonalizedProducts = cachedSelection.personalizedProducts;
 
             const shouldBypassEmptyProduceCache = intent === 'produce'
                 && cachedPersonalizedProducts.length === 0
@@ -1309,6 +1388,8 @@ export async function searchNearbyProducts(
                     cache_hit: true,
                     search_latency_ms: Date.now() - startTime,
                     filtered_out_count: cachedFilteredOutCount,
+                    fallback_mode: cachedSelection.fallbackMode,
+                    fallback_reason: cachedSelection.fallbackReason,
                 };
             }
         }
@@ -1349,10 +1430,9 @@ export async function searchNearbyProducts(
     }
 
     const { products: contentSafeProducts, removed: contentRemoved } = applyContentFilters(allProducts);
-    const relevantProducts = filterProductsByRelevance(contentSafeProducts, productQuery, intent);
-    const personalizedProducts = intolerances.length
-        ? filterProductsByIntolerances(relevantProducts, intolerances)
-        : relevantProducts;
+    const selection = applyFallbackSelection(contentSafeProducts, productQuery, intent, intolerances);
+    const relevantProducts = selection.relevantProducts;
+    const personalizedProducts = selection.personalizedProducts;
 
     const { products: llmGuardedProducts, removed: llmRemoved } = await guardProductsWithGroq(personalizedProducts, productQuery);
 
@@ -1364,17 +1444,28 @@ export async function searchNearbyProducts(
 
     const storesDiscovered = nearbyStores
         .filter((store) => Boolean(store.id))
-        .map((store) => ({
-            store_id: store.id!,
-            store_name: store.name,
-            store_brand: store.brand,
-            store_type: store.store_type,
-            distance_meters: store.distance || 0,
-            store_lat: store.latitude,
-            store_lon: store.longitude,
-            has_products: storesWithProducts.has(store.id!),
-            scraping_enabled: store.scraping_enabled !== false,
-        }));
+        .map((store) => {
+            const hasProducts = storesWithProducts.has(store.id!);
+            const scrapingEnabled = store.scraping_enabled !== false;
+            const confidenceLabel: 'verified' | 'estimated' | 'no_catalog' = hasProducts
+                ? 'verified'
+                : (scrapingEnabled ? 'estimated' : 'no_catalog');
+
+            return {
+                store_id: store.id!,
+                store_name: store.name,
+                store_brand: store.brand,
+                store_type: store.store_type,
+                store_address: formatStoreAddress(store.address),
+                store_website_url: store.website_url,
+                distance_meters: store.distance || 0,
+                store_lat: store.latitude,
+                store_lon: store.longitude,
+                has_products: hasProducts,
+                scraping_enabled: scrapingEnabled,
+                confidence_label: confidenceLabel,
+            };
+        });
 
     const storesWithProductsCount = storesDiscovered.filter((store) => store.has_products).length;
     const storesWithoutCatalogCount = storesDiscovered.filter((store) => !store.scraping_enabled).length;
@@ -1406,6 +1497,8 @@ export async function searchNearbyProducts(
         cache_hit: false,
         search_latency_ms: Date.now() - startTime,
         filtered_out_count: filteredOutCount,
+        fallback_mode: selection.fallbackMode,
+        fallback_reason: selection.fallbackReason,
     };
 }
 
@@ -1440,6 +1533,7 @@ async function checkCache(
             product_coverage_rate: 0,
             stores_discovered: [],
             filtered_out_count: removed,
+            fallback_mode: 'none',
         };
     } catch (error) {
         console.error('[Cache] Check error:', error);
