@@ -1217,6 +1217,12 @@ export async function POST(req: Request) {
       latency_ms: Date.now() - llmStartedAt,
     });
 
+    if (autoActionNote) {
+      const fallbackNotice =
+        "No pude generar una respuesta completa del chat en este momento, pero tu registro ya quedó guardado.";
+      return respondWithText(`${autoActionNote}\n${fallbackNotice}`);
+    }
+
     const hasOnlyRateOrQuota =
       failureSummary.length > 0
       && failureSummary.every((failure) => failure.kind === "rate_limit" || failure.kind === "quota");
