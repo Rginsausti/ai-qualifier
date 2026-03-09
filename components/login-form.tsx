@@ -219,16 +219,21 @@ export function LoginForm() {
 
       {!isStandalone && (
         <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
-          <p className="text-sm font-semibold text-emerald-900">Instalar app en tu celular</p>
+          <p className="text-sm font-semibold text-emerald-900">
+            {t("auth.login.installCard.title", "Install app on your phone")}
+          </p>
           <p className="mt-1 text-sm text-emerald-800">
-            Puedes instalar Agente Alma antes de iniciar sesion y usarla como app desde tu pantalla de inicio.
+            {t(
+              "auth.login.installCard.description",
+              "You can install Agente Alma before signing in and use it from your home screen like an app."
+            )}
           </p>
           <Link
             href="/app"
             className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500"
           >
             <Download className="h-4 w-4" />
-            Instalar app
+            {t("auth.login.installCard.cta", "Install app")}
           </Link>
         </div>
       )}

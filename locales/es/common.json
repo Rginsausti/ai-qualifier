@@ -36,6 +36,35 @@
       "tokenLabel": "Token de sesión:",
       "logout": "Cerrar sesión",
       "seedSuccess": "Usuario creado con ID: {{userId}}"
+      ,"installCard": {
+        "title": "Instalar app en tu celular",
+        "description": "Puedes instalar Agente Alma antes de iniciar sesion y usarla como app desde tu pantalla de inicio.",
+        "cta": "Instalar app"
+      }
+    }
+  },
+  "installApp": {
+    "badge": "App web oficial",
+    "title": "Instala Agente Alma en tu celular",
+    "description": "Funciona en iPhone y Android sin pasar por tienda. Queda en tu pantalla de inicio como app.",
+    "backHome": "Volver al inicio",
+    "stepsTitle": "Instalacion en 3 pasos",
+    "stepOpen": "1) Abre esta pagina desde tu celular.",
+    "stepInstall": "2) Toca Instalar app o Agregar a pantalla de inicio.",
+    "stepLogin": "3) Inicia sesion y usa Alma como app.",
+    "securityTitle": "Seguridad y privacidad",
+    "securityDescription": "Agente Alma se abre bajo HTTPS y usa el mismo entorno seguro que ya usas en web. No hay instaladores externos ni APK para iOS.",
+    "securityBadge": "Instalacion segura desde el navegador",
+    "assistant": {
+      "installed": "Ya tenes Agente Alma instalada como app web.",
+      "installButton": "Instalar app en este dispositivo",
+      "dismissed": "No hay problema. Puedes instalarla mas tarde desde el menu del navegador.",
+      "manual": "No pudimos abrir el instalador automatico. Abre el menu del navegador y elige Instalar app o Agregar a pantalla de inicio.",
+      "iosTitle": "En iPhone (Safari):",
+      "iosStepShare": "1) Toca Compartir en Safari.",
+      "iosStepAdd": "2) Elige Agregar a pantalla de inicio.",
+      "iosStepOpen": "3) Abre la app desde tu home.",
+      "fallbackHint": "Si no aparece el boton de instalacion, abre el menu del navegador y selecciona Instalar app o Agregar a pantalla de inicio."
     }
   },
   "dashboard": {

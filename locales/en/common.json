@@ -36,6 +36,35 @@
       "tokenLabel": "Session token:",
       "logout": "Log out",
       "seedSuccess": "User created with ID: {{userId}}"
+      ,"installCard": {
+        "title": "Install app on your phone",
+        "description": "You can install Agente Alma before signing in and use it from your home screen like an app.",
+        "cta": "Install app"
+      }
+    }
+  },
+  "installApp": {
+    "badge": "Official web app",
+    "title": "Install Agente Alma on your phone",
+    "description": "Works on iPhone and Android without app stores. It stays on your home screen like an app.",
+    "backHome": "Back to home",
+    "stepsTitle": "Install in 3 steps",
+    "stepOpen": "1) Open this page from your phone.",
+    "stepInstall": "2) Tap Install app or Add to home screen.",
+    "stepLogin": "3) Sign in and use Alma like an app.",
+    "securityTitle": "Security and privacy",
+    "securityDescription": "Agente Alma runs over HTTPS and uses the same secure environment as the web version. There are no external installers and no APK for iOS.",
+    "securityBadge": "Secure browser-based installation",
+    "assistant": {
+      "installed": "You already have Agente Alma installed as a web app.",
+      "installButton": "Install app on this device",
+      "dismissed": "No problem. You can install it later from your browser menu.",
+      "manual": "We could not open the automatic installer. Open your browser menu and choose Install app or Add to home screen.",
+      "iosTitle": "On iPhone (Safari):",
+      "iosStepShare": "1) Tap Share in Safari.",
+      "iosStepAdd": "2) Choose Add to Home Screen.",
+      "iosStepOpen": "3) Open the app from your home screen.",
+      "fallbackHint": "If the install button does not appear, open your browser menu and select Install app or Add to home screen."
     }
   },
   "dashboard": {

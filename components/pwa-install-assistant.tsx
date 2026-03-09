@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Download, Share2, Smartphone } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -25,6 +26,7 @@ function isInStandaloneMode(): boolean {
 }
 
 export function PwaInstallAssistant() {
+  const { t } = useTranslation();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [status, setStatus] = useState<"idle" | "installed" | "dismissed" | "manual">("idle");
 
@@ -84,7 +86,7 @@ export function PwaInstallAssistant() {
   if (platform.isStandalone) {
     return (
       <p className="rounded-2xl bg-emerald-100 px-4 py-3 text-sm font-medium text-emerald-900">
-        Ya tenes Agente Alma instalada como app web.
+        {t("installApp.assistant.installed", "You already have Agente Alma installed as a web app.")}
       </p>
     );
   }
@@ -98,14 +100,22 @@ export function PwaInstallAssistant() {
           className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5"
         >
           <Download className="h-4 w-4" />
-          Instalar app en este dispositivo
+          {t("installApp.assistant.installButton", "Install app on this device")}
         </button>
         {status === "dismissed" && (
-          <p className="text-sm text-slate-600">No hay problema. Puedes instalarla mas tarde desde el menu del navegador.</p>
+          <p className="text-sm text-slate-600">
+            {t(
+              "installApp.assistant.dismissed",
+              "No problem. You can install it later from your browser menu."
+            )}
+          </p>
         )}
         {status === "manual" && (
           <p className="text-sm text-slate-600">
-            No pudimos abrir el instalador automatico. Abre el menu del navegador y elige Instalar app o Agregar a pantalla de inicio.
+            {t(
+              "installApp.assistant.manual",
+              "We could not open the automatic installer. Open your browser menu and choose Install app or Add to home screen."
+            )}
           </p>
         )}
       </div>
@@ -115,19 +125,21 @@ export function PwaInstallAssistant() {
   if (platform.isIos) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-        <p className="font-semibold text-slate-900">En iPhone (Safari):</p>
+        <p className="font-semibold text-slate-900">
+          {t("installApp.assistant.iosTitle", "On iPhone (Safari):")}
+        </p>
         <ol className="mt-2 space-y-2">
           <li className="flex items-start gap-2">
             <Share2 className="mt-0.5 h-4 w-4" />
-            1) Toca Compartir en Safari.
+            {t("installApp.assistant.iosStepShare", "1) Tap Share in Safari.")}
           </li>
           <li className="flex items-start gap-2">
             <Smartphone className="mt-0.5 h-4 w-4" />
-            2) Elige Agregar a pantalla de inicio.
+            {t("installApp.assistant.iosStepAdd", "2) Choose Add to Home Screen.")}
           </li>
           <li className="flex items-start gap-2">
             <Download className="mt-0.5 h-4 w-4" />
-            3) Abre la app desde tu home.
+            {t("installApp.assistant.iosStepOpen", "3) Open the app from your home screen.")}
           </li>
         </ol>
       </div>
@@ -136,7 +148,10 @@ export function PwaInstallAssistant() {
 
   return (
     <p className="text-sm text-slate-600">
-      Si no aparece el boton de instalacion, abre el menu del navegador y selecciona Instalar app o Agregar a pantalla de inicio.
+      {t(
+        "installApp.assistant.fallbackHint",
+        "If the install button does not appear, open your browser menu and select Install app or Add to home screen."
+      )}
     </p>
   );
 }
