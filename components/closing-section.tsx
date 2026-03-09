@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { ArrowRight, HeartHandshake, Loader2 } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import Image from "next/image";
+import Link from "next/link";
 
 export function ClosingSection() {
   const { t } = useTranslation();
@@ -73,10 +74,13 @@ export function ClosingSection() {
           <p className="text-base text-white/80">
             {t("closingSection.description")}
           </p>
-          <button className="inline-flex items-center gap-2 rounded-full border border-white/20 px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:-translate-y-0.5">
+          <Link
+            href="/apk"
+            className="inline-flex items-center gap-2 rounded-full border border-white/20 px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:-translate-y-0.5"
+          >
             {t("closingSection.secondaryCta")}
             <ArrowRight className="h-4 w-4" />
-          </button>
+          </Link>
         </div>
         <form
           className="space-y-4 rounded-3xl bg-white/10 p-6 backdrop-blur"
