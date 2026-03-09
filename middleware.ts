@@ -17,6 +17,8 @@ export async function middleware(request: NextRequest) {
 
   // Keep API/static/public routes out of auth redirects.
   const isPublicPath = 
+    path === "/app" ||
+    path.startsWith("/app/") ||
     path.startsWith("/auth") || 
     path.startsWith("/api/auth") ||
     path.startsWith("/api") ||

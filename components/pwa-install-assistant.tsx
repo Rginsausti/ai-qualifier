@@ -28,7 +28,7 @@ function isInStandaloneMode(): boolean {
 export function PwaInstallAssistant() {
   const { t } = useTranslation();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [status, setStatus] = useState<"idle" | "installed" | "dismissed" | "manual">("idle");
+  const [status, setStatus] = useState<"idle" | "waiting" | "installed" | "dismissed" | "manual">("idle");
   const [manualReason, setManualReason] = useState<string | null>(null);
 
   const platform = useMemo(() => {
@@ -73,7 +73,38 @@ export function PwaInstallAssistant() {
   }, []);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) {
+    let promptEvent = deferredPrompt;
+
+    if (!promptEvent) {
+      setStatus("waiting");
+      const waitedPrompt = await new Promise<BeforeInstallPromptEvent | null>((resolve) => {
+        const existing = window.__almaDeferredInstallPrompt ?? null;
+        if (existing) {
+          resolve(existing);
+          return;
+        }
+
+        const timeout = window.setTimeout(() => {
+          window.removeEventListener("alma-install-prompt-ready", onReady as EventListener);
+          resolve(window.__almaDeferredInstallPrompt ?? null);
+        }, 6000);
+
+        const onReady = () => {
+          window.clearTimeout(timeout);
+          window.removeEventListener("alma-install-prompt-ready", onReady as EventListener);
+          resolve(window.__almaDeferredInstallPrompt ?? null);
+        };
+
+        window.addEventListener("alma-install-prompt-ready", onReady as EventListener, { once: true });
+      });
+
+      if (waitedPrompt) {
+        promptEvent = waitedPrompt;
+        setDeferredPrompt(waitedPrompt);
+      }
+    }
+
+    if (!promptEvent) {
       const canUseSw = typeof navigator !== "undefined" && "serviceWorker" in navigator;
       const hasController = canUseSw ? Boolean(navigator.serviceWorker.controller) : false;
 
@@ -134,11 +165,12 @@ export function PwaInstallAssistant() {
       return;
     }
 
-    await deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice;
+    await promptEvent.prompt();
+    const choice = await promptEvent.userChoice;
     setStatus(choice.outcome === "accepted" ? "installed" : "dismissed");
     setManualReason(null);
     setDeferredPrompt(null);
+    window.__almaDeferredInstallPrompt = null;
   };
 
   if (platform.isStandalone) {
@@ -155,10 +187,13 @@ export function PwaInstallAssistant() {
         <button
           type="button"
           onClick={handleInstall}
+          disabled={status === "waiting"}
           className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5"
         >
           <Download className="h-4 w-4" />
-          {t("installApp.assistant.installButton", "Install app on this device")}
+          {status === "waiting"
+            ? t("installApp.assistant.waiting", "Preparing installer...")
+            : t("installApp.assistant.installButton", "Install app on this device")}
         </button>
         {status === "dismissed" && (
           <p className="text-sm text-slate-600">
