@@ -16,6 +16,10 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(clients.claim());
 });
 
+self.addEventListener("fetch", () => {
+  // Keep a fetch handler so the app meets installability checks.
+});
+
 self.addEventListener("push", (event) => {
   let payload = {};
 

@@ -3,6 +3,7 @@ import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/components/i18n-provider";
 import { PageTransition } from "@/components/page-transition";
+import { PwaRegister } from "@/components/pwa-register";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -59,6 +60,7 @@ export default async function RootLayout({
       <body
         className={`${plusJakarta.variable} ${geistMono.variable} antialiased`}
       >
+        <PwaRegister />
         <I18nProvider initialLanguage={lang}>
           <PageTransition>{children}</PageTransition>
         </I18nProvider>

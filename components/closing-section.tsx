@@ -75,7 +75,7 @@ export function ClosingSection() {
             {t("closingSection.description")}
           </p>
           <Link
-            href="/apk"
+            href="/app"
             className="inline-flex items-center gap-2 rounded-full border border-white/20 px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:-translate-y-0.5"
           >
             {t("closingSection.secondaryCta")}
