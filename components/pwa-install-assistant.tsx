@@ -8,6 +8,12 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 };
 
+declare global {
+  interface Window {
+    __almaDeferredInstallPrompt?: BeforeInstallPromptEvent | null;
+  }
+}
+
 function isIosUserAgent(userAgent: string): boolean {
   return /iPad|iPhone|iPod/.test(userAgent);
 }
@@ -20,7 +26,7 @@ function isInStandaloneMode(): boolean {
 
 export function PwaInstallAssistant() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [status, setStatus] = useState<"idle" | "installed" | "dismissed">("idle");
+  const [status, setStatus] = useState<"idle" | "installed" | "dismissed" | "manual">("idle");
 
   const platform = useMemo(() => {
     if (typeof window === "undefined") {
@@ -37,14 +43,38 @@ export function PwaInstallAssistant() {
     const handler = (event: Event) => {
       event.preventDefault();
       setDeferredPrompt(event as BeforeInstallPromptEvent);
+      window.__almaDeferredInstallPrompt = event as BeforeInstallPromptEvent;
     };
 
+    const readyHandler = () => {
+      setDeferredPrompt(window.__almaDeferredInstallPrompt ?? null);
+    };
+
+    const installedHandler = () => {
+      setStatus("installed");
+      setDeferredPrompt(null);
+      window.__almaDeferredInstallPrompt = null;
+    };
+
+    setDeferredPrompt(window.__almaDeferredInstallPrompt ?? null);
+
     window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    window.addEventListener("alma-install-prompt-ready", readyHandler);
+    window.addEventListener("appinstalled", installedHandler);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("alma-install-prompt-ready", readyHandler);
+      window.removeEventListener("appinstalled", installedHandler);
+    };
   }, []);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+      setStatus("manual");
+      return;
+    }
+
     await deferredPrompt.prompt();
     const choice = await deferredPrompt.userChoice;
     setStatus(choice.outcome === "accepted" ? "installed" : "dismissed");
@@ -59,7 +89,7 @@ export function PwaInstallAssistant() {
     );
   }
 
-  if (deferredPrompt) {
+  if (!platform.isIos) {
     return (
       <div className="space-y-3">
         <button
@@ -72,6 +102,11 @@ export function PwaInstallAssistant() {
         </button>
         {status === "dismissed" && (
           <p className="text-sm text-slate-600">No hay problema. Puedes instalarla mas tarde desde el menu del navegador.</p>
+        )}
+        {status === "manual" && (
+          <p className="text-sm text-slate-600">
+            No pudimos abrir el instalador automatico. Abre el menu del navegador y elige Instalar app o Agregar a pantalla de inicio.
+          </p>
         )}
       </div>
     );
