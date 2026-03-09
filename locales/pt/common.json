@@ -35,10 +35,39 @@
       "loggedInAs": "Conectado como {{email}}",
       "tokenLabel": "Token de sessão:",
       "logout": "Sair",
-      "seedSuccess": "Usuário criado com ID: {{userId}}"
+      "seedSuccess": "Usuário criado com ID: {{userId}}",
+      "installCard": {
+        "title": "Instalar app no seu celular",
+        "description": "Você pode instalar o Agente Alma antes de entrar e usar pela tela inicial como app.",
+        "cta": "Instalar app"
+      }
     }
   },
-      "badge": "Explorador local",
+  "installApp": {
+    "badge": "App web oficial",
+    "title": "Instale o Agente Alma no seu celular",
+    "description": "Funciona no iPhone e Android sem loja de apps. Fica na tela inicial como um app.",
+    "backHome": "Voltar ao início",
+    "stepsTitle": "Instalação em 3 passos",
+    "stepOpen": "1) Abra esta página no seu celular.",
+    "stepInstall": "2) Toque em Instalar app ou Adicionar à tela inicial.",
+    "stepLogin": "3) Faça login e use o Alma como app.",
+    "securityTitle": "Segurança e privacidade",
+    "securityDescription": "O Agente Alma roda em HTTPS e usa o mesmo ambiente seguro da versão web. Não há instaladores externos nem APK para iOS.",
+    "securityBadge": "Instalação segura pelo navegador",
+    "assistant": {
+      "installed": "Você já tem o Agente Alma instalado como app web.",
+      "installButton": "Instalar app neste dispositivo",
+      "dismissed": "Sem problema. Você pode instalar depois pelo menu do navegador.",
+      "manual": "Não conseguimos abrir o instalador automático. Abra o menu do navegador e escolha Instalar app ou Adicionar à tela inicial.",
+      "iosTitle": "No iPhone (Safari):",
+      "iosStepShare": "1) Toque em Compartilhar no Safari.",
+      "iosStepAdd": "2) Escolha Adicionar à Tela de Início.",
+      "iosStepOpen": "3) Abra o app pela tela inicial.",
+      "fallbackHint": "Se o botão de instalação não aparecer, abra o menu do navegador e selecione Instalar app ou Adicionar à tela inicial."
+    }
+  },
+  "badge": "Explorador local",
   "dashboard": {
     "locale": "pt-BR",
     "header": {

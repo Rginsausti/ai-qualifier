@@ -3,8 +3,8 @@
 const DEFAULT_TITLE = "Agente saludable";
 const DEFAULT_OPTIONS = {
   body: "Tienes un recordatorio pendiente.",
-  icon: "/images/girl-avatar.png",
-  badge: "/images/girl-avatar.png",
+  icon: "/icons/icon-192.png",
+  badge: "/icons/icon-192.png",
   data: {},
 };
 

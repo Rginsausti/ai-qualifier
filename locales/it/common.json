@@ -4,6 +4,30 @@
     "scrollLeft": "Vedi precedenti",
     "scrollRight": "Vedi successivi"
   },
+  "installApp": {
+    "badge": "Web app ufficiale",
+    "title": "Installa Agente Alma sul tuo telefono",
+    "description": "Funziona su iPhone e Android senza passare dallo store. Rimane nella schermata Home come un'app.",
+    "backHome": "Torna alla home",
+    "stepsTitle": "Installazione in 3 passaggi",
+    "stepOpen": "1) Apri questa pagina dal tuo telefono.",
+    "stepInstall": "2) Tocca Installa app oppure Aggiungi alla schermata Home.",
+    "stepLogin": "3) Accedi e usa Alma come un'app.",
+    "securityTitle": "Sicurezza e privacy",
+    "securityDescription": "Agente Alma usa HTTPS e lo stesso ambiente sicuro della versione web. Non ci sono installer esterni né APK per iOS.",
+    "securityBadge": "Installazione sicura dal browser",
+    "assistant": {
+      "installed": "Hai gia Agente Alma installata come web app.",
+      "installButton": "Installa app su questo dispositivo",
+      "dismissed": "Nessun problema. Puoi installarla piu tardi dal menu del browser.",
+      "manual": "Non siamo riusciti ad aprire l'installer automatico. Apri il menu del browser e scegli Installa app o Aggiungi alla schermata Home.",
+      "iosTitle": "Su iPhone (Safari):",
+      "iosStepShare": "1) Tocca Condividi in Safari.",
+      "iosStepAdd": "2) Scegli Aggiungi alla schermata Home.",
+      "iosStepOpen": "3) Apri l'app dalla schermata Home.",
+      "fallbackHint": "Se il pulsante di installazione non appare, apri il menu del browser e seleziona Installa app o Aggiungi alla schermata Home."
+    }
+  },
   "dashboard": {
     "locale": "it-IT",
     "header": {

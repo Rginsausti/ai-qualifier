@@ -4,6 +4,30 @@
     "scrollLeft": "Nach links scrollen",
     "scrollRight": "Nach rechts scrollen"
   },
+  "installApp": {
+    "badge": "Offizielle Web-App",
+    "title": "Installiere Agente Alma auf deinem Handy",
+    "description": "Funktioniert auf iPhone und Android ohne App-Store. Die App bleibt wie eine native App auf deinem Homescreen.",
+    "backHome": "Zurück zur Startseite",
+    "stepsTitle": "Installation in 3 Schritten",
+    "stepOpen": "1) Öffne diese Seite auf deinem Handy.",
+    "stepInstall": "2) Tippe auf App installieren oder Zum Home-Bildschirm hinzufügen.",
+    "stepLogin": "3) Melde dich an und nutze Alma wie eine App.",
+    "securityTitle": "Sicherheit und Datenschutz",
+    "securityDescription": "Agente Alma läuft über HTTPS und nutzt dieselbe sichere Umgebung wie die Webversion. Es gibt keine externen Installer und kein APK für iOS.",
+    "securityBadge": "Sichere Installation über den Browser",
+    "assistant": {
+      "installed": "Du hast Agente Alma bereits als Web-App installiert.",
+      "installButton": "App auf diesem Gerät installieren",
+      "dismissed": "Kein Problem. Du kannst sie später über das Browser-Menü installieren.",
+      "manual": "Der automatische Installer konnte nicht geöffnet werden. Öffne das Browser-Menü und wähle App installieren oder Zum Home-Bildschirm hinzufügen.",
+      "iosTitle": "Auf iPhone (Safari):",
+      "iosStepShare": "1) Tippe in Safari auf Teilen.",
+      "iosStepAdd": "2) Wähle Zum Home-Bildschirm hinzufügen.",
+      "iosStepOpen": "3) Öffne die App vom Homescreen.",
+      "fallbackHint": "Wenn die Installationsschaltfläche nicht angezeigt wird, öffne das Browser-Menü und wähle App installieren oder Zum Home-Bildschirm hinzufügen."
+    }
+  },
   "dashboard": {
     "locale": "de-DE",
     "header": {

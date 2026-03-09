@@ -4,6 +4,30 @@
     "scrollLeft": "左へスクロール",
     "scrollRight": "右へスクロール"
   },
+  "installApp": {
+    "badge": "公式Webアプリ",
+    "title": "スマホにAgente Almaをインストール",
+    "description": "iPhoneとAndroidでアプリストア不要で利用できます。ホーム画面にアプリとして追加されます。",
+    "backHome": "ホームに戻る",
+    "stepsTitle": "3ステップでインストール",
+    "stepOpen": "1) このページをスマホで開きます。",
+    "stepInstall": "2) 「アプリをインストール」または「ホーム画面に追加」を選びます。",
+    "stepLogin": "3) ログインしてAlmaをアプリのように使います。",
+    "securityTitle": "セキュリティとプライバシー",
+    "securityDescription": "Agente AlmaはHTTPSで動作し、Web版と同じ安全な環境を使用します。外部インストーラーやiOS向けAPKはありません。",
+    "securityBadge": "ブラウザ経由の安全なインストール",
+    "assistant": {
+      "installed": "Agente AlmaはすでにWebアプリとしてインストールされています。",
+      "installButton": "この端末にアプリをインストール",
+      "dismissed": "問題ありません。後でブラウザのメニューからインストールできます。",
+      "manual": "自動インストーラーを開けませんでした。ブラウザメニューから「アプリをインストール」または「ホーム画面に追加」を選んでください。",
+      "iosTitle": "iPhone（Safari）の場合：",
+      "iosStepShare": "1) Safariで共有をタップします。",
+      "iosStepAdd": "2) 「ホーム画面に追加」を選びます。",
+      "iosStepOpen": "3) ホーム画面からアプリを開きます。",
+      "fallbackHint": "インストールボタンが表示されない場合は、ブラウザメニューから「アプリをインストール」または「ホーム画面に追加」を選んでください。"
+    }
+  },
   "dashboard": {
     "locale": "ja-JP",
     "header": {

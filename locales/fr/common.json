@@ -35,7 +35,36 @@
       "loggedInAs": "Connecté en tant que {{email}}",
       "tokenLabel": "Jeton de session :",
       "logout": "Se déconnecter",
-      "seedSuccess": "Utilisateur créé avec ID : {{userId}}"
+      "seedSuccess": "Utilisateur créé avec ID : {{userId}}",
+      "installCard": {
+        "title": "Installer l'app sur votre téléphone",
+        "description": "Vous pouvez installer Agente Alma avant de vous connecter et l'utiliser depuis votre écran d'accueil comme une app.",
+        "cta": "Installer l'app"
+      }
+    }
+  },
+  "installApp": {
+    "badge": "App web officielle",
+    "title": "Installez Agente Alma sur votre téléphone",
+    "description": "Fonctionne sur iPhone et Android sans passer par un store. Elle reste sur votre écran d'accueil comme une app.",
+    "backHome": "Retour à l'accueil",
+    "stepsTitle": "Installation en 3 étapes",
+    "stepOpen": "1) Ouvrez cette page depuis votre téléphone.",
+    "stepInstall": "2) Touchez Installer l'app ou Ajouter à l'écran d'accueil.",
+    "stepLogin": "3) Connectez-vous et utilisez Alma comme une app.",
+    "securityTitle": "Sécurité et confidentialité",
+    "securityDescription": "Agente Alma fonctionne en HTTPS et utilise le même environnement sécurisé que la version web. Il n'y a pas d'installateurs externes ni d'APK pour iOS.",
+    "securityBadge": "Installation sécurisée depuis le navigateur",
+    "assistant": {
+      "installed": "Agente Alma est déjà installée comme app web.",
+      "installButton": "Installer l'app sur cet appareil",
+      "dismissed": "Aucun souci. Vous pouvez l'installer plus tard depuis le menu du navigateur.",
+      "manual": "Nous n'avons pas pu ouvrir l'installateur automatique. Ouvrez le menu du navigateur et choisissez Installer l'app ou Ajouter à l'écran d'accueil.",
+      "iosTitle": "Sur iPhone (Safari) :",
+      "iosStepShare": "1) Touchez Partager dans Safari.",
+      "iosStepAdd": "2) Choisissez Ajouter à l'écran d'accueil.",
+      "iosStepOpen": "3) Ouvrez l'app depuis l'écran d'accueil.",
+      "fallbackHint": "Si le bouton d'installation n'apparaît pas, ouvrez le menu du navigateur et sélectionnez Installer l'app ou Ajouter à l'écran d'accueil."
     }
   },
   "dashboard": {
