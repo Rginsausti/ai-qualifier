@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { LogIn, LogOut, Loader2, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { Download, LogIn, LogOut, Loader2, ShieldCheck } from "lucide-react";
 import type { SupabaseClient, Session, AuthChangeEvent } from "@supabase/supabase-js";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { login, signOut } from "@/lib/auth-actions";
@@ -42,9 +43,17 @@ export function LoginForm() {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [seedStatus, setSeedStatus] = useState<AuthStatus>("idle");
   const [seedMessage, setSeedMessage] = useState<string | null>(null);
+  const [isStandalone, setIsStandalone] = useState(false);
 
   const isLoading = status === "loading";
   const isSeeding = seedStatus === "loading";
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const standalone = (window.navigator as Navigator & { standalone?: boolean }).standalone;
+    const installed = Boolean(standalone) || window.matchMedia("(display-mode: standalone)").matches;
+    setIsStandalone(installed);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -207,6 +216,22 @@ export function LoginForm() {
       <p className="mt-2 text-sm text-slate-600">
         {t("auth.login.description")}
       </p>
+
+      {!isStandalone && (
+        <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
+          <p className="text-sm font-semibold text-emerald-900">Instalar app en tu celular</p>
+          <p className="mt-1 text-sm text-emerald-800">
+            Puedes instalar Agente Alma antes de iniciar sesion y usarla como app desde tu pantalla de inicio.
+          </p>
+          <Link
+            href="/app"
+            className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500"
+          >
+            <Download className="h-4 w-4" />
+            Instalar app
+          </Link>
+        </div>
+      )}
 
       <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
         <label className="flex flex-col text-sm font-medium text-slate-700">
