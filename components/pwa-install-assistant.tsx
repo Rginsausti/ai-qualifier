@@ -74,6 +74,27 @@ export function PwaInstallAssistant() {
 
   const handleInstall = async () => {
     if (!deferredPrompt) {
+      const canUseSw = typeof navigator !== "undefined" && "serviceWorker" in navigator;
+      const hasController = canUseSw ? Boolean(navigator.serviceWorker.controller) : false;
+
+      if (canUseSw && !hasController) {
+        const reloadKey = "alma-install-sw-refresh";
+        const alreadyReloaded = typeof sessionStorage !== "undefined" && sessionStorage.getItem(reloadKey) === "1";
+
+        if (!alreadyReloaded) {
+          try {
+            await navigator.serviceWorker.ready;
+            if (typeof sessionStorage !== "undefined") {
+              sessionStorage.setItem(reloadKey, "1");
+            }
+            window.location.reload();
+            return;
+          } catch {
+            // Continue with diagnostic fallback below.
+          }
+        }
+      }
+
       const isSecure = typeof window !== "undefined" ? window.isSecureContext : false;
       const hasServiceWorker = typeof navigator !== "undefined" && "serviceWorker" in navigator;
       const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
