@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ShieldCheck, Smartphone } from "lucide-react";
 import { PwaInstallAssistant } from "@/components/pwa-install-assistant";
+import { PwaInstalledRedirect } from "@/components/pwa-installed-redirect";
 
 export const metadata: Metadata = {
   title: "Instalar app | Agente Alma",
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 export default function InstallAppPage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-amber-50 via-white to-emerald-50 px-4 py-8 text-slate-900 sm:px-6">
+      <PwaInstalledRedirect />
       <div className="mx-auto w-full max-w-3xl space-y-6">
         <section className="rounded-3xl border border-amber-100 bg-white/90 p-6 shadow-xl shadow-amber-100/40 sm:p-8">
           <p className="inline-flex items-center rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">

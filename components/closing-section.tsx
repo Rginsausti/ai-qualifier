@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { ArrowRight, HeartHandshake, Loader2 } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase/client";
@@ -13,8 +13,16 @@ export function ClosingSection() {
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isStandalone, setIsStandalone] = useState(false);
 
   const isSubmitting = status === "loading";
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const standalone = (window.navigator as Navigator & { standalone?: boolean }).standalone;
+    const installed = Boolean(standalone) || window.matchMedia("(display-mode: standalone)").matches;
+    setIsStandalone(installed);
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -74,13 +82,15 @@ export function ClosingSection() {
           <p className="text-base text-white/80">
             {t("closingSection.description")}
           </p>
-          <Link
-            href="/app"
-            className="inline-flex items-center gap-2 rounded-full border border-white/20 px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:-translate-y-0.5"
-          >
-            {t("closingSection.secondaryCta")}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+          {!isStandalone && (
+            <Link
+              href="/app"
+              className="inline-flex items-center gap-2 rounded-full border border-white/20 px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:-translate-y-0.5"
+            >
+              {t("closingSection.secondaryCta")}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
         </div>
         <form
           className="space-y-4 rounded-3xl bg-white/10 p-6 backdrop-blur"
