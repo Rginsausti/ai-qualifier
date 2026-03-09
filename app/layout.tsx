@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { I18nProvider } from "@/components/i18n-provider";
 import { PageTransition } from "@/components/page-transition";
@@ -60,6 +61,13 @@ export default async function RootLayout({
       <body
         className={`${plusJakarta.variable} ${geistMono.variable} antialiased`}
       >
+        <Script
+          id="alma-capture-install-prompt"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: "window.__almaDeferredInstallPrompt=window.__almaDeferredInstallPrompt||null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__almaDeferredInstallPrompt=e;window.dispatchEvent(new Event('alma-install-prompt-ready'));});window.addEventListener('appinstalled',function(){window.__almaDeferredInstallPrompt=null;});",
+          }}
+        />
         <PwaRegister />
         <I18nProvider initialLanguage={lang}>
           <PageTransition>{children}</PageTransition>

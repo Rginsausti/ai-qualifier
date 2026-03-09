@@ -29,6 +29,7 @@ export function PwaInstallAssistant() {
   const { t } = useTranslation();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [status, setStatus] = useState<"idle" | "installed" | "dismissed" | "manual">("idle");
+  const [manualReason, setManualReason] = useState<string | null>(null);
 
   const platform = useMemo(() => {
     if (typeof window === "undefined") {
@@ -73,6 +74,41 @@ export function PwaInstallAssistant() {
 
   const handleInstall = async () => {
     if (!deferredPrompt) {
+      const isSecure = typeof window !== "undefined" ? window.isSecureContext : false;
+      const hasServiceWorker = typeof navigator !== "undefined" && "serviceWorker" in navigator;
+      const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+      const isAndroid = /Android/i.test(ua);
+
+      if (!isSecure) {
+        setManualReason(
+          t(
+            "installApp.assistant.reasonInsecure",
+            "This page is not running in a secure context (HTTPS), so installation is blocked."
+          )
+        );
+      } else if (!hasServiceWorker) {
+        setManualReason(
+          t(
+            "installApp.assistant.reasonNoSw",
+            "Your browser does not support Service Worker, so installation is not available."
+          )
+        );
+      } else if (isAndroid) {
+        setManualReason(
+          t(
+            "installApp.assistant.reasonNoPromptAndroid",
+            "Chrome still has no install prompt available for this session. Open menu (⋮) and tap Install app."
+          )
+        );
+      } else {
+        setManualReason(
+          t(
+            "installApp.assistant.reasonNoPromptGeneric",
+            "Automatic install prompt is not available on this browser right now."
+          )
+        );
+      }
+
       setStatus("manual");
       return;
     }
@@ -80,6 +116,7 @@ export function PwaInstallAssistant() {
     await deferredPrompt.prompt();
     const choice = await deferredPrompt.userChoice;
     setStatus(choice.outcome === "accepted" ? "installed" : "dismissed");
+    setManualReason(null);
     setDeferredPrompt(null);
   };
 
@@ -118,6 +155,7 @@ export function PwaInstallAssistant() {
             )}
           </p>
         )}
+        {status === "manual" && manualReason && <p className="text-xs text-slate-500">{manualReason}</p>}
       </div>
     );
   }
