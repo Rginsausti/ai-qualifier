@@ -179,6 +179,30 @@
       "next": "Próxima meta",
       "cta": "Abrir medalla mindful"
     },
+    "progress": {
+      "badge": "Visión de progreso",
+      "title": "Tu avance en 3 horizontes",
+      "description": "Seguimos adherencia, calidad nutricional e hidratación para sostener cambios reales.",
+      "live": "Actualizado",
+      "week": "Semanal",
+      "weekDetail": "Últimos 7 días",
+      "month": "Mensual",
+      "monthDetail": "Últimos 30 días",
+      "halfyear": "Semestral",
+      "halfyearDetail": "Últimos 180 días",
+      "adherence": "Días con adherencia",
+      "nutrition": "Nutrición",
+      "hydration": "Hidratación",
+      "calories": "kcal prom",
+      "vsPrevious": "vs período previo",
+      "daysShort": "d",
+      "insight": {
+        "title": "Insight IA",
+        "metrics": "Adherencia mes",
+        "good": "Vas muy bien: mantenes constancia mensual y el sistema ya puede recomendarte desafíos un poco más ambiciosos.",
+        "recover": "Hay margen para simplificar la semana: enfocate en una sola acción diaria de baja fricción para recuperar ritmo."
+      }
+    },
     "rewards": {
       "badge": "Nutridor consciente",
       "label": "Recompensas activas",
@@ -794,6 +818,24 @@
       "notHelpful": "No útil",
       "saved": "Gracias por tu feedback",
       "error": "No pudimos guardar tu feedback"
+    },
+    "thinking": "Alma está preparando una recomendación concreta...",
+    "actions": {
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "useAsPlan": "Usar como plan de hoy"
+    },
+    "prompts": {
+      "food": {
+        "dinner": "Dame 3 opciones de cena saludable con lo que tengo",
+        "swap": "Qué puedo comer en vez de algo dulce ahora",
+        "lowFriction": "Una acción simple para mejorar hoy sin esfuerzo"
+      },
+      "movement": {
+        "softWalk": "Armate una caminata suave de 15 minutos",
+        "knees": "Necesito moverme sin dolor de rodillas",
+        "home": "Dame una rutina corta para hacer en casa"
+      }
     }
   },
   "productSearch": {

@@ -10,6 +10,14 @@ Make Alma progressively more helpful for each user.
 - time/context patterns (morning/evening, weekdays/weekends).
 - local search behavior (queries, clicked stores, ignored results, no-result reports).
 
+## Current implemented signals
+- Chat feedback events (`helpful`/`not_helpful`) persisted by assistant message id.
+- Chat quality telemetry persisted in `chat_quality_events`:
+  - token usage (prompt/completion/total),
+  - provider/model and finish reason,
+  - latency and fallback counts.
+- Search-side fallback metadata exposed to UI (`fallback_mode`, `fallback_reason`) for future learning features.
+
 ## Learning loop
 1. Collect behavior signals from interactions.
 2. Aggregate into compact user features (weekly summary).
@@ -28,6 +36,9 @@ Make Alma progressively more helpful for each user.
 - Add user feature snapshot table (updated daily/weekly).
 - Keep raw logs and derived features separate.
 - Add search-quality feedback events (false positive, not available nearby, price mismatch).
+
+## Next implementation step
+- Add nightly aggregation job that joins `chat_feedback_events` + `chat_quality_events` to produce per-user and per-intent feature snapshots.
 
 ## KPIs
 - repeat-use retention,

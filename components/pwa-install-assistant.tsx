@@ -27,7 +27,10 @@ function isInStandaloneMode(): boolean {
 
 export function PwaInstallAssistant() {
   const { t } = useTranslation();
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(() => {
+    if (typeof window === "undefined") return null;
+    return window.__almaDeferredInstallPrompt ?? null;
+  });
   const [status, setStatus] = useState<"idle" | "waiting" | "installed" | "dismissed" | "manual">("idle");
   const [manualReason, setManualReason] = useState<string | null>(null);
 
@@ -58,8 +61,6 @@ export function PwaInstallAssistant() {
       setDeferredPrompt(null);
       window.__almaDeferredInstallPrompt = null;
     };
-
-    setDeferredPrompt(window.__almaDeferredInstallPrompt ?? null);
 
     window.addEventListener("beforeinstallprompt", handler);
     window.addEventListener("alma-install-prompt-ready", readyHandler);

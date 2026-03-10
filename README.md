@@ -4,10 +4,11 @@ Alma es un acompañante digital que escucha tus horarios, revisa tu alacena y re
 
 ## Qué podés hacer hoy
 - Registrar ánimo, hambre y antojos con tres toques.
-- Ver qué hay en tu despensa y qué locales cercanos tienen lo que falta.
+- Ver qué hay en tu despensa y qué locales cercanos tienen lo que falta, con dirección y cómo llegar.
 - Recibir sugerencias inmediatas de comidas reales con ingredientes cotidianos.
 - Seguir misiones gamificadas que premian las pequeñas victorias.
 - Hablar con el demo de coach y sentir cómo Alma responde en menos de un minuto.
+- Buscar productos con fallback inteligente para evitar pantallas vacías cuando la zona tiene poco catálogo.
 
 ## Ritual diario en 5 minutos
 1. **Check-in lúdico:** contás cómo venís y Alma aprende tus ritmos.
@@ -18,6 +19,9 @@ Alma es un acompañante digital que escucha tus horarios, revisa tu alacena y re
 
 ## Barrio + alacena en lenguaje humano
 Analizamos dónde vivís, qué comercios confiables te rodean y qué ingredientes ya tenés. Con eso armamos tableros como “Despensa zen”, “Ánimo & hambre” o “Locales aliados” que podés leer de un vistazo, sin tecnicismos.
+
+## Transparencia en búsqueda local
+Cuando no hay catálogo online suficiente, Alma muestra igual los locales descubiertos con su estado (`catálogo verificado`, `estimado`, `sin catálogo`) y te deja abrir mapa/direcciones para decidir rápido sin datos inventados.
 
 ## Gamificación mindful
 El tablero de misiones trae retos como “Misiones Ayurveda”, “Despensa express” o “Explorador de barrios”. Cada misión tiene puntos, estatus y un beneficio emocional claro. Nada de métricas inentendibles: sólo pasos accionables.
@@ -44,3 +48,7 @@ Toda la app está tokenizada con i18next. Podés cambiar entre español, inglés
 - `docs/architecture/recommendation-quality.md`
 - `docs/architecture/personalization-loop.md`
 - `docs/architecture/implementation-roadmap.md`
+- `docs/architecture/optimization-execution-plan.md`
+
+## Growth and distribution
+- `docs/marketing/apk-landing-plan.md`

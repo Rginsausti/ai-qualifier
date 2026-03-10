@@ -32,9 +32,14 @@ Support growth without adding heavy infrastructure.
 - token usage and cost per successful response.
 - nearby stores discovered vs stores with usable catalog.
 - produce query precision (fresh items vs packaged false positives).
+- zero-result rate and fallback-mode distribution (`none`, `relaxed_relevance`, `relaxed_personalization`).
 
 ## Local commerce scaling notes
 - Discover nearby stores from OSM/geo sources first, persist regardless of catalog availability.
 - Run scraping only for stores with supported brand adapters or valid website sources.
 - Surface "no online catalog" stores in the UX to avoid silent coverage gaps.
 - Use shorter cache TTL for volatile produce queries than for stable packaged-goods searches.
+- Keep discovery cards actionable (address + directions + confidence label) so users can act even without online catalog.
+
+## Observability status
+- Chat quality telemetry is persisted in `chat_quality_events` and can be used for token/cost control loops.

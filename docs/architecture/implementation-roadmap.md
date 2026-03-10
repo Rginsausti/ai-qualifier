@@ -18,7 +18,7 @@ Exit criteria:
 - Expand deterministic pre-LLM policy checks.
 - Add candidate scoring by pantry fit, prep time, and budget realism.
 - Standardize fallback behavior when providers fail. (done)
-- Add quality telemetry for suggestion outcomes. (in progress: LLM usage + latency telemetry persisted)
+- Add quality telemetry for suggestion outcomes. (done: `chat_quality_events` with tokens, latency, provider/model, fallback_count)
 - Enforce commerce-truthfulness guardrails (no unverified prices, explicit fallback messaging). (done)
 - Add semantic intent filters for local search (fresh produce vs packaged lookalikes). (done)
 
@@ -29,11 +29,13 @@ Exit criteria:
 - produce search precision improves with stable regression tests.
 
 ## Phase 2.5 - Local Commerce Coverage and Trust (P1)
+- Status: in progress (2026-02-13)
 - Split discovery and catalog coverage in APIs and UI.
-- Persist and show nearby stores even when no online catalog exists.
+- Persist and show nearby stores even when no online catalog exists. (done)
 - Expand store discovery sources and deduplication for neighborhood coverage.
-- Add confidence labels (`verified`, `estimated`, `no_catalog`) for market data.
-- Tune cache policy by query intent (shorter TTL for volatile produce searches).
+- Add confidence labels (`verified`, `estimated`, `no_catalog`) for market data. (done)
+- Tune cache policy by query intent (shorter TTL for volatile produce searches). (done)
+- Add no-result fallback ladder for product search (`relaxed_relevance`, `relaxed_personalization`). (done)
 
 Exit criteria:
 - increase in nearby stores surfaced per search area,

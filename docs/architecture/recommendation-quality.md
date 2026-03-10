@@ -17,6 +17,14 @@ Increase recommendation usefulness while enforcing nutrition safety.
 4. LLM generation with strict prompt contract.
 5. Output sanity checks before response.
 
+## Current implementation status
+- Product search now applies a fallback ladder to avoid hard zero-result UX:
+  - strict relevance,
+  - relaxed relevance (`fallback_mode=relaxed_relevance`),
+  - relaxed personalization when only soft preferences block all options (`fallback_mode=relaxed_personalization`).
+- Nearby store cards now expose actionable context: distance, address (when available), directions link, and confidence label.
+- Chat quality telemetry is persisted in `chat_quality_events` (tokens, latency, provider/model, finish/failure and fallback count).
+
 ## Commerce truthfulness rules
 - If price evidence is missing, explicitly state that no verified price is available.
 - Label results by confidence (`verified`, `estimated`, `no_catalog`) instead of guessing.

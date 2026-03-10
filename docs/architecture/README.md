@@ -13,3 +13,7 @@ This folder keeps the long-term technical direction for Alma.
 - Keep decisions concrete and testable.
 - Update roadmap status when a phase starts/completes.
 - Reflect major architectural changes in `README.md` links.
+
+## Current status snapshot (2026-02-13)
+- Phase 2 (Recommendation Quality): in progress, telemetry and fallback standardization implemented.
+- Phase 2.5 (Local Commerce Coverage and Trust): in progress, discovery/catalog split and confidence labels implemented.

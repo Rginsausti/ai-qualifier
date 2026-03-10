@@ -5,7 +5,7 @@ import { QuickLogPanel } from "@/components/quick-log";
 import { CoachSection } from "@/components/coach-section";
 import { MultimodalInput } from "@/components/logging/MultimodalInput";
 import { useTranslation } from "react-i18next";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useMemo, useRef, useCallback, useTransition } from "react";
 import type { KeyboardEvent } from "react";
 import Image from "next/image";
@@ -20,6 +20,7 @@ import {
   ArrowRight,
   Award,
   BellRing,
+  ChevronDown,
   Droplet,
   Droplets,
   Flame,
@@ -35,6 +36,9 @@ import {
   Zap,
   LogOut,
   X,
+  ClipboardList,
+  ArrowUpRight,
+  ArrowDownRight,
   type LucideIcon,
 } from "lucide-react";
 
@@ -164,6 +168,32 @@ const getSectionReveal = (reducedMotion: boolean, delay = 0) => {
     whileInView: { opacity: 1, y: 0 },
     transition: { duration: 0.34, ease: [0, 0, 0.2, 1] as const, delay },
   };
+};
+
+type ProgressPeriodSummary = {
+  periodDays: number;
+  adherenceDays: number;
+  nutritionGoalDays: number;
+  hydrationGoalDays: number;
+  avgCalories: number;
+  avgWater: number;
+  completionRate: number;
+};
+
+type ProgressInsight = {
+  current: ProgressPeriodSummary;
+  previous: ProgressPeriodSummary;
+  trend: {
+    adherenceDelta: number;
+    caloriesDelta: number;
+    hydrationDelta: number;
+  };
+};
+
+type ProgressInsights = {
+  week: ProgressInsight;
+  month: ProgressInsight;
+  halfyear: ProgressInsight;
 };
 
 type RewardLevel = {
@@ -316,19 +346,24 @@ export default function DashboardClient({
   streak = 0,
   dailyStats,
   initialQuickLog,
+  progressInsights,
 }: { 
   dailyPlan?: DailyPlanContent; 
   streak?: number;
   dailyStats?: DailyStats | null;
   initialQuickLog?: { energy: string | null; hunger: number | null; craving: string | null } | null;
+  progressInsights?: ProgressInsights | null;
 }) {
   const prefersReducedMotion = useReducedMotion();
   const reducedMotion = Boolean(prefersReducedMotion);
+  const [motionProfile, setMotionProfile] = useState<"full" | "lite">("full");
+  const [openPanels, setOpenPanels] = useState({ quickWins: true, neighborhood: true });
   const hydratedEnergy = normalizeEnergy(initialQuickLog?.energy ?? null);
   const hydratedCraving = normalizeCraving(initialQuickLog?.craving ?? null);
   const hydratedHunger = normalizeHunger(initialQuickLog?.hunger ?? null);
   const { t } = useTranslation();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [notes, setNotes] = useState("");
   const [isMultimodalOpen, setIsMultimodalOpen] = useState(false);
   const [multimodalMode, setMultimodalMode] = useState<"voice" | "multi">("multi");
@@ -364,6 +399,27 @@ export default function DashboardClient({
     disablePush,
   } = usePushNotifications();
   const [isLoggingOut, startLogoutTransition] = useTransition();
+  const prefilledPlan = searchParams.get("prefillPlan");
+  const hasAppliedPrefilledPlan = useRef(false);
+
+  useEffect(() => {
+    if (reducedMotion) {
+      setMotionProfile("lite");
+      return;
+    }
+
+    const memory = typeof navigator !== "undefined" ? (navigator as Navigator & { deviceMemory?: number }).deviceMemory : undefined;
+    if (typeof memory === "number" && memory <= 4) {
+      setMotionProfile("lite");
+      return;
+    }
+
+    setMotionProfile("full");
+  }, [reducedMotion]);
+
+  const togglePanel = (panel: "quickWins" | "neighborhood") => {
+    setOpenPanels((prev) => ({ ...prev, [panel]: !prev[panel] }));
+  };
 
   const handleNotificationsToggle = async () => {
     if (pushEnabled) {
@@ -422,6 +478,18 @@ export default function DashboardClient({
     }, 50);
     return () => clearTimeout(focusTimeout);
   }, [isFoodNoteDialogOpen]);
+
+  useEffect(() => {
+    if (!prefilledPlan || hasAppliedPrefilledPlan.current) return;
+    const trimmed = prefilledPlan.trim();
+    if (!trimmed) return;
+    setFoodNote(trimmed);
+    setFoodNoteError(null);
+    setFoodNoteStatus("idle");
+    setIsFoodNoteDialogOpen(true);
+    hasAppliedPrefilledPlan.current = true;
+    router.replace("/", { scroll: false });
+  }, [prefilledPlan, router]);
 
   const getCopy = useCallback(
     (key: string, fallback: string) => t(key, { defaultValue: fallback }),
@@ -588,6 +656,52 @@ export default function DashboardClient({
       barColor: "bg-lime-600",
     },
   ];
+
+  const progressCards = useMemo(
+    () => [
+      {
+        id: "week",
+        title: getCopy("dashboard.progress.week", "Semanal"),
+        subtitle: getCopy("dashboard.progress.weekDetail", "Últimos 7 días"),
+        data: progressInsights?.week,
+        accent: "from-emerald-500 via-teal-500 to-cyan-500",
+      },
+      {
+        id: "month",
+        title: getCopy("dashboard.progress.month", "Mensual"),
+        subtitle: getCopy("dashboard.progress.monthDetail", "Últimos 30 días"),
+        data: progressInsights?.month,
+        accent: "from-amber-500 via-orange-500 to-rose-500",
+      },
+      {
+        id: "halfyear",
+        title: getCopy("dashboard.progress.halfyear", "Semestral"),
+        subtitle: getCopy("dashboard.progress.halfyearDetail", "Últimos 180 días"),
+        data: progressInsights?.halfyear,
+        accent: "from-indigo-500 via-violet-500 to-fuchsia-500",
+      },
+    ],
+    [getCopy, progressInsights]
+  );
+
+  const formatDelta = (value: number) => {
+    if (value > 0) return `+${value}`;
+    if (value < 0) return `${value}`;
+    return "0";
+  };
+
+  const monthlyAdherence = progressInsights?.month.current.adherenceDays ?? 0;
+  const monthlyDays = progressInsights?.month.current.periodDays ?? 30;
+  const monthlyHydration = progressInsights?.month.current.hydrationGoalDays ?? 0;
+  const insightSummary = monthlyAdherence >= Math.round(monthlyDays * 0.6)
+    ? getCopy(
+        "dashboard.progress.insight.good",
+        "Vas muy bien: mantenes constancia mensual y el sistema ya puede recomendarte desafíos un poco más ambiciosos."
+      )
+    : getCopy(
+        "dashboard.progress.insight.recover",
+        "Hay margen para simplificar la semana: enfocate en una sola acción diaria de baja fricción para recuperar ritmo."
+      );
 
   const handleAddWater = async () => {
     const amount = 250; // 1 glass
@@ -806,9 +920,19 @@ export default function DashboardClient({
               <MessageCircle className="h-4 w-4" />
               {getCopy("dashboard.header.chat", "Chat")}
             </m.button>
-            <button
+            <m.button
               onClick={handleNotificationsToggle}
               disabled={pushLoading}
+              whileHover={reducedMotion ? undefined : { y: -1, scale: 1.01 }}
+              whileTap={reducedMotion ? undefined : { scaleX: 0.98, scaleY: 1.02 }}
+              animate={
+                reducedMotion
+                  ? { scale: 1 }
+                  : pushEnabled
+                    ? { scaleX: [1, 0.97, 1.03, 1], rotate: [0, -1.2, 1.2, 0] }
+                    : { scaleX: 1, rotate: 0 }
+              }
+              transition={{ duration: motionProfile === "full" ? 0.42 : 0.22, ease: [0.2, 0.8, 0.2, 1] }}
               className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium shadow-sm shadow-white/40 transition ${
                 pushEnabled
                   ? "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-500"
@@ -821,7 +945,7 @@ export default function DashboardClient({
                 : pushEnabled
                   ? getCopy("dashboard.header.alerts.enabled", "Recordatorios activos")
                   : getCopy("dashboard.header.alerts.label", "Notificaciones suaves")}
-            </button>
+            </m.button>
             <div className="flex w-full justify-center sm:w-auto sm:justify-end">
               <LanguageSwitcher
                 variant="minimal"
@@ -1331,6 +1455,102 @@ export default function DashboardClient({
           </m.article>
         </section>
 
+        <m.section
+          {...getSectionReveal(reducedMotion, 0.14)}
+          viewport={{ once: true, amount: 0.25 }}
+          className="mt-10"
+        >
+          <article className="rounded-3xl border border-white/60 bg-white/85 p-6 shadow-lg shadow-slate-200/70">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
+                  {getCopy("dashboard.progress.badge", "Visión de progreso")}
+                </p>
+                <h3 className="mt-2 text-2xl font-semibold text-slate-900">
+                  {getCopy("dashboard.progress.title", "Tu avance en 3 horizontes")}
+                </h3>
+                <p className="mt-1 text-sm text-slate-600">
+                  {getCopy(
+                    "dashboard.progress.description",
+                    "Seguimos adherencia, calidad nutricional e hidratación para sostener cambios reales."
+                  )}
+                </p>
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white">
+                <ClipboardList className="h-4 w-4" />
+                {getCopy("dashboard.progress.live", "Actualizado")}
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {progressCards.map((card) => {
+                const data = card.data;
+                const completion = data?.current.completionRate ?? 0;
+                const adherenceDelta = data?.trend.adherenceDelta ?? 0;
+                const hydrationDelta = data?.trend.hydrationDelta ?? 0;
+                const caloriesDelta = data?.trend.caloriesDelta ?? 0;
+                const positiveAdherence = adherenceDelta >= 0;
+
+                return (
+                  <div
+                    key={card.id}
+                    className="relative overflow-hidden rounded-3xl border border-white/70 bg-white/90 p-5 shadow-sm"
+                  >
+                    <div className={`pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${card.accent}`} />
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400">{card.title}</p>
+                    <p className="mt-1 text-xs text-slate-500">{card.subtitle}</p>
+
+                    <div className="mt-4 flex items-end justify-between">
+                      <p className="text-4xl font-semibold text-slate-900">{Math.round(completion)}%</p>
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold ${positiveAdherence ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
+                        {positiveAdherence ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
+                        {formatDelta(adherenceDelta)}d
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {getCopy("dashboard.progress.adherence", "Días con adherencia")}: {data?.current.adherenceDays ?? 0}/{data?.current.periodDays ?? 0}
+                    </p>
+
+                    <div className="mt-4 space-y-2">
+                      <div className="h-2 rounded-full bg-slate-100">
+                        <div className="h-full rounded-full bg-slate-900" style={{ width: `${Math.min(100, completion)}%` }} />
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-[11px] text-slate-500">
+                        <p>
+                          {getCopy("dashboard.progress.nutrition", "Nutrición")}
+                          <br />
+                          <span className="font-semibold text-slate-700">{data?.current.nutritionGoalDays ?? 0}d</span>
+                        </p>
+                        <p>
+                          {getCopy("dashboard.progress.hydration", "Hidratación")}
+                          <br />
+                          <span className="font-semibold text-slate-700">{data?.current.hydrationGoalDays ?? 0}d</span>
+                        </p>
+                        <p>
+                          {getCopy("dashboard.progress.calories", "kcal prom")}
+                          <br />
+                          <span className="font-semibold text-slate-700">{Math.round(data?.current.avgCalories ?? 0)}</span>
+                        </p>
+                      </div>
+                      <p className="text-[11px] text-slate-500">
+                        {getCopy("dashboard.progress.vsPrevious", "vs período previo")}: {formatDelta(caloriesDelta)} kcal, {formatDelta(hydrationDelta)} {getCopy("dashboard.progress.daysShort", "d")}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50/90 px-4 py-3 text-sm text-slate-700">
+              <span className="font-semibold text-slate-900">{getCopy("dashboard.progress.insight.title", "Insight IA")}: </span>
+              {insightSummary}
+              <span className="ml-2 text-xs text-slate-500">
+                {getCopy("dashboard.progress.insight.metrics", "Adherencia mes")}: {monthlyAdherence}/{monthlyDays} · {getCopy("dashboard.progress.hydration", "Hidratación")}: {monthlyHydration}/{monthlyDays}
+              </span>
+            </div>
+          </article>
+        </m.section>
+
         <SectionSeparator
           src="/images/separador_transparent_3.png"
           height={220}
@@ -1351,7 +1571,13 @@ export default function DashboardClient({
             transition={{ duration: 0.35, ease: "easeOut" }}
             className="rounded-3xl border border-white/60 bg-white/80 p-6 shadow-lg shadow-emerald-100"
           >
-            <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => togglePanel("quickWins")}
+              aria-expanded={openPanels.quickWins}
+              aria-controls="quickwins-panel"
+              className="flex w-full items-center justify-between rounded-2xl px-1 py-1 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
+            >
               <div>
                 <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
                   {getCopy("dashboard.quickwins.badge", "Atajos")}
@@ -1360,43 +1586,76 @@ export default function DashboardClient({
                   {getCopy("dashboard.quickwins.title", "Acciones rápidas")}
                 </h3>
               </div>
-              <Zap className="h-6 w-6 text-emerald-500" />
-            </div>
-            <div className="mt-6 grid gap-4 md:grid-cols-3">
-              {quickWins.map((item) => {
-                const actionMap: Record<string, () => void> = {
-                  voice: handleQuickVoice,
-                  pantry: handleQuickPantry,
-                  walk: handleMindfulWalk,
-                };
-                const onClick = actionMap[item.id] || (() => undefined);
-                return (
-                  <m.button
-                    type="button"
-                    key={item.labelKey}
-                    onClick={onClick}
-                    whileHover={reducedMotion ? undefined : { y: -2, scale: 1.02 }}
-                    whileTap={reducedMotion ? undefined : { scale: 0.98 }}
-                    transition={springButton}
-                    className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 text-left transition hover:border-emerald-400 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
-                  >
-                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-900 shadow">
-                      <item.icon className="h-5 w-5" />
-                    </div>
-                    <p className="mt-3 text-sm font-semibold text-slate-900">
-                      {getCopy(item.labelKey, "Acción")}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {getCopy(item.detailKey, "Detalle breve")}
-                    </p>
-                  </m.button>
-                );
-              })}
-            </div>
+              <div className="flex items-center gap-2 text-slate-500">
+                <Zap className="h-6 w-6 text-emerald-500" />
+                <m.span
+                  animate={openPanels.quickWins ? { rotate: 180 } : { rotate: 0 }}
+                  transition={{ duration: motionProfile === "full" ? 0.24 : 0.14, ease: [0.2, 0.8, 0.2, 1] }}
+                >
+                  <ChevronDown className="h-5 w-5" />
+                </m.span>
+              </div>
+            </button>
+            <m.div
+              id="quickwins-panel"
+              initial={false}
+              animate={openPanels.quickWins ? "open" : "closed"}
+              variants={{
+                open: { height: "auto", opacity: 1, marginTop: 24 },
+                closed: { height: 0, opacity: 0, marginTop: 0 },
+              }}
+              transition={{ duration: motionProfile === "full" ? 0.3 : 0.18, ease: [0.2, 0.8, 0.2, 1] }}
+              className="overflow-hidden"
+              aria-hidden={!openPanels.quickWins}
+            >
+              <div className="grid gap-4 md:grid-cols-3">
+                {quickWins.map((item) => {
+                  const actionMap: Record<string, () => void> = {
+                    voice: handleQuickVoice,
+                    pantry: handleQuickPantry,
+                    walk: handleMindfulWalk,
+                  };
+                  const onClick = actionMap[item.id] || (() => undefined);
+                  return (
+                    <m.button
+                      type="button"
+                      key={item.labelKey}
+                      onClick={onClick}
+                      whileHover={reducedMotion ? undefined : { y: -2, scale: 1.02 }}
+                      whileTap={reducedMotion ? undefined : { scale: 0.98 }}
+                      transition={springButton}
+                      className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 text-left transition hover:border-emerald-400 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
+                    >
+                      <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-900 shadow">
+                        <item.icon className="h-5 w-5" />
+                      </div>
+                      <p className="mt-3 text-sm font-semibold text-slate-900">
+                        {getCopy(item.labelKey, "Acción")}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {getCopy(item.detailKey, "Detalle breve")}
+                      </p>
+                    </m.button>
+                  );
+                })}
+              </div>
+            </m.div>
           </m.article>
 
-          <article className="rounded-3xl border border-white/60 bg-white/80 p-6 shadow-lg shadow-emerald-100">
-            <div className="flex items-center justify-between">
+          <m.article
+            initial={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 10 }}
+            whileInView={reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.35, ease: [0, 0, 0.2, 1] }}
+            className="rounded-3xl border border-white/60 bg-white/80 p-6 shadow-lg shadow-emerald-100"
+          >
+            <button
+              type="button"
+              onClick={() => togglePanel("neighborhood")}
+              aria-expanded={openPanels.neighborhood}
+              aria-controls="neighborhood-panel"
+              className="flex w-full items-center justify-between rounded-2xl px-1 py-1 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
+            >
               <div>
                 <p className="text-xs uppercase tracking-[0.4em] text-slate-400">
                   {getCopy("dashboard.neighborhood.badge", "Cerca tuyo")}
@@ -1405,16 +1664,39 @@ export default function DashboardClient({
                   {getCopy("dashboard.neighborhood.title", "Vecindario mindful")}
                 </h3>
               </div>
-              <MapPin className="h-6 w-6 text-rose-500" />
-            </div>
-            <p className="mt-3 text-sm text-slate-600">
-              {getCopy(
-                "dashboard.neighborhood.subtitle",
-                "Compartí tu ubicación para ordenar con IA los locales más alineados a tu plan."
-              )}
-            </p>
-            <HealthyNeighborhoodPanel />
-          </article>
+              <div className="flex items-center gap-2 text-slate-500">
+                <MapPin className="h-6 w-6 text-rose-500" />
+                <m.span
+                  animate={openPanels.neighborhood ? { rotate: 180 } : { rotate: 0 }}
+                  transition={{ duration: motionProfile === "full" ? 0.24 : 0.14, ease: [0.2, 0.8, 0.2, 1] }}
+                >
+                  <ChevronDown className="h-5 w-5" />
+                </m.span>
+              </div>
+            </button>
+            <m.div
+              id="neighborhood-panel"
+              initial={false}
+              animate={openPanels.neighborhood ? "open" : "closed"}
+              variants={{
+                open: { height: "auto", opacity: 1, marginTop: 12 },
+                closed: { height: 0, opacity: 0, marginTop: 0 },
+              }}
+              transition={{ duration: motionProfile === "full" ? 0.3 : 0.18, ease: [0.2, 0.8, 0.2, 1] }}
+              className="overflow-hidden"
+              aria-hidden={!openPanels.neighborhood}
+            >
+              <p className="text-sm text-slate-600">
+                {getCopy(
+                  "dashboard.neighborhood.subtitle",
+                  "Compartí tu ubicación para ordenar con IA los locales más alineados a tu plan."
+                )}
+              </p>
+              <div className="mt-3">
+                <HealthyNeighborhoodPanel />
+              </div>
+            </m.div>
+          </m.article>
         </m.section>
         <div className="mt-16 flex justify-center">
           <m.button

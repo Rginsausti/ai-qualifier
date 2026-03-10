@@ -58,6 +58,233 @@ function getTodayRangeIso(timezone: string) {
     }
 }
 
+function getRangeIsoForDays(timezone: string, days: number, offsetDays = 0) {
+    try {
+        const now = new Date();
+        const zonedNow = toZonedTime(now, timezone);
+        const zonedStartToday = startOfDay(zonedNow);
+        const periodEnd = addDays(zonedStartToday, 1 - offsetDays);
+        const periodStart = addDays(periodEnd, -days);
+        const utcStart = fromZonedTime(periodStart, timezone);
+        const utcEnd = fromZonedTime(periodEnd, timezone);
+        return {
+            startIso: utcStart.toISOString(),
+            endIso: utcEnd.toISOString(),
+        };
+    } catch (error) {
+        console.error("getRangeIsoForDays: fallback to UTC", error);
+        const end = new Date();
+        end.setUTCHours(0, 0, 0, 0);
+        end.setUTCDate(end.getUTCDate() + 1 - offsetDays);
+        const start = new Date(end);
+        start.setUTCDate(start.getUTCDate() - days);
+        return {
+            startIso: start.toISOString(),
+            endIso: end.toISOString(),
+        };
+    }
+}
+
+type PeriodProgressSummary = {
+    periodDays: number;
+    adherenceDays: number;
+    nutritionGoalDays: number;
+    hydrationGoalDays: number;
+    avgCalories: number;
+    avgWater: number;
+    completionRate: number;
+};
+
+type ProgressInsight = {
+    current: PeriodProgressSummary;
+    previous: PeriodProgressSummary;
+    trend: {
+        adherenceDelta: number;
+        caloriesDelta: number;
+        hydrationDelta: number;
+    };
+};
+
+type ProgressInsights = {
+    week: ProgressInsight;
+    month: ProgressInsight;
+    halfyear: ProgressInsight;
+};
+
+type DayAggregate = {
+    calories: number;
+    water: number;
+    adherence: boolean;
+};
+
+const roundMetric = (value: number) => Math.round(value * 10) / 10;
+
+const aggregatePeriodProgress = (params: {
+    timezone: string;
+    periodDays: number;
+    quickLogs: Array<{ created_at: string }>;
+    nutritionLogs: Array<{ created_at: string; calories: number | null }>;
+    waterLogs: Array<{ created_at: string; amount_ml: number | null }>;
+    calorieGoal: number;
+    waterGoal: number;
+}): PeriodProgressSummary => {
+    const {
+        timezone,
+        periodDays,
+        quickLogs,
+        nutritionLogs,
+        waterLogs,
+        calorieGoal,
+        waterGoal,
+    } = params;
+
+    const dayMap = new Map<string, DayAggregate>();
+
+    const ensureDay = (isoDate: string) => {
+        if (!dayMap.has(isoDate)) {
+            dayMap.set(isoDate, { calories: 0, water: 0, adherence: false });
+        }
+        return dayMap.get(isoDate)!;
+    };
+
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+        timeZone: timezone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+    });
+
+    const toLocalDate = (value: string) => {
+        const parts = formatter.formatToParts(new Date(value));
+        const year = parts.find((part) => part.type === "year")?.value;
+        const month = parts.find((part) => part.type === "month")?.value;
+        const day = parts.find((part) => part.type === "day")?.value;
+        if (!year || !month || !day) return "";
+        return `${year}-${month}-${day}`;
+    };
+
+    quickLogs.forEach((log) => {
+        const key = toLocalDate(log.created_at);
+        const day = ensureDay(key);
+        day.adherence = true;
+    });
+
+    nutritionLogs.forEach((log) => {
+        const key = toLocalDate(log.created_at);
+        const day = ensureDay(key);
+        day.calories += Number(log.calories || 0);
+    });
+
+    waterLogs.forEach((log) => {
+        const key = toLocalDate(log.created_at);
+        const day = ensureDay(key);
+        day.water += Number(log.amount_ml || 0);
+    });
+
+    const allDays = Array.from(dayMap.values());
+    const adherenceDays = allDays.filter((day) => day.adherence).length;
+    const hydrationGoalDays = allDays.filter((day) => day.water >= waterGoal).length;
+    const nutritionGoalDays = allDays.filter((day) => {
+        if (day.calories <= 0) return false;
+        return day.calories >= calorieGoal * 0.85 && day.calories <= calorieGoal * 1.15;
+    }).length;
+
+    const caloriesTotal = allDays.reduce((acc, day) => acc + day.calories, 0);
+    const waterTotal = allDays.reduce((acc, day) => acc + day.water, 0);
+
+    return {
+        periodDays,
+        adherenceDays,
+        nutritionGoalDays,
+        hydrationGoalDays,
+        avgCalories: roundMetric(caloriesTotal / periodDays),
+        avgWater: roundMetric(waterTotal / periodDays),
+        completionRate: roundMetric((adherenceDays / periodDays) * 100),
+    };
+};
+
+async function buildProgressInsight(params: {
+    userId: string;
+    timezone: string;
+    calorieGoal: number;
+    waterGoal: number;
+    periodDays: number;
+}): Promise<ProgressInsight> {
+    const { userId, timezone, calorieGoal, waterGoal, periodDays } = params;
+    const supabase = getSupabaseServiceClient();
+    const currentRange = getRangeIsoForDays(timezone, periodDays, 0);
+    const previousRange = getRangeIsoForDays(timezone, periodDays, periodDays);
+
+    const [quickLogsCurrent, quickLogsPrevious, nutritionCurrent, nutritionPrevious, waterCurrent, waterPrevious] = await Promise.all([
+        supabase
+            .from("quick_logs")
+            .select("created_at")
+            .eq("user_id", userId)
+            .gte("created_at", currentRange.startIso)
+            .lt("created_at", currentRange.endIso),
+        supabase
+            .from("quick_logs")
+            .select("created_at")
+            .eq("user_id", userId)
+            .gte("created_at", previousRange.startIso)
+            .lt("created_at", previousRange.endIso),
+        supabase
+            .from("nutrition_logs")
+            .select("created_at, calories")
+            .eq("user_id", userId)
+            .gte("created_at", currentRange.startIso)
+            .lt("created_at", currentRange.endIso),
+        supabase
+            .from("nutrition_logs")
+            .select("created_at, calories")
+            .eq("user_id", userId)
+            .gte("created_at", previousRange.startIso)
+            .lt("created_at", previousRange.endIso),
+        supabase
+            .from("water_logs")
+            .select("created_at, amount_ml")
+            .eq("user_id", userId)
+            .gte("created_at", currentRange.startIso)
+            .lt("created_at", currentRange.endIso),
+        supabase
+            .from("water_logs")
+            .select("created_at, amount_ml")
+            .eq("user_id", userId)
+            .gte("created_at", previousRange.startIso)
+            .lt("created_at", previousRange.endIso),
+    ]);
+
+    const current = aggregatePeriodProgress({
+        timezone,
+        periodDays,
+        quickLogs: quickLogsCurrent.data || [],
+        nutritionLogs: nutritionCurrent.data || [],
+        waterLogs: waterCurrent.data || [],
+        calorieGoal,
+        waterGoal,
+    });
+
+    const previous = aggregatePeriodProgress({
+        timezone,
+        periodDays,
+        quickLogs: quickLogsPrevious.data || [],
+        nutritionLogs: nutritionPrevious.data || [],
+        waterLogs: waterPrevious.data || [],
+        calorieGoal,
+        waterGoal,
+    });
+
+    return {
+        current,
+        previous,
+        trend: {
+            adherenceDelta: current.adherenceDays - previous.adherenceDays,
+            caloriesDelta: roundMetric(current.avgCalories - previous.avgCalories),
+            hydrationDelta: current.hydrationGoalDays - previous.hydrationGoalDays,
+        },
+    };
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function saveOnboardingData(data: any, userId?: string) {
     const supabase = getSupabaseServiceClient();
@@ -366,6 +593,27 @@ export async function getTodayNutritionLogs(userId: string, locale?: string) {
     }
 
     return data || [];
+}
+
+export async function getProgressInsights(userId: string, locale?: string): Promise<ProgressInsights> {
+    const supabase = getSupabaseServiceClient();
+    const timezone = resolveTimezone(locale);
+    const { data: profile } = await supabase
+        .from("user_profiles")
+        .select("calculated_calories, water_goal_ml")
+        .eq("user_id", userId)
+        .single();
+
+    const calorieGoal = profile?.calculated_calories || 2000;
+    const waterGoal = profile?.water_goal_ml || 2000;
+
+    const [week, month, halfyear] = await Promise.all([
+        buildProgressInsight({ userId, timezone, calorieGoal, waterGoal, periodDays: 7 }),
+        buildProgressInsight({ userId, timezone, calorieGoal, waterGoal, periodDays: 30 }),
+        buildProgressInsight({ userId, timezone, calorieGoal, waterGoal, periodDays: 180 }),
+    ]);
+
+    return { week, month, halfyear };
 }
 
 async function resolveUserLocale(userId: string, locale?: string) {

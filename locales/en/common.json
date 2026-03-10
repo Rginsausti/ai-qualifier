@@ -180,6 +180,30 @@
       "next": "Next milestone",
       "cta": "Open mindful medal"
     },
+    "progress": {
+      "badge": "Progress view",
+      "title": "Your progress across 3 horizons",
+      "description": "We track adherence, nutrition quality and hydration to sustain real change.",
+      "live": "Updated",
+      "week": "Weekly",
+      "weekDetail": "Last 7 days",
+      "month": "Monthly",
+      "monthDetail": "Last 30 days",
+      "halfyear": "Semiannual",
+      "halfyearDetail": "Last 180 days",
+      "adherence": "Adherence days",
+      "nutrition": "Nutrition",
+      "hydration": "Hydration",
+      "calories": "avg kcal",
+      "vsPrevious": "vs previous period",
+      "daysShort": "d",
+      "insight": {
+        "title": "AI Insight",
+        "metrics": "Month adherence",
+        "good": "You are doing great: monthly consistency is strong, so the system can suggest slightly more ambitious challenges.",
+        "recover": "There is room to simplify this week: focus on one low-friction daily action to regain rhythm."
+      }
+    },
     "rewards": {
       "badge": "Conscious nourisher",
       "label": "Active rewards",
@@ -795,6 +819,24 @@
       "notHelpful": "Not helpful",
       "saved": "Thanks for your feedback",
       "error": "We could not save your feedback"
+    },
+    "thinking": "Alma is preparing a concrete recommendation...",
+    "actions": {
+      "copy": "Copy",
+      "copied": "Copied",
+      "useAsPlan": "Use as today plan"
+    },
+    "prompts": {
+      "food": {
+        "dinner": "Give me 3 healthy dinner options with what I have",
+        "swap": "What can I eat instead of sweets right now",
+        "lowFriction": "Give me one simple action to improve today"
+      },
+      "movement": {
+        "softWalk": "Build me a gentle 15-minute walk",
+        "knees": "I need movement without knee pain",
+        "home": "Give me a short routine to do at home"
+      }
     }
   },
   "productSearch": {

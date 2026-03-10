@@ -16,6 +16,8 @@ Build a nutrition coach that:
 - Lean, cost-efficient platform components are already in place.
 - Rich domain knowledge exists in `docs/kb/*`.
 - Main user loop (onboarding -> chat -> logs -> dashboard) is implemented.
+- Chat layer now tracks quality telemetry (tokens, latency, provider/fallback outcomes).
+- Local search now exposes discovery vs catalog signals and confidence labels in API/UI.
 
 ## Current risks
 - Runtime coupling: some critical routes handle too many concerns.
@@ -23,7 +25,8 @@ Build a nutrition coach that:
 - Data model drift risk across migrations/routes.
 - Recommendation safety relies heavily on prompt behavior.
 - Local commerce coverage is uneven (chain-heavy bias, sparse small-store catalogs).
-- Search relevance for fresh produce can drift toward packaged false positives.
+- Search relevance for fresh produce can still drift toward packaged false positives in low-catalog zones.
+- Scraping source breadth for neighborhood stores remains the main bottleneck for coverage.
 
 ## Target architecture
 - Keep request path fast and predictable.
