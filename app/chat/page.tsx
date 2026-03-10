@@ -519,7 +519,7 @@ function ChatPageContent() {
             </header>
 
             {/* Chat Area */}
-            <div className="relative z-10 flex-1 overflow-y-auto p-4 sm:p-6">
+            <div className="relative z-10 flex-1 overflow-y-auto p-4 pb-28 sm:p-6 sm:pb-32">
                 <div className="mx-auto max-w-2xl space-y-6">
                     {messages.length === 0 && (
                         <div className="mt-20 flex flex-col items-center text-center">
@@ -548,14 +548,14 @@ function ChatPageContent() {
                     )}
 
                     {messages.length > 0 && (
-                        <div className="sticky top-2 z-10 -mb-1 flex gap-2 overflow-x-auto pb-1">
+                        <div className="flex gap-2 overflow-x-auto pb-2">
                             {suggestedPrompts.map((prompt) => (
                                 <button
                                     key={`floating-${prompt}`}
                                     type="button"
                                     onClick={() => sendMessage(prompt)}
                                     disabled={isLoading}
-                                    className="whitespace-nowrap rounded-full border border-slate-200 bg-white/95 px-3 py-1.5 text-[11px] font-semibold text-slate-600 shadow-sm transition hover:border-slate-400 disabled:opacity-60"
+                                    className="whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-600 shadow-sm transition hover:border-slate-400 disabled:opacity-60"
                                 >
                                     {prompt}
                                 </button>
@@ -591,7 +591,7 @@ function ChatPageContent() {
                                             {formatTimestamp(m.created_at) ? <span>{formatTimestamp(m.created_at)}</span> : null}
                                         </div>
                                         {m.role === "assistant" ? (
-                                            <div className="mt-2 flex flex-wrap items-center gap-2 px-1 text-xs text-slate-500">
+                                            <div className="mt-2 grid grid-cols-1 gap-2 px-1 text-xs text-slate-500 sm:flex sm:flex-wrap sm:items-center">
                                                 {userId ? (
                                                     <>
                                                         <button

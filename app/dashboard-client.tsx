@@ -1710,8 +1710,8 @@ export default function DashboardClient({
           >
             <LogOut className="h-4 w-4" />
             {isLoggingOut
-              ? getCopy("dashboard.footer.loggingOut", "Cerrando sesión…")
-              : getCopy("dashboard.footer.logout", "Cerrar sesión")}
+              ? getCopy("dashboard.header.footer.loggingOut", "Cerrando sesión…")
+              : getCopy("dashboard.header.footer.logout", "Cerrar sesión")}
           </m.button>
         </div>
       </m.main>

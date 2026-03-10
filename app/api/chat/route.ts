@@ -1,6 +1,6 @@
 import { groq } from "@ai-sdk/groq";
 import { createHuggingFace } from "@ai-sdk/huggingface";
-import { streamText } from "ai";
+import { generateText } from "ai";
 import {
   getUserProfile,
   getRecentQuickLogs,
@@ -225,6 +225,8 @@ const hasPriceIntent = (text?: string | null) => {
 
 const buildNoVerifiedPriceMessage = () =>
   "No tengo un precio verificado para ese producto en este momento. Si querés, te recomiendo opciones similares por perfil nutricional sin inventar precios, o podés pedirme precios solo de productos con referencia en mi lista actual.";
+
+const isSpanishLocale = (locale: string) => locale.toLowerCase().startsWith("es");
 
 const formatTimeForLocale = (dateIso?: string | null, locale = "es") => {
   if (!dateIso) return "";
@@ -726,6 +728,107 @@ const buildSafetyGuardrails = (profile: unknown): string => {
   `;
 };
 
+type DraftQualityResult = {
+  pass: boolean;
+  reasons: string[];
+};
+
+const evaluateNutritionDraft = (text: string): DraftQualityResult => {
+  const trimmed = text.trim();
+  const normalized = normalizeText(trimmed);
+  const reasons: string[] = [];
+
+  if (trimmed.length < 160) reasons.push("too_short");
+
+  const bulletLines = trimmed
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("-") || line.startsWith("•") || line.startsWith("*"));
+
+  if (bulletLines.length < 3) reasons.push("missing_structure");
+
+  const hasOptions =
+    normalized.includes("opcion a")
+    || normalized.includes("opcion b")
+    || normalized.includes("plan b")
+    || normalized.includes("option a")
+    || normalized.includes("option b");
+
+  if (!hasOptions) reasons.push("missing_options");
+
+  const hasFallback =
+    normalized.includes("plan b")
+    || normalized.includes("si no tenes")
+    || normalized.includes("si no tienes")
+    || normalized.includes("fallback");
+
+  if (!hasFallback) reasons.push("missing_fallback");
+
+  const genericPatterns = ["toma agua", "tomá agua", "bebe agua", "come fruta", "descansa"];
+  const genericHit = genericPatterns.some((pattern) => normalized.includes(pattern));
+  const hasConcreteFoodWords =
+    normalized.includes("huevo")
+    || normalized.includes("avena")
+    || normalized.includes("yogur")
+    || normalized.includes("wrap")
+    || normalized.includes("ensalada")
+    || normalized.includes("legumbre")
+    || normalized.includes("tostada")
+    || normalized.includes("arroz")
+    || normalized.includes("pollo")
+    || normalized.includes("atun")
+    || normalized.includes("banana")
+    || normalized.includes("manzana");
+
+  if (genericHit && !hasConcreteFoodWords) reasons.push("too_generic");
+
+  return { pass: reasons.length === 0, reasons };
+};
+
+const buildQualityRepairPrompt = (draft: string, reasons: string[], locale: string) => {
+  if (isSpanishLocale(locale)) {
+    return `
+Reescribí esta respuesta para cumplir un estándar premium y evitar genericidad.
+
+Idioma de salida: ${locale}
+Motivos de rechazo: ${reasons.join(", ")}
+
+Reglas obligatorias:
+- 1 línea de anclaje corta.
+- Luego exactamente 3 bullets:
+  - Opción A (más fácil)
+  - Opción B (equilibrada)
+  - Plan B si no tengo nada
+- Cada bullet debe tener: acción concreta <10 min + ejemplo real de comida + por qué corto.
+- Evitá consejos vacíos tipo "tomá agua" como respuesta principal.
+- Cerrá con una micro-acción final de 1 oración para hoy.
+
+Borrador a mejorar:
+${draft}
+`;
+  }
+
+  return `
+Rewrite this answer to meet a premium quality standard and avoid generic advice.
+
+Output language: ${locale}
+Rejection reasons: ${reasons.join(", ")}
+
+Mandatory rules:
+- 1 short anchor line.
+- Then exactly 3 bullets:
+  - Option A (easiest)
+  - Option B (balanced)
+  - Plan B if there is nothing available
+- Each bullet must include: concrete action under 10 minutes + realistic food example + short reason.
+- Avoid empty tips like "drink water" as the main answer.
+- Close with one micro-action for today in a single sentence.
+
+Draft to improve:
+${draft}
+`;
+};
+
 const persistChatQualityEvent = async (event: ChatQualityEventInput) => {
   try {
     const supabase = await createClient();
@@ -1096,6 +1199,22 @@ export async function POST(req: Request) {
       - EVIDENCE CONTRACT:
         - Every recommendation must include a short "por qué" grounded in memory or Knowledge Base context.
         - If evidence is weak or missing, say it explicitly and provide a safer fallback option.
+      - MINIMUM QUALITY BAR (MANDATORY):
+        - Never reply with a single generic tip (e.g., "drink water", "eat fruit", "take a walk") as the full answer.
+        - Provide at least 2 concrete options and 1 fallback when user asks what to eat or how to improve.
+        - Every option must include:
+          1) exact action now (what to do in <10 min),
+          2) practical version using likely pantry items,
+          3) one-line reason tied to the user's memory/check-ins/goals.
+        - Use bridge-change logic: keep familiar taste/texture and improve quality step-by-step.
+        - If user is low energy/high craving, prioritize low-friction options first, not perfect options.
+      - RESPONSE SHAPE (DEFAULT):
+        - Start with one short anchor sentence (max 12 words).
+        - Then bullets using localized labels in the user's language:
+          - Option A (easiest)
+          - Option B (balanced)
+          - Plan B if nothing is available
+        - End with one next micro-action for today (single sentence).
       - Be extremely concise. Use bullet points for options.
       - Avoid long explanations unless explicitly asked.
       - Ask MAX ONE follow-up question, and ONLY if critical to give a recommendation. Otherwise, do not ask anything.
@@ -1141,44 +1260,73 @@ export async function POST(req: Request) {
         }
 
         try {
-            const result = await streamText({
+            const result = await generateText({
                 model: candidate.model,
                 system: systemPrompt,
                 messages: trimmedMessages,
                 maxOutputTokens: CHAT_MAX_OUTPUT_TOKENS,
-                onFinish: ({ usage, finishReason }) => {
-                  const promptTokens = extractUsageCounter(usage, ["promptTokens", "inputTokens"]);
-                  const completionTokens = extractUsageCounter(usage, ["completionTokens", "outputTokens"]);
-                  const totalTokens = extractUsageCounter(usage, ["totalTokens"]);
-                  const latencyMs = Date.now() - llmStartedAt;
-
-                  console.info("[chat/llm] usage", {
-                    provider: candidate.provider,
-                    model: candidate.name,
-                    finish_reason: finishReason,
-                    prompt_tokens: promptTokens ?? null,
-                    completion_tokens: completionTokens ?? null,
-                    total_tokens: totalTokens ?? null,
-                  });
-
-                  if (userId) {
-                    void persistChatQualityEvent({
-                      userId,
-                      intent,
-                      locale: userLocale,
-                      provider: candidate.provider,
-                      model: candidate.name,
-                      finishReason,
-                      success: true,
-                      promptTokens,
-                      completionTokens,
-                      totalTokens,
-                      latencyMs,
-                      fallbackCount: failureSummary.length,
-                    });
-                  }
-                },
             });
+
+            let outputText = result.text?.trim() || "";
+            let finishReason = (result.finishReason as string | undefined) ?? "stop";
+            let promptTokens = extractUsageCounter(result.usage, ["promptTokens", "inputTokens"]);
+            let completionTokens = extractUsageCounter(result.usage, ["completionTokens", "outputTokens"]);
+            let totalTokens = extractUsageCounter(result.usage, ["totalTokens"]);
+
+            if (intent !== "movement") {
+              const draftQuality = evaluateNutritionDraft(outputText);
+              if (!draftQuality.pass) {
+                const repair = await generateText({
+                  model: candidate.model,
+                  system: `${systemPrompt}\n\nYou are now in QUALITY-REPAIR mode.`,
+                  messages: [
+                    ...trimmedMessages,
+                    { role: "assistant", content: outputText },
+                    {
+                      role: "user",
+                      content: buildQualityRepairPrompt(outputText, draftQuality.reasons, userLocale),
+                    },
+                  ],
+                  maxOutputTokens: CHAT_MAX_OUTPUT_TOKENS,
+                });
+
+                if (repair.text?.trim()) {
+                  outputText = repair.text.trim();
+                  finishReason = (repair.finishReason as string | undefined) ?? finishReason;
+                  promptTokens = (promptTokens || 0) + (extractUsageCounter(repair.usage, ["promptTokens", "inputTokens"]) || 0);
+                  completionTokens = (completionTokens || 0) + (extractUsageCounter(repair.usage, ["completionTokens", "outputTokens"]) || 0);
+                  totalTokens = (totalTokens || 0) + (extractUsageCounter(repair.usage, ["totalTokens"]) || 0);
+                }
+              }
+            }
+
+            const latencyMs = Date.now() - llmStartedAt;
+
+            console.info("[chat/llm] usage", {
+              provider: candidate.provider,
+              model: candidate.name,
+              finish_reason: finishReason,
+              prompt_tokens: promptTokens ?? null,
+              completion_tokens: completionTokens ?? null,
+              total_tokens: totalTokens ?? null,
+            });
+
+            if (userId) {
+              void persistChatQualityEvent({
+                userId,
+                intent,
+                locale: userLocale,
+                provider: candidate.provider,
+                model: candidate.name,
+                finishReason,
+                success: true,
+                promptTokens,
+                completionTokens,
+                totalTokens,
+                latencyMs,
+                fallbackCount: failureSummary.length,
+              });
+            }
 
             console.info("[chat/llm] success", {
               provider: candidate.provider,
@@ -1188,7 +1336,10 @@ export async function POST(req: Request) {
               latency_ms: Date.now() - llmStartedAt,
             });
 
-            return result.toTextStreamResponse();
+            const emptyFallback = isSpanishLocale(userLocale)
+              ? "No pude generar una respuesta completa. Probá de nuevo."
+              : "I couldn't generate a complete answer. Please try again.";
+            return respondWithText(outputText || emptyFallback);
         } catch (error) {
             const kind = classifyProviderFailure(error);
             const message = readErrorMessage(error);
