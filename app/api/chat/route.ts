@@ -15,6 +15,11 @@ import {
 import { getPantryItems } from "@/lib/user-activities";
 import { findMarketPriceMatches, getMarketContext } from "@/lib/market-prices";
 import { formatKnowledgeContext, retrieveKnowledge } from "@/lib/kb/retrieval";
+import {
+  getPersonalizationSnapshot,
+  inferKnowledgeModules,
+  persistRecommendationEvent,
+} from "@/lib/kb/personalization";
 import { randomUUID } from "crypto";
 import { tryUpstashLimit } from "@/lib/upstash/ratelimit";
 import { createClient } from "@/lib/supabase/server";
@@ -223,10 +228,41 @@ const hasPriceIntent = (text?: string | null) => {
   return PRICE_INTENT_KEYWORDS.some((keyword) => normalized.includes(keyword));
 };
 
-const buildNoVerifiedPriceMessage = () =>
-  "No tengo un precio verificado para ese producto en este momento. Si querés, te recomiendo opciones similares por perfil nutricional sin inventar precios, o podés pedirme precios solo de productos con referencia en mi lista actual.";
+const localizedCopy = {
+  es: {
+    noVerifiedPrice:
+      "No tengo un precio verificado para ese producto en este momento. Si querés, te recomiendo opciones similares por perfil nutricional sin inventar precios, o podés pedirme precios solo de productos con referencia en mi lista actual.",
+    emptyReply: "No pude generar una respuesta completa. Probá de nuevo.",
+    qualityIntro: "Reescribí esta respuesta para cumplir un estándar premium y evitar genericidad.",
+    qualityReasons: "Motivos de rechazo",
+    qualityRules: [
+      "1 línea de anclaje corta.",
+      "Luego exactamente 3 bullets: Opción A (más fácil), Opción B (equilibrada), Plan B si no tengo nada.",
+      "Cada bullet debe tener: acción concreta <10 min + ejemplo real de comida + por qué corto.",
+      "Evitá consejos vacíos tipo 'tomá agua' como respuesta principal.",
+      "Cerrá con una micro-acción final de 1 oración para hoy.",
+    ],
+  },
+  en: {
+    noVerifiedPrice:
+      "I don't have a verified price for that product right now. I can suggest similar options by nutrition profile without inventing prices, or you can ask for prices only for products with verified references in my current list.",
+    emptyReply: "I couldn't generate a complete answer. Please try again.",
+    qualityIntro: "Rewrite this answer to meet a premium quality standard and avoid generic advice.",
+    qualityReasons: "Rejection reasons",
+    qualityRules: [
+      "1 short anchor line.",
+      "Then exactly 3 bullets: Option A (easiest), Option B (balanced), Plan B if there is nothing available.",
+      "Each bullet must include: concrete action under 10 minutes + realistic food example + short reason.",
+      "Avoid empty tips like 'drink water' as the main answer.",
+      "Close with one micro-action for today in a single sentence.",
+    ],
+  },
+} as const;
 
 const isSpanishLocale = (locale: string) => locale.toLowerCase().startsWith("es");
+const routeLocale = (locale: string) => (isSpanishLocale(locale) ? localizedCopy.es : localizedCopy.en);
+
+const buildNoVerifiedPriceMessage = (locale: string) => routeLocale(locale).noVerifiedPrice;
 
 const formatTimeForLocale = (dateIso?: string | null, locale = "es") => {
   if (!dateIso) return "";
@@ -786,47 +822,52 @@ const evaluateNutritionDraft = (text: string): DraftQualityResult => {
 };
 
 const buildQualityRepairPrompt = (draft: string, reasons: string[], locale: string) => {
-  if (isSpanishLocale(locale)) {
-    return `
-Reescribí esta respuesta para cumplir un estándar premium y evitar genericidad.
-
-Idioma de salida: ${locale}
-Motivos de rechazo: ${reasons.join(", ")}
-
-Reglas obligatorias:
-- 1 línea de anclaje corta.
-- Luego exactamente 3 bullets:
-  - Opción A (más fácil)
-  - Opción B (equilibrada)
-  - Plan B si no tengo nada
-- Cada bullet debe tener: acción concreta <10 min + ejemplo real de comida + por qué corto.
-- Evitá consejos vacíos tipo "tomá agua" como respuesta principal.
-- Cerrá con una micro-acción final de 1 oración para hoy.
-
-Borrador a mejorar:
-${draft}
-`;
-  }
+  const copy = routeLocale(locale);
+  const rules = copy.qualityRules.map((rule) => `- ${rule}`).join("\n");
+  const header = isSpanishLocale(locale) ? `Idioma de salida: ${locale}` : `Output language: ${locale}`;
+  const draftLabel = isSpanishLocale(locale) ? "Borrador a mejorar" : "Draft to improve";
 
   return `
-Rewrite this answer to meet a premium quality standard and avoid generic advice.
+${copy.qualityIntro}
 
-Output language: ${locale}
-Rejection reasons: ${reasons.join(", ")}
+${header}
+${copy.qualityReasons}: ${reasons.join(", ")}
 
 Mandatory rules:
-- 1 short anchor line.
-- Then exactly 3 bullets:
-  - Option A (easiest)
-  - Option B (balanced)
-  - Plan B if there is nothing available
-- Each bullet must include: concrete action under 10 minutes + realistic food example + short reason.
-- Avoid empty tips like "drink water" as the main answer.
-- Close with one micro-action for today in a single sentence.
+${rules}
 
-Draft to improve:
+${draftLabel}:
 ${draft}
 `;
+};
+
+const buildDeterministicNutritionFallback = (
+  locale: string,
+  pantry: Array<{ item_name?: string | null }>
+) => {
+  const pantryItems = pantry
+    .map((item) => (item.item_name || "").trim())
+    .filter(Boolean)
+    .slice(0, 3);
+  const pantryLine = pantryItems.length ? pantryItems.join(", ") : null;
+
+  if (isSpanishLocale(locale)) {
+    return [
+      "Vamos con un plan simple y accionable para hoy.",
+      `- Opción A (más fácil): armá un plato rápido en 8 minutos (base + proteína + vegetal). ${pantryLine ? `Si tenés ${pantryLine}, empezá por eso.` : "Usá lo que tengas más a mano."} Por qué: mejora saciedad y evita picoteo impulsivo.`,
+      "- Opción B (equilibrada): prepará una comida puente que mantenga sabor familiar (por ejemplo, wrap/tostada con proteína y algo fresco). Por qué: baja fricción y mejor calidad nutricional.",
+      "- Plan B si no tengo nada: elegí una combinación lista en 5 minutos (yogur natural + fruta + puñado de frutos secos, o alternativa equivalente). Por qué: estabiliza energía sin complicarte.",
+      "Micro-acción de hoy: elegí una opción y hacela ahora mismo antes de seguir con otra tarea.",
+    ].join("\n");
+  }
+
+  return [
+    "Let's keep this simple and actionable for today.",
+    `- Option A (easiest): build a quick plate in under 8 minutes (base + protein + vegetable). ${pantryLine ? `If you have ${pantryLine}, start there.` : "Use whatever is easiest to grab."} Why: better satiety and fewer impulse snacks.`,
+    "- Option B (balanced): make a bridge meal that keeps a familiar taste (for example, wrap/toast with protein and something fresh). Why: low friction with better nutrition quality.",
+    "- Plan B if nothing is available: pick a 5-minute combo (plain yogurt + fruit + a handful of nuts, or equivalent). Why: steadier energy without complexity.",
+    "Today's micro-action: choose one option and do it now before your next task.",
+  ].join("\n");
 };
 
 const persistChatQualityEvent = async (event: ChatQualityEventInput) => {
@@ -994,6 +1035,14 @@ export async function POST(req: Request) {
       })()
     : "No feedback memory available for anonymous user.";
 
+  const personalizationSnapshot = userId
+    ? await getPersonalizationSnapshot(userId, intent).catch((error) => {
+        console.warn("personalization snapshot load failed", error);
+        return null;
+      })
+    : null;
+  const kbModules = inferKnowledgeModules(personalizationSnapshot);
+
   // 2. Construct System Prompt with Memory
   const todaysMeals: MealLog[] = todaysMealsRaw.map((meal) => ({
     id: typeof meal.id === "number" || typeof meal.id === "string" ? meal.id : undefined,
@@ -1029,6 +1078,7 @@ export async function POST(req: Request) {
         query: lastUserMessage.content,
         language: userLocale,
         limit: kbLimit,
+        modules: kbModules,
       });
       knowledgeContext = formatKnowledgeContext(snippets, { maxChars: MAX_KB_CONTEXT_CHARS });
     } catch (error) {
@@ -1045,7 +1095,7 @@ export async function POST(req: Request) {
     : [];
 
   if (userAskedPrice && marketPriceMatches.length === 0) {
-    return respondWithText(buildNoVerifiedPriceMessage());
+    return respondWithText(buildNoVerifiedPriceMessage(userLocale));
   }
 
   const verifiedPriceContext = marketPriceMatches.length > 0
@@ -1137,6 +1187,11 @@ export async function POST(req: Request) {
 
     QUALITY FEEDBACK MEMORY:
     ${feedbackMemory}
+
+    PERSONALIZATION SNAPSHOT:
+    ${personalizationSnapshot
+      ? `helpful_rate=${Math.round(personalizationSnapshot.helpfulRate * 100)}%, low_value_rate=${Math.round(personalizationSnapshot.lowValueRate * 100)}%, acceptance_rate=${Math.round(personalizationSnapshot.recommendationAcceptanceRate * 100)}%, module_focus=${personalizationSnapshot.moduleFocus.join(",") || "none"}, window_days=${personalizationSnapshot.windowDays}`
+      : "not available yet"}
 
     ${knowledgeContext}
     ${automationContext}
@@ -1298,6 +1353,11 @@ export async function POST(req: Request) {
                   totalTokens = (totalTokens || 0) + (extractUsageCounter(repair.usage, ["totalTokens"]) || 0);
                 }
               }
+
+              const finalQuality = evaluateNutritionDraft(outputText);
+              if (!finalQuality.pass) {
+                outputText = buildDeterministicNutritionFallback(userLocale, pantryItems);
+              }
             }
 
             const latencyMs = Date.now() - llmStartedAt;
@@ -1336,10 +1396,23 @@ export async function POST(req: Request) {
               latency_ms: Date.now() - llmStartedAt,
             });
 
-            const emptyFallback = isSpanishLocale(userLocale)
-              ? "No pude generar una respuesta completa. Probá de nuevo."
-              : "I couldn't generate a complete answer. Please try again.";
-            return respondWithText(outputText || emptyFallback);
+            if (userId && intent === "nutrition" && outputText) {
+              void persistRecommendationEvent({
+                userId,
+                intent,
+                strategy: "chat_two_pass_quality_gate",
+                recommendationText: outputText.slice(0, 2400),
+                modules: kbModules,
+                metadata: {
+                  provider: candidate.provider,
+                  model: candidate.name,
+                  fallback_count: failureSummary.length,
+                  locale: userLocale,
+                },
+              });
+            }
+
+            return respondWithText(outputText || routeLocale(userLocale).emptyReply);
         } catch (error) {
             const kind = classifyProviderFailure(error);
             const message = readErrorMessage(error);
@@ -1369,8 +1442,9 @@ export async function POST(req: Request) {
     });
 
     if (autoActionNote) {
-      const fallbackNotice =
-        "No pude generar una respuesta completa del chat en este momento, pero tu registro ya quedó guardado.";
+      const fallbackNotice = isSpanishLocale(userLocale)
+        ? "No pude generar una respuesta completa del chat en este momento, pero tu registro ya quedó guardado."
+        : "I couldn't generate a complete chat answer right now, but your log was saved.";
       return respondWithText(`${autoActionNote}\n${fallbackNotice}`);
     }
 

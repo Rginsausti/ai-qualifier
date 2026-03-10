@@ -317,6 +317,18 @@ function ChatPageContent() {
                 ...prev,
                 [message.id]: { value, status: "saved" },
             }));
+
+            void fetch("/api/chat/recommendation-outcome", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    intent,
+                    outcome: value === "up" ? "accepted" : "replaced",
+                    reason: value === "up" ? "helpful" : "not_helpful",
+                }),
+            }).catch((outcomeError) => {
+                console.warn("Unable to sync recommendation outcome", outcomeError);
+            });
         } catch (error) {
             console.error("Unable to submit feedback", error);
             setFeedbackByMessageId((prev) => ({
@@ -328,6 +340,24 @@ function ChatPageContent() {
 
     const sendMessage = useCallback(async (content: string, options?: { hidden?: boolean; hint?: string; includeHiddenHistory?: boolean }) => {
         if (!content.trim() || isLoading) return;
+
+        const lastVisibleMessage = [...messages].reverse().find((entry) => !entry.hidden);
+        if (userId && lastVisibleMessage?.role === "assistant") {
+            const feedbackState = feedbackByMessageId[lastVisibleMessage.id];
+            if (!feedbackState || feedbackState.status !== "saved") {
+                void fetch("/api/chat/recommendation-outcome", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        intent,
+                        outcome: "skipped",
+                        reason: "new_prompt_before_accept",
+                    }),
+                }).catch((outcomeError) => {
+                    console.warn("Unable to mark recommendation as skipped", outcomeError);
+                });
+            }
+        }
 
         const trimmed = content.trim();
         const userMessage: Message = {
@@ -429,7 +459,7 @@ function ChatPageContent() {
         } finally {
             setIsLoading(false);
         }
-    }, [i18n.language, intent, isLoading, location, messages, persistMessages, t, userId]);
+    }, [feedbackByMessageId, i18n.language, intent, isLoading, location, messages, persistMessages, t, userId]);
 
     const handleCopyAssistantMessage = useCallback(async (message: Message) => {
         const cleanContent = message.content.replace(/<!--[\s\S]*?-->/g, "").trim();
@@ -448,9 +478,39 @@ function ChatPageContent() {
     const handleUseAsPlan = useCallback((message: Message) => {
         const cleanContent = message.content.replace(/<!--[\s\S]*?-->/g, "").trim();
         if (!cleanContent) return;
+
+        if (userId) {
+            void fetch("/api/chat/recommendation-outcome", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    intent,
+                    outcome: "accepted",
+                    reason: "used_as_today_plan",
+                }),
+            }).catch((outcomeError) => {
+                console.warn("Unable to mark recommendation as accepted", outcomeError);
+            });
+        }
+
         const query = encodeURIComponent(cleanContent.slice(0, 600));
         window.location.href = `/?prefillPlan=${query}`;
-    }, []);
+    }, [intent, userId]);
+
+    const handleSkipRecommendation = useCallback((message: Message) => {
+        if (!userId || message.role !== "assistant") return;
+        void fetch("/api/chat/recommendation-outcome", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                intent,
+                outcome: "skipped",
+                reason: "user_skipped",
+            }),
+        }).catch((outcomeError) => {
+            console.warn("Unable to mark recommendation as skipped", outcomeError);
+        });
+    }, [intent, userId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -635,6 +695,13 @@ function ChatPageContent() {
                                                 >
                                                     <CalendarPlus className="h-3.5 w-3.5" />
                                                     {t("chat.actions.useAsPlan", { defaultValue: "Usar como plan de hoy" })}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleSkipRecommendation(m)}
+                                                    className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1 transition hover:bg-slate-50"
+                                                >
+                                                    {t("chat.actions.skip", { defaultValue: "Saltar" })}
                                                 </button>
                                             </div>
                                         ) : null}

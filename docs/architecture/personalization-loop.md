@@ -17,6 +17,8 @@ Make Alma progressively more helpful for each user.
   - provider/model and finish reason,
   - latency and fallback counts.
 - Search-side fallback metadata exposed to UI (`fallback_mode`, `fallback_reason`) for future learning features.
+- Recommendation event log persisted in `recommendation_events` (intent, strategy, modules, outcome, metadata).
+- Feature snapshots persisted in `user_feature_snapshots` (14-day rolling metrics per user/intent).
 
 ## Learning loop
 1. Collect behavior signals from interactions.
@@ -38,7 +40,8 @@ Make Alma progressively more helpful for each user.
 - Add search-quality feedback events (false positive, not available nearby, price mismatch).
 
 ## Next implementation step
-- Add nightly aggregation job that joins `chat_feedback_events` + `chat_quality_events` to produce per-user and per-intent feature snapshots.
+- Wire `POST /api/chat/recommendation-outcome` in UI actions to explicitly send `accepted/skipped/replaced` outcomes.
+- Schedule `GET /api/cron/personalization-aggregate` daily with `CRON_SECRET`.
 
 ## KPIs
 - repeat-use retention,

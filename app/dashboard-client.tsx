@@ -376,6 +376,7 @@ export default function DashboardClient({
   const [foodNoteStatus, setFoodNoteStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [foodNoteError, setFoodNoteError] = useState<string | null>(null);
   const [isFoodNoteDialogOpen, setIsFoodNoteDialogOpen] = useState(false);
+  const [pendingPlanFromChat, setPendingPlanFromChat] = useState<string | null>(null);
   const [isPantryModalOpen, setIsPantryModalOpen] = useState(false);
   const [isRewardsModalOpen, setIsRewardsModalOpen] = useState(false);
   const [showInstallGuide, setShowInstallGuide] = useState(false);
@@ -483,13 +484,22 @@ export default function DashboardClient({
     if (!prefilledPlan || hasAppliedPrefilledPlan.current) return;
     const trimmed = prefilledPlan.trim();
     if (!trimmed) return;
-    setFoodNote(trimmed);
-    setFoodNoteError(null);
-    setFoodNoteStatus("idle");
-    setIsFoodNoteDialogOpen(true);
+    setPendingPlanFromChat(trimmed);
     hasAppliedPrefilledPlan.current = true;
     router.replace("/", { scroll: false });
   }, [prefilledPlan, router]);
+
+  const applyChatPlanToNote = useCallback(() => {
+    if (!pendingPlanFromChat) return;
+    setFoodNote(pendingPlanFromChat);
+    setFoodNoteError(null);
+    setFoodNoteStatus("idle");
+    setIsFoodNoteDialogOpen(true);
+  }, [pendingPlanFromChat]);
+
+  const dismissChatPlan = useCallback(() => {
+    setPendingPlanFromChat(null);
+  }, []);
 
   const getCopy = useCallback(
     (key: string, fallback: string) => t(key, { defaultValue: fallback }),
@@ -1093,6 +1103,33 @@ export default function DashboardClient({
                     {getCopy("dashboard.hero.secondaryCta", "Registrar audio")}
                   </m.button>
                 </div>
+
+                {pendingPlanFromChat ? (
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700">
+                      {getCopy("dashboard.chatPlan.badge", "Suggested plan from chat")}
+                    </p>
+                    <p className="mt-2 line-clamp-3 text-sm text-slate-700">
+                      {pendingPlanFromChat}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={applyChatPlanToNote}
+                        className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
+                      >
+                        {getCopy("dashboard.chatPlan.apply", "Apply to note")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={dismissChatPlan}
+                        className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                      >
+                        {getCopy("dashboard.chatPlan.dismiss", "Dismiss")}
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
               </div>
               <div className="flex flex-1 flex-col items-center gap-8">
                 <div className="relative h-56 w-56">

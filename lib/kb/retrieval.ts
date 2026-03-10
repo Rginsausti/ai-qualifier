@@ -33,6 +33,7 @@ const MIN_SIMILARITY_SCORE = Number(process.env.KB_MIN_SIMILARITY_SCORE ?? "0.22
 const DEFAULT_LANGUAGE = "es";
 
 const embeddingCache = new Map<string, { vector: number[]; expiresAt: number }>();
+const KB_MODULE_WHITELIST = new Set(["patrones", "filosofia", "recetas", "guardrails"]);
 
 function vectorLiteral(values: number[]): string {
   return `[${values.map((value) => Number(value).toString()).join(",")}]`;
@@ -182,12 +183,16 @@ async function embedText(text: string): Promise<number[] | null> {
 }
 
 function buildModuleClause(paramIndex: number, modules?: string[]) {
-  if (!modules?.length) {
+  const sanitizedModules = (modules || [])
+    .map((module) => module.trim().toLowerCase())
+    .filter((module) => KB_MODULE_WHITELIST.has(module));
+
+  if (!sanitizedModules.length) {
     return { clause: "", params: [] as unknown[] };
   }
   return {
     clause: ` and module_tag = any($${paramIndex}::kb_module_tag[])`,
-    params: [modules],
+    params: [sanitizedModules],
   };
 }
 

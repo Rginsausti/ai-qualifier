@@ -179,6 +179,11 @@
       "next": "Próxima meta",
       "cta": "Abrir medalla mindful"
     },
+    "chatPlan": {
+      "badge": "Plan sugerido desde chat",
+      "apply": "Aplicar al registro",
+      "dismiss": "Descartar"
+    },
     "progress": {
       "badge": "Visión de progreso",
       "title": "Tu avance en 3 horizontes",
@@ -823,7 +828,8 @@
     "actions": {
       "copy": "Copiar",
       "copied": "Copiado",
-      "useAsPlan": "Usar como plan de hoy"
+      "useAsPlan": "Usar como plan de hoy",
+      "skip": "Saltar"
     },
     "prompts": {
       "food": {

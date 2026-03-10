@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { updateLatestRecommendationOutcome } from "@/lib/kb/personalization";
 
 type FeedbackValue = "up" | "down";
 
@@ -101,6 +102,16 @@ export async function POST(request: NextRequest) {
   if (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
+
+  const mappedOutcome = feedback === "up" ? "accepted" : "replaced";
+  void updateLatestRecommendationOutcome({
+    userId: user.id,
+    intent,
+    outcome: mappedOutcome,
+    reason: reason || null,
+  }).catch((outcomeError) => {
+    console.warn("feedback->recommendation outcome sync failed", outcomeError);
+  });
 
   return NextResponse.json({ success: true });
 }

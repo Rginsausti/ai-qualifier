@@ -180,6 +180,11 @@
       "next": "Next milestone",
       "cta": "Open mindful medal"
     },
+    "chatPlan": {
+      "badge": "Suggested plan from chat",
+      "apply": "Apply to note",
+      "dismiss": "Dismiss"
+    },
     "progress": {
       "badge": "Progress view",
       "title": "Your progress across 3 horizons",
@@ -824,7 +829,8 @@
     "actions": {
       "copy": "Copy",
       "copied": "Copied",
-      "useAsPlan": "Use as today plan"
+      "useAsPlan": "Use as today plan",
+      "skip": "Skip"
     },
     "prompts": {
       "food": {
