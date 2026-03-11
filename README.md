@@ -41,6 +41,18 @@ Toda la app está tokenizada con i18next. Podés cambiar entre español, inglés
 4. Programá las llamadas a `POST /api/notifications/cron` con `type=water`, `type=meal`, `type=day_end` o `type=nearby_search` desde Vercel Cron o Upstash QStash, pasando `Authorization: Bearer ${CRON_SECRET}`.
 5. Para recibir avisos en iOS, instalá Alma como PWA (Agregar a pantalla de inicio) y luego activá las notificaciones desde el botón de campana.
 
+## Ops: admin auth and endpoints
+- User-based admin auth: cualquier usuario autenticado de Supabase con `app_metadata.is_admin === true` puede usar rutas admin desde sesión server-side.
+- Machine-to-machine auth se mantiene: también acepta `Authorization: Bearer ${ADMIN_SECRET}` (con fallback a `CRON_SECRET` si `ADMIN_SECRET` no está definido).
+- Bootstrap/promoción de admin user: `npx tsx scripts/create-admin-user.ts <email> [password]`.
+- Endpoint analytics: `GET /api/admin/recommendation-analytics` con query params opcionales `intent` (default `nutrition`), `days` (1..90, default 14), `limitUsers` (1..50, default 10).
+- Endpoint cache: `GET /api/admin/clear-cache` para limpiar entradas vacías de `product_search_cache`.
+
+## Ops: personalization aggregation cron
+- Cron configurado en `vercel.json` para `GET /api/cron/personalization-aggregate` a las `03:30 UTC` todos los días.
+- Este endpoint valida `Authorization: Bearer ${CRON_SECRET}`.
+- Si usás Vercel Cron, definí `CRON_SECRET` en el proyecto para habilitar la ejecución autenticada.
+
 ## Architecture and roadmap
 - `docs/architecture/README.md`
 - `docs/architecture/architecture-overview.md`

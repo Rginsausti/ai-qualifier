@@ -1,16 +1,11 @@
 import { NextResponse } from 'next/server';
+import { assertAdminRequest } from '@/lib/auth/admin';
 import { getSupabaseServiceClient } from '@/lib/supabase/server-client';
 
-const adminSecret = process.env.ADMIN_SECRET || process.env.CRON_SECRET;
-
 export async function GET(request: Request) {
-  if (!adminSecret) {
-    return NextResponse.json({ error: 'ADMIN_SECRET is not configured' }, { status: 503 });
-  }
-
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${adminSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const auth = await assertAdminRequest(request);
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
   try {

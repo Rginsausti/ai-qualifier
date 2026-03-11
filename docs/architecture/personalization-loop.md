@@ -18,6 +18,7 @@ Make Alma progressively more helpful for each user.
   - latency and fallback counts.
 - Search-side fallback metadata exposed to UI (`fallback_mode`, `fallback_reason`) for future learning features.
 - Recommendation event log persisted in `recommendation_events` (intent, strategy, modules, outcome, metadata).
+- Recommendation outcome capture wired through `POST /api/chat/recommendation-outcome` for explicit `accepted/skipped/replaced` user actions.
 - Feature snapshots persisted in `user_feature_snapshots` (14-day rolling metrics per user/intent).
 
 ## Learning loop
@@ -40,8 +41,8 @@ Make Alma progressively more helpful for each user.
 - Add search-quality feedback events (false positive, not available nearby, price mismatch).
 
 ## Next implementation step
-- Wire `POST /api/chat/recommendation-outcome` in UI actions to explicitly send `accepted/skipped/replaced` outcomes.
-- Schedule `GET /api/cron/personalization-aggregate` daily with `CRON_SECRET`.
+- Schedule daily `GET /api/cron/personalization-aggregate` with `CRON_SECRET` (now configured in `vercel.json` at `03:30 UTC`; adjust to your preferred timezone).
+- Expose `GET /api/admin/recommendation-analytics` for recommendation outcome monitoring.
 
 ## KPIs
 - repeat-use retention,
