@@ -117,7 +117,119 @@ type DayAggregate = {
     adherence: boolean;
 };
 
+type DailyPlanContent = {
+    morning: { title: string; detail: string };
+    lunch: { title: string; detail: string };
+    dinner: { title: string; detail: string };
+    tip: string;
+};
+
 const roundMetric = (value: number) => Math.round(value * 10) / 10;
+
+const PLAN_TEXT_MAX_LENGTH = 2000;
+
+function sanitizeChatPlanText(rawPlan: string) {
+    const trimmed = rawPlan.trim().slice(0, PLAN_TEXT_MAX_LENGTH);
+
+    return trimmed
+        .replace(/\*\*/g, "")
+        .replace(/__/g, "")
+        .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+        .replace(/^\s{0,3}[-*+]\s+/gm, "")
+        .replace(/\r/g, "")
+        .trim();
+}
+
+function buildNormalizedPlanFromText(sanitizedText: string): DailyPlanContent {
+    const defaults: DailyPlanContent = {
+        morning: {
+            title: "Morning plan",
+            detail: "Start with water, protein, and fiber to support steady energy.",
+        },
+        lunch: {
+            title: "Lunch plan",
+            detail: "Build a balanced plate with vegetables, lean protein, and whole carbs.",
+        },
+        dinner: {
+            title: "Dinner plan",
+            detail: "Keep dinner light and satisfying with vegetables plus a gentle protein.",
+        },
+        tip: "Plan one easy meal in advance so healthy choices feel simpler today.",
+    };
+
+    if (!sanitizedText) {
+        return defaults;
+    }
+
+    const lines = sanitizedText
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
+    const assigned = new Set<"morning" | "lunch" | "dinner" | "tip">();
+    const leftovers: string[] = [];
+
+    const removeLabel = (line: string) => line.replace(/^([a-záéíóúñ\s]+)[:\-]\s*/i, "").trim();
+
+    for (const line of lines) {
+        const normalized = line.toLowerCase();
+        if (!assigned.has("morning") && /(morning|breakfast|desayuno)/i.test(normalized)) {
+            defaults.morning.detail = removeLabel(line) || defaults.morning.detail;
+            assigned.add("morning");
+            continue;
+        }
+
+        if (!assigned.has("lunch") && /(lunch|almuerzo|comida|midday)/i.test(normalized)) {
+            defaults.lunch.detail = removeLabel(line) || defaults.lunch.detail;
+            assigned.add("lunch");
+            continue;
+        }
+
+        if (!assigned.has("dinner") && /(dinner|cena|night|evening)/i.test(normalized)) {
+            defaults.dinner.detail = removeLabel(line) || defaults.dinner.detail;
+            assigned.add("dinner");
+            continue;
+        }
+
+        if (!assigned.has("tip") && /(tip|consejo|note|extra)/i.test(normalized)) {
+            defaults.tip = removeLabel(line) || defaults.tip;
+            assigned.add("tip");
+            continue;
+        }
+
+        leftovers.push(line);
+    }
+
+    const fallbackSegments = leftovers
+        .join(" ")
+        .split(/[.!?]+/)
+        .map((segment) => segment.trim())
+        .filter(Boolean);
+
+    const fallback = (index: number) => fallbackSegments[index];
+
+    const fallbackMorning = fallback(0);
+    const fallbackLunch = fallback(1);
+    const fallbackDinner = fallback(2);
+    const fallbackTip = fallback(3);
+
+    if (!assigned.has("morning") && fallbackMorning) {
+        defaults.morning.detail = fallbackMorning;
+    }
+
+    if (!assigned.has("lunch") && fallbackLunch) {
+        defaults.lunch.detail = fallbackLunch;
+    }
+
+    if (!assigned.has("dinner") && fallbackDinner) {
+        defaults.dinner.detail = fallbackDinner;
+    }
+
+    if (!assigned.has("tip") && fallbackTip) {
+        defaults.tip = fallbackTip;
+    }
+
+    return defaults;
+}
 
 const aggregatePeriodProgress = (params: {
     timezone: string;
@@ -593,6 +705,42 @@ export async function getTodayNutritionLogs(userId: string, locale?: string) {
     }
 
     return data || [];
+}
+
+export async function saveTodayPlanFromChat(rawPlan: string): Promise<{
+    success: boolean;
+    error?: string;
+    content?: DailyPlanContent;
+}> {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { success: false, error: "Unauthorized" };
+    }
+
+    const sanitizedText = sanitizeChatPlanText(rawPlan);
+    const normalizedContent = buildNormalizedPlanFromText(sanitizedText);
+    const today = new Date().toISOString().split("T")[0];
+
+    const { error } = await supabase.from("daily_plans").upsert(
+        {
+            user_id: user.id,
+            date: today,
+            content: normalizedContent,
+        },
+        { onConflict: "user_id,date" }
+    );
+
+    if (error) {
+        console.error("saveTodayPlanFromChat: failed to save plan", error);
+        return { success: false, error: "Could not save today's plan" };
+    }
+
+    return {
+        success: true,
+        content: normalizedContent,
+    };
 }
 
 export async function getProgressInsights(userId: string, locale?: string): Promise<ProgressInsights> {

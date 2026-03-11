@@ -12,7 +12,7 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { LazyMotion, MotionConfig, domAnimation, useReducedMotion } from "motion/react";
 import * as m from "motion/react-m";
-import { logWater, logNutrition, analyzeFoodFromText } from "@/lib/actions";
+import { logWater, logNutrition, analyzeFoodFromText, saveTodayPlanFromChat } from "@/lib/actions";
 import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
 import { signOut } from "@/lib/auth-actions";
 import { PantryModal } from "@/components/modals/PantryModal";
@@ -257,6 +257,11 @@ type DailyPlanContent = {
   tip: string;
 };
 
+type ChatPlanStatus = {
+  tone: "success" | "error";
+  message: string;
+};
+
 type SectionSeparatorProps = {
   src: string;
   height?: number;
@@ -377,6 +382,9 @@ export default function DashboardClient({
   const [foodNoteError, setFoodNoteError] = useState<string | null>(null);
   const [isFoodNoteDialogOpen, setIsFoodNoteDialogOpen] = useState(false);
   const [pendingPlanFromChat, setPendingPlanFromChat] = useState<string | null>(null);
+  const [activeDailyPlan, setActiveDailyPlan] = useState<DailyPlanContent | null>(dailyPlan ?? null);
+  const [isSavingChatPlan, setIsSavingChatPlan] = useState(false);
+  const [chatPlanStatus, setChatPlanStatus] = useState<ChatPlanStatus | null>(null);
   const [isPantryModalOpen, setIsPantryModalOpen] = useState(false);
   const [isRewardsModalOpen, setIsRewardsModalOpen] = useState(false);
   const [showInstallGuide, setShowInstallGuide] = useState(false);
@@ -464,6 +472,10 @@ export default function DashboardClient({
   }, [dailyStats]);
 
   useEffect(() => {
+    setActiveDailyPlan(dailyPlan ?? null);
+  }, [dailyPlan]);
+
+  useEffect(() => {
     return () => {
       if (foodNoteResetTimeout.current) {
         clearTimeout(foodNoteResetTimeout.current);
@@ -489,22 +501,46 @@ export default function DashboardClient({
     router.replace("/", { scroll: false });
   }, [prefilledPlan, router]);
 
-  const applyChatPlanToNote = useCallback(() => {
-    if (!pendingPlanFromChat) return;
-    setFoodNote(pendingPlanFromChat);
-    setFoodNoteError(null);
-    setFoodNoteStatus("idle");
-    setIsFoodNoteDialogOpen(true);
-  }, [pendingPlanFromChat]);
-
-  const dismissChatPlan = useCallback(() => {
-    setPendingPlanFromChat(null);
-  }, []);
-
   const getCopy = useCallback(
     (key: string, fallback: string) => t(key, { defaultValue: fallback }),
     [t]
   );
+
+  const applyChatPlanToToday = useCallback(async () => {
+    if (!pendingPlanFromChat) return;
+
+    setIsSavingChatPlan(true);
+    setChatPlanStatus(null);
+
+    try {
+      const result = await saveTodayPlanFromChat(pendingPlanFromChat);
+      if (!result.success || !result.content) {
+        setChatPlanStatus({
+          tone: "error",
+          message: result.error || getCopy("dashboard.chatPlan.error", "Could not update today's plan. Try again."),
+        });
+        return;
+      }
+
+      setActiveDailyPlan(result.content);
+      setPendingPlanFromChat(null);
+      setChatPlanStatus({
+        tone: "success",
+        message: getCopy("dashboard.chatPlan.success", "Today's plan updated."),
+      });
+    } catch {
+      setChatPlanStatus({
+        tone: "error",
+        message: getCopy("dashboard.chatPlan.error", "Could not update today's plan. Try again."),
+      });
+    } finally {
+      setIsSavingChatPlan(false);
+    }
+  }, [getCopy, pendingPlanFromChat]);
+
+  const dismissChatPlan = useCallback(() => {
+    setPendingPlanFromChat(null);
+  }, []);
 
   const streakDays = streak;
   const currentRewardLevel = useMemo(() => {
@@ -839,10 +875,10 @@ export default function DashboardClient({
   };
 
 
-  const currentPlan = dailyPlan ? [
+  const currentPlan = activeDailyPlan ? [
     {
-      titleKey: dailyPlan.morning.title,
-      detailKey: dailyPlan.morning.detail,
+      titleKey: activeDailyPlan.morning.title,
+      detailKey: activeDailyPlan.morning.detail,
       tagKey: "dashboard.plan.morning.tag",
       time: "08:30",
       icon: Flame,
@@ -850,8 +886,8 @@ export default function DashboardClient({
       isDynamic: true
     },
     {
-      titleKey: dailyPlan.lunch.title,
-      detailKey: dailyPlan.lunch.detail,
+      titleKey: activeDailyPlan.lunch.title,
+      detailKey: activeDailyPlan.lunch.detail,
       tagKey: "dashboard.plan.lunch.tag",
       time: "13:00",
       icon: HeartPulse,
@@ -859,8 +895,8 @@ export default function DashboardClient({
       isDynamic: true
     },
     {
-      titleKey: dailyPlan.dinner.title,
-      detailKey: dailyPlan.dinner.detail,
+      titleKey: activeDailyPlan.dinner.title,
+      detailKey: activeDailyPlan.dinner.detail,
       tagKey: "dashboard.plan.dinner.tag",
       time: "20:00",
       icon: Utensils,
@@ -1115,10 +1151,13 @@ export default function DashboardClient({
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
                         type="button"
-                        onClick={applyChatPlanToNote}
-                        className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
+                        onClick={applyChatPlanToToday}
+                        disabled={isSavingChatPlan}
+                        className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
                       >
-                        {getCopy("dashboard.chatPlan.apply", "Apply to note")}
+                        {isSavingChatPlan
+                          ? getCopy("dashboard.chatPlan.saving", "Saving...")
+                          : getCopy("dashboard.chatPlan.apply", "Use as today's plan")}
                       </button>
                       <button
                         type="button"
@@ -1129,6 +1168,14 @@ export default function DashboardClient({
                       </button>
                     </div>
                   </div>
+                ) : null}
+                {chatPlanStatus ? (
+                  <p
+                    className={`text-xs font-medium ${chatPlanStatus.tone === "success" ? "text-emerald-700" : "text-rose-600"}`}
+                    aria-live="polite"
+                  >
+                    {chatPlanStatus.message}
+                  </p>
                 ) : null}
               </div>
               <div className="flex flex-1 flex-col items-center gap-8">

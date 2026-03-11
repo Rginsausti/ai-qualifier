@@ -181,7 +181,10 @@
     },
     "chatPlan": {
       "badge": "Plan sugerido desde chat",
-      "apply": "Aplicar al registro",
+      "apply": "Usar como plan de hoy",
+      "saving": "Guardando...",
+      "success": "Plan de hoy actualizado.",
+      "error": "No pude actualizar el plan de hoy. Probá de nuevo.",
       "dismiss": "Descartar"
     },
     "progress": {

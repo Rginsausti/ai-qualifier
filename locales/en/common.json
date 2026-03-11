@@ -182,7 +182,10 @@
     },
     "chatPlan": {
       "badge": "Suggested plan from chat",
-      "apply": "Apply to note",
+      "apply": "Use as today's plan",
+      "saving": "Saving...",
+      "success": "Today's plan updated.",
+      "error": "Could not update today's plan. Try again.",
       "dismiss": "Dismiss"
     },
     "progress": {
